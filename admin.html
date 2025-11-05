@@ -2,106 +2,120 @@
 <html lang="da">
 <head>
   <meta charset="utf-8" />
-  <title>Admin • Infoskaerm</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • Infoskærm</title>
   <style>
     :root{
-      --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff; --card:#111a2d;
+      --bg:#0b1220; --card:#111a2d; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--fg);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{max-width:1000px;margin:32px auto;padding:0 16px}
+    h1{margin:0 0 12px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;margin:14px 0}
+    label{display:block;margin:10px 0 8px;color:var(--muted)}
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%;padding:10px;border:1px solid rgba(255,255,255,.1);background:#0e172a;color:var(--fg);
+      border-radius:10px;outline:none
     }
-    .wrap{
-      max-width:1100px; margin: 28px auto; padding:0 14px;
-    }
-    h1{font-size:20px; margin:0 0 16px}
-    .card{
-      background:var(--card); border:1px solid rgba(255,255,255,.06);
-      border-radius:12px; padding:16px; margin-bottom:18px;
-    }
-    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    label{display:block; font-size:13px; color:var(--muted); margin:4px 0}
-    input,select,textarea{
-      width:100%; background:#0e172a; color:var(--fg); border:1px solid rgba(255,255,255,.08);
-      border-radius:10px; padding:10px 12px; font-size:14px; outline:none;
-    }
-    textarea{min-height:110px; resize:vertical}
-    button{
-      background:var(--acc); color:white; border:0; border-radius:10px; padding:10px 14px; font-weight:600; cursor:pointer;
-    }
-    .ghost{background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.12)}
-    .hint{font-size:13px; color:var(--muted)}
-    table{width:100%; border-collapse:collapse; font-size:14px; margin-top:10px}
-    th, td{padding:10px 8px; border-top:1px solid rgba(255,255,255,.06)}
-    th{color:var(--muted); font-weight:600; text-align:left}
-    .actions{display:flex; gap:8px; flex-wrap:wrap}
-    .ok{color:#7ce38b}
-    .err{color:#ff7f7f}
+    textarea{min-height:110px;resize:vertical;white-space:pre}
+    .row{display:grid;gap:10px}
+    .row-2{grid-template-columns:1fr 1fr}
+    .row-3{grid-template-columns:1fr 1fr 1fr}
+    button{padding:10px 14px;border:0;border-radius:10px;background:var(--acc);color:#001;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,.14);color:var(--fg)}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+    .hint{color:var(--muted);font-size:12px}
+    .hint.ok{color:#4ad37e}
+    .hint.warn{color:#f9a23f}
+    .pill{display:inline-block;background:rgba(255,255,255,.08);padding:4px 8px;border-radius:999px;font-size:12px}
+    .gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg)}
   </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Admin • Infoskaerm</h1>
 
-  <!-- DATASOURCE -->
+<div id="gate" class="gate" hidden>
+  <div>
+    <h2 style="text-align:center;margin:0 0 8px">Ingen adgang</h2>
+    <p class="hint" style="text-align:center">Åbn med <strong>?admin=0705</strong></p>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>Admin • Infoskærm</h1>
+  <div id="status" class="hint">Klar</div>
+
+  <!-- Datakilde -->
   <div class="card">
-    <div class="row">
-      <div>
-        <label for="data_url">Adresse til <b>data.json</b></label>
-        <input id="data_url" value="https://perbonde07-byte.github.io/Infoskaerm/data.json" />
-      </div>
-    </div>
-    <div class="actions" style="margin-top:12px">
+    <label>Adresse til <strong>data.json</strong></label>
+    <div class="row row-3">
+      <input id="dataUrl" type="text" placeholder="https://.../data.json" />
       <button id="loadBtn" class="ghost">Hent data</button>
       <button id="downloadBtn" class="ghost">Download ny data.json</button>
-      <button id="saveServerBtn">Gem til server</button>
-      <span id="status" class="hint">Klar</span>
+    </div>
+    <div style="margin-top:8px">
+      <button id="saveBtn">Gem til server</button>
+      <span id="saveMsg" class="hint" style="margin-left:8px"></span>
     </div>
   </div>
 
-  <!-- SLIDES -->
+  <!-- Slides -->
   <div class="card">
-    <h3 style="margin:4px 0 12px">Slides</h3>
-    <div class="row">
+    <h3 style="margin-top:0">Slides</h3>
+
+    <div class="row row-3">
       <div>
         <label>Type</label>
         <select id="s_type">
-          <option value="bullets">bullets (punktliste)</option>
-          <option value="image">image (fuldskærmsbillede)</option>
+          <option value="bullets">image: tekst (punktliste)</option>
+          <option value="image">image: fuldskærmsbillede</option>
         </select>
       </div>
       <div>
         <label>Titel</label>
-        <input id="s_title" placeholder="Titel…" />
+        <input id="s_title" type="text" placeholder="Titel..." />
       </div>
+      <div>
+        <label>Varighed (sek.)</label>
+        <input id="s_duration" type="number" value="12" min="2" />
+      </div>
+    </div>
+
+    <div class="row">
       <div>
         <label>Linjer (brug `|` til flere)</label>
         <textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
       </div>
+    </div>
+
+    <div class="row">
       <div>
         <label>Billede (URL) – kun for type=image</label>
-        <div class="actions">
-          <input id="s_image" placeholder="https://… (eller vælg fra liste)" style="flex:1" />
-          <button id="mediaBtn" class="ghost" type="button">Hent medieliste</button>
+        <div class="row row-3">
+          <input id="s_image" type="text" placeholder="https://... (eller vælg fra liste)" />
+          <button id="btn_media_refresh" class="ghost" type="button">Hent medieliste</button>
+          <select id="media_select"></select>
         </div>
-        <select id="media_list" style="margin-top:6px; display:none"></select>
-      </div>
-      <div>
-        <label>Varighed (sek.)</label>
-        <input id="s_duration" type="number" min="3" value="12" />
+
+        <!-- Upload felt -->
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+          <input type="file" id="img_file" accept="image/*">
+          <button id="btn_upload" type="button" class="ghost">Upload billede</button>
+          <span id="up_status" class="hint"></span>
+        </div>
       </div>
     </div>
-    <div class="actions" style="margin-top:12px">
+
+    <div class="row row-3" style="margin-top:10px">
       <button id="addSlide">Tilføj slide</button>
       <button id="clearSlides" class="ghost">Tøm alle slides</button>
     </div>
 
     <table id="slidesTable">
       <thead>
-        <tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr>
+      <tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -109,170 +123,190 @@
 </div>
 
 <script>
-  // === LILLE "GATE" MED ADMIN-NØGLE ===================================
-  const ADMIN_KEY = "0705";
-  (function gate(){
-    const p = new URLSearchParams(location.search).get('admin');
-    if (p === ADMIN_KEY) localStorage.setItem('admin_ok', '1');
-    if (localStorage.getItem('admin_ok') !== '1') {
-      document.body.innerHTML =
-        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b1220;color:#e8eefb;font-family:system-ui">Ingen adgang – åbn med ?admin=0705</div>';
-    }
-  })();
+/* =============== Simple "gate" =============== */
+const ADMIN_KEY = "0705";
+(function gate(){
+  const p = new URLSearchParams(location.search).get('admin');
+  if(p===ADMIN_KEY){ localStorage.setItem('admin_ok','1'); }
+  if(localStorage.getItem('admin_ok')!=='1'){
+    document.getElementById('gate').hidden = false;
+    document.querySelector('.wrap').style.display='none';
+  }
+})();
 
-  // === STATE ===========================================================
-  const state = {
-    dataUrl: document.getElementById('data_url').value,
-    data: { brand: 'Bredsgaard Info', slides: [] }
+/* =============== State & helpers =============== */
+const state = {
+  dataUrl: 'https://perbonde07-byte.github.io/Infoskaerm/data.json',
+  data: { brand: 'Bredsgaard Info', slides: [] }
+};
+
+const $ = s=>document.querySelector(s);
+const statusEl = $('#status');
+$('#dataUrl').value = state.dataUrl;
+
+function setStatus(msg, cls='') {
+  statusEl.textContent = msg;
+  statusEl.className = 'hint ' + cls;
+}
+
+function downloadText(filename, text) {
+  const blob=new Blob([text],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+}
+
+/* =============== Render slides table =============== */
+function render(){
+  const tbody = $('#slidesTable tbody');
+  tbody.innerHTML = '';
+  state.data.slides.forEach((s,i)=>{
+    const tr = document.createElement('tr');
+    const preview = s.type==='image' ? (s.image||'') : (s.lines||[]).join(' | ');
+    tr.innerHTML =
+      `<td class="hint">${i+1}</td>
+       <td><span class="pill">${s.type}</span></td>
+       <td>${s.title||''}</td>
+       <td style="max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${preview}</td>
+       <td><button class="ghost del" data-i="${i}">Slet</button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.del').forEach(btn=>{
+    btn.onclick = e => { const i=+e.target.dataset.i; state.data.slides.splice(i,1); render(); }
+  });
+}
+
+/* =============== Load existing data.json =============== */
+async function load(){
+  try{
+    setStatus('Henter data...');
+    const url = ($('#dataUrl').value||'').trim();
+    state.dataUrl = url;
+    const res = await fetch(url + '?v=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    state.data = await res.json();
+    render();
+    setStatus('Data hentet', 'ok');
+  }catch(e){
+    setStatus('Kunde ikke hente – starter tomt (' + e.message + ')', 'warn');
+    state.data = { brand: 'Bredsgaard Info', slides: [] };
+    render();
+  }
+}
+
+/* =============== Build slide from inputs =============== */
+function readSlide(){
+  return {
+    type: $('#s_type').value,
+    title: $('#s_title').value.trim(),
+    lines: ($('#s_lines').value||'').split('|').map(x=>x.trim()).filter(Boolean),
+    image: $('#s_image').value.trim(),
+    duration: +$('#s_duration').value || 12
   };
+}
 
-  const $ = s => document.querySelector(s);
-  const statusEl = $('#status');
-  const typeEl = $('#s_type');
-  const imageEl = $('#s_image');
+/* =============== Buttons =============== */
+$('#loadBtn').onclick = load;
 
-  // Skift aktivering af billed-URL hvis type= image
-  function toggleImageInput(){
-    const isImage = typeEl.value === 'image';
-    imageEl.disabled = !isImage;
+$('#downloadBtn').onclick = () => {
+  const text = JSON.stringify(state.data, null, 2);
+  downloadText('data.json', text);
+}
+
+$('#addSlide').onclick = () => {
+  const s = readSlide();
+  state.data.slides.push(s);
+  render();
+  setStatus('Slide tilføjet', 'ok');
+}
+
+$('#clearSlides').onclick = () => {
+  if (confirm('Tøm alle slides?')) {
+    state.data.slides = [];
+    render();
+    setStatus('Alle slides er fjernet', 'ok');
   }
-  typeEl.addEventListener('change', toggleImageInput);
-  toggleImageInput();
+}
 
-  // RENDER tabel
-  function render(){
-    const tbody = $('#slidesTable tbody'); tbody.innerHTML = '';
-    state.data.slides.forEach((s, i) => {
-      const tr = document.createElement('tr');
-      const preview = s.type === 'image' ? (s.image || '') : (s.lines || []).join(' | ');
-      tr.innerHTML = `
-        <td>${i+1}</td>
-        <td>${s.type}</td>
-        <td>${s.title || ''}</td>
-        <td>${preview}</td>
-        <td><button data-i="${i}" class="ghost del-slide">Slet</button></td>
-      `;
-      tbody.appendChild(tr);
+/* =============== Gem til server (PUT data.json) =============== */
+$('#saveBtn').onclick = async () => {
+  const msgEl = $('#saveMsg');
+  msgEl.textContent = 'Gemmer til server...';
+  try{
+    const res = await fetch('/api/save', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(state.data)
     });
-    tbody.querySelectorAll('.del-slide').forEach(b => b.onclick = e => {
-      const idx = +e.target.dataset.i;
-      state.data.slides.splice(idx, 1);
-      render();
-    });
-    statusEl.textContent = 'Klar';
-    statusEl.className = 'hint ok';
-  }
-
-  // HENT data.json
-  async function load(){
-    try {
-      state.dataUrl = $('#data_url').value.trim();
-      statusEl.textContent = 'Henter data…';
-      const res = await fetch(state.dataUrl + '?v=' + Date.now());
-      if (res.ok) {
-        state.data = await res.json();
-        render();
-      } else {
-        throw new Error('HTTP ' + res.status);
-      }
-    } catch (e) {
-      statusEl.textContent = 'Ingen/ugyldig data.json – starter tomt';
-      state.data = { brand: 'Bredsgaard Info', slides: [] };
-      render();
-    }
-  }
-
-  // GEM LOKAL KOPI (download)
-  function downloadLocal(){
-    const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'data.json';
-    a.click();
-  }
-
-  // GEM TIL SERVER (GitHub via Vercel /api/save)
-  async function saveToServer(){
-    try{
-      statusEl.textContent = 'Gemmer til server…';
-      const res = await fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state.data)
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        alert('Fejl under gemning: ' + t);
-        statusEl.textContent = 'Fejl';
-        statusEl.className = 'hint err';
-        return;
-      }
-      await res.json();
-      statusEl.textContent = 'Gemt ✔';
-      statusEl.className = 'hint ok';
-    } catch (err) {
-      alert('Fejl: ' + err.message);
-      statusEl.textContent = 'Fejl';
-      statusEl.className = 'hint err';
-    }
-  }
-
-  // HENT MEDIELISTE
-  async function loadMediaList(){
-    try{
-      const btn = $('#mediaBtn');
-      btn.disabled = true; btn.textContent = 'Henter…';
-      const res = await fetch('/api/media-list');
-      const out = await res.json();
-      const sel = $('#media_list');
-      sel.innerHTML = '';
-      (out.items || []).forEach(item => {
-        const o = document.createElement('option');
-        o.value = item.url;
-        o.textContent = `${item.name} (${Math.round(item.size/1024)} KB)`;
-        sel.appendChild(o);
-      });
-      sel.style.display = 'block';
-      sel.onchange = () => { imageEl.value = sel.value; };
-      btn.textContent = 'Hent medieliste';
-      btn.disabled = false;
-    } catch (e){
-      alert('Kunne ikke hente medieliste: ' + e.message);
-      const btn = $('#mediaBtn');
-      btn.textContent = 'Hent medieliste';
-      btn.disabled = false;
-    }
-  }
-
-  // UI handlers
-  $('#loadBtn').onclick = load;
-  $('#downloadBtn').onclick = downloadLocal;
-  $('#saveServerBtn').onclick = saveToServer;
-  $('#mediaBtn').onclick = loadMediaList;
-
-  $('#addSlide').onclick = () => {
-    const s = {
-      type: $('#s_type').value,
-      title: $('#s_title').value.trim(),
-      lines: ($('#s_lines').value || '')
-        .split('|').map(x => x.trim()).filter(Boolean),
-      image: $('#s_image').value.trim(),
-      duration: +($('#s_duration').value) || 12
-    };
-    if (s.type === 'image' && !s.image) {
-      alert('For "image" skal du vælge/angive et billed-URL');
+    const out = await res.json();
+    if (!res.ok) {
+      msgEl.textContent = 'Fejl: ' + (out.error || res.status);
       return;
     }
-    if (s.type !== 'image') s.image = '';
-    state.data.slides.push(s); render();
-  };
+    msgEl.textContent = '✅ Gemt';
+  }catch(e){
+    msgEl.textContent = 'Fejl: ' + e.message;
+  }
+}
 
-  $('#clearSlides').onclick = () => {
-    if (confirm('Slet alle slides?')) { state.data.slides = []; render(); }
-  };
+/* =============== Medieliste (læser MEDIA_DIR) =============== */
+async function refreshMedia(){
+  const btn = $('#btn_media_refresh');
+  const sel = $('#media_select');
+  btn.disabled = true; sel.innerHTML = '<option>Henter...</option>';
+  try{
+    const res = await fetch('/api/media-list');
+    const out = await res.json();
+    if (!res.ok) throw new Error(out.error||res.status);
+    sel.innerHTML = '<option value="">— vælg billede fra medieliste —</option>';
+    out.items.forEach(x=>{
+      const opt = document.createElement('option');
+      opt.value = x.url;
+      opt.textContent = `${x.name} (${Math.round(x.size/1024)} kB)`;
+      sel.appendChild(opt);
+    });
+  }catch(e){
+    sel.innerHTML = '<option>Fejl: ' + e.message + '</option>';
+  }finally{
+    btn.disabled = false;
+  }
+}
+$('#btn_media_refresh').onclick = refreshMedia;
+$('#media_select').onchange = e => { if (e.target.value) $('#s_image').value = e.target.value; };
 
-  // Init
-  load();
+/* =============== Upload billede =============== */
+function toBase64(arrayBuffer){
+  let bin=''; const bytes=new Uint8Array(arrayBuffer); const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){ bin += String.fromCharCode.apply(null, bytes.subarray(i,i+chunk)); }
+  return btoa(bin);
+}
+$('#btn_upload').onclick = async ()=>{
+  const f = $('#img_file').files?.[0];
+  const up = $('#up_status');
+  if(!f){ up.textContent='Vælg en billedfil først.'; up.className='hint warn'; return; }
+  if(f.size>10*1024*1024){ up.textContent='Filen er større end 10 MB.'; up.className='hint warn'; return; }
+  try{
+    up.textContent='Uploader...'; up.className='hint';
+    const buf = await f.arrayBuffer();
+    const b64 = toBase64(buf);
+    const res = await fetch('/api/upload-image', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name: f.name, data: b64 })
+    });
+    const out = await res.json();
+    if(!res.ok){ up.textContent='Fejl: '+(out.error||res.status); up.className='hint warn'; return; }
+    $('#s_image').value = out.cdnUrl; // eller out.rawUrl
+    up.textContent='✅ Upload ok'; up.className='hint ok';
+    // opdatér medieliste
+    refreshMedia();
+  }catch(e){
+    up.textContent='Fejl: '+e.message; up.className='hint warn';
+  }
+}
+
+/* init */
+load();
 </script>
 </body>
 </html>
+
