@@ -49,12 +49,13 @@
     //    - Skrivning: Lav et Google Apps Script (webapp) der modtager POST og skriver til arket; sæt APPS_SCRIPT_URL.
     // 2) Alternativt: brug kun data.json i repo og redigér via GitHub web-UI (ingen admin-UI nødvendig).
 
-    const INTEGRATION = {
-      USE_SHEET: false, // start simpelt: kør kun med indbygget data.json/fallback. Skift til true når du er klar til Google Sheet
-      SHEET_CSV_URL: "", // <- (valgfri) CSV-URL fra Google Sheets
-      APPS_SCRIPT_URL: "", // <- (valgfri) Apps Script Web App URL til at skrive rækker
-      ADMIN_KEY: "skift-mig" // adgangsnøgle til admin-tilstand (?admin=skift-mig)
-    };
+const INTEGRATION = {
+  USE_SHEET: false,
+  SHEET_CSV_URL: "",
+  APPS_SCRIPT_URL: "",
+  ADMIN_KEY: "0705"    // din nye admin-nøgle
+};
+
   </script>
   <script>
     // === SIKKERHED (valgfri) ===
