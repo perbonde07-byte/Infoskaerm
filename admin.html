@@ -117,6 +117,34 @@
     };
 
     load();
+<script>
+document.getElementById("save_btn").addEventListener("click", async () => {
+  const dataStr = localStorage.getItem("slides");
+  if (!dataStr) {
+    alert("Ingen data at gemme!");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: dataStr
+    });
+
+    if (res.ok) {
+      alert("✅ Data gemt til server!");
+    } else {
+      const txt = await res.text();
+      alert("Fejl under gemning: " + txt);
+    }
+  } catch (err) {
+    alert("Fejl: " + err.message);
+  }
+});
+</script>
+
+    
   </script>
 </body>
 </html>
