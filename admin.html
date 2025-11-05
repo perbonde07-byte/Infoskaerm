@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin – Infoskærm</title>
+  <style>
+    body{margin:0;background:#0b1220;color:#e8eefb;font-family:system-ui,Segoe UI,Roboto,Arial}
+    header{display:flex;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg,rgba(255,255,255,.04),transparent)}
+    h1{font-size:18px;margin:0}
+    main{max-width:1000px;margin:24px auto;padding:0 16px;display:grid;gap:22px}
+    .card{background:#111a2d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+    .row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center;margin:8px 0}
+    input,textarea,select{width:100%;padding:10px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.15)}
+    textarea{min-height:72px}
+    button{padding:10px 14px;border-radius:10px;border:0;background:#5aa2ff;color:#081325;font-weight:700;cursor:pointer}
+    .ghost{background:#24324f;color:#e8eefb}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:14px}
+    .hint{opacity:.7;font-size:12px}
+    .ok{color:#9fe29f}
+    .err{color:#ff9c9c}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin • Infoskærm</h1>
+    <div style="margin-left:auto" id="status" class="hint">Indlæser data…</div>
+  </header>
+  <main>
+    <section class="card">
+      <h2 style="margin:0 0 6px;font-size:16px">Datakilde</h2>
+      <div class="hint">Denne admin-side læser <code>data.json</code> fra dit repo og lader dig downloade en opdateret fil, som du derefter uploader i GitHub.</div>
+      <div class="row"><label>Adresse til data.json</label>
+        <input id="dataUrl" placeholder="https://perbonde07-byte.github.io/Infoskaerm/data.json">
+      </div>
+      <div class="row"><label>Outlook ICS (kalender)</label>
+        <input id="icsUrl" placeholder="https://.../calendar.ics">
+      </div>
+      <div class="hint">ICS-URL’en bruges af <code>calendar.html</code>. Du kan også sætte den direkte i den fil senere.</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="loadBtn" class="ghost">Hent data</button>
+        <button id="downloadBtn">Download ny data.json</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 6px;font-size:16px">Slides</h2>
+      <div class="row"><label>Type</label>
+        <select id="s_type"><option>bullets</option><option>image</option></select>
+      </div>
+      <div class="row"><label>Titel</label><input id="s_title"></div>
+      <div class="row"><label>Linjer</label><textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea></div>
+      <div class="row"><label>Billede (URL)</label><input id="s_image" placeholder="https://... (kun til type=image)"></div>
+      <div class="row"><label>Varighed (sek.)</label><input id="s_duration" type="number" value="12" min="3"></div>
+      <div style="display:flex;gap:8px"><button id="addSlide">Tilføj slide</button><button class="ghost" id="clearSlides">Tøm alle slides</button></div>
+      <div style="margin-top:12px;overflow:auto">
+        <table id="slidesTable"><thead><tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 6px;font-size:16px">Opgavelister</h2>
+      <div class="row"><label>Liste-navn</label><input id="t_name" placeholder="Fx Vedligehold"></div>
+      <div class="row"><label>Nyt punkt (tekst)</label><input id="t_text" placeholder="Tøm maskine A"></div>
+      <div class="row"><label>Dato</label><input id="t_date" type="date"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px"><button id="addTask">Tilføj til liste</button>
+        <button class="ghost" id="genMondays">Lav mandage for næste 12 uger</button>
+      </div>
+      <div style="margin-top:12px;overflow:auto">
+        <table id="tasksTable"><thead><tr><th>Liste</th><th>Dato</th><th>Tekst</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="hint">Lister gemmes i <code>data.tasks</code>. På infosiden kan du vise en slide med opgavelisten (vi laver en dedikeret opgave-slide senere hvis du vil).</div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 6px;font-size:16px">Gem & vis</h2>
+      <div class="hint">1) Klik “Download data.json”  →  2) Gå til dit repo og upload filen (erstat den gamle)  →  3) Siden opdaterer automatisk.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+        <a class="ghost" id="openScreen" href="index.html" target="_blank"><button class="ghost">Åbn infoskærm</button></a>
+        <a class="ghost" id="openCal" href="calendar.html" target="_blank"><button class="ghost">Åbn kalender-skærm</button></a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- Adgang (samme model som index.html): ?admin=DIN_NOEGLE for at låse op ---
+    const ADMIN_KEY = "skift-mig"; // <- skift så den matcher din index.html
+    (function gate(){
+      const p = new URLSearchParams(location.search).get('admin');
+      if(p===ADMIN_KEY){ localStorage.setItem('admin_ok','1'); }
+      if(localStorage.getItem('admin_ok')!=='1'){
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b1220;color:#e8eefb;font-family:system-ui">Ingen adgang – åbn med ?admin=DIN_NOEGLE</div>';
+      }
+    })();
+
+    // --- App state ---
+    const state = {
+      dataUrl: 'https://perbonde07-byte.github.io/Infoskaerm/data.json',
+      data: { brand:'Bredsgaard Info', ics:'', slides:[], tasks:[] }
+    };
+
+    const $ = (sel)=>document.querySelector(sel);
+    const status = $('#status');
+
+    function render(){
+      $('#dataUrl').value = state.dataUrl;
+      $('#icsUrl').value = state.data.ics || '';
+      // slides
+      const tbody = $('#slidesTable tbody'); tbody.innerHTML='';
+      state.data.slides.forEach((s,i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${s.type||''}</td><td>${escapeHtml(s.title||'')}</td>
+                        <td>${s.type==='image' ? (s.image||'') : escapeHtml((s.lines||[]).join(' | '))}</td>
+                        <td><button data-i="${i}" class="ghost del-slide">Slet</button></td>`;
+        tbody.appendChild(tr);
+      });
+      tbody.querySelectorAll('.del-slide').forEach(b=>b.onclick = e=>{
+        const i = Number(e.target.dataset.i); state.data.slides.splice(i,1); render();
+      });
+
+      // tasks
+      const tBody = $('#tasksTable tbody'); tBody.innerHTML='';
+      state.data.tasks.forEach((t,idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(t.list||'')}</td><td>${t.date||''}</td><td>${escapeHtml(t.text||'')}</td>
+                        <td><button data-i="${idx}" class="ghost del-task">Slet</button></td>`;
+        tBody.appendChild(tr);
+      });
+      tBody.querySelectorAll('.del-task').forEach(b=>b.onclick = e=>{
+        const i = Number(e.target.dataset.i); state.data.tasks.splice(i,1); render();
+      });
+
+      status.textContent = 'Klar';
+      status.className = 'hint ok';
+    }
+
+    function escapeHtml(s){ return (s||'').replace(/[&<>\"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+
+    // Hent eksisterende data
+    async function load(){
+      try{
+        status.textContent = 'Henter data...';
+        const res = await fetch(state.dataUrl+'?v='+Date.now());
+        if(res.ok){
+          state.data = await res.json();
+          if(!state.data.slides) state.data.slides=[];
+          if(!state.data.tasks) state.data.tasks=[];
+          render();
+        }else{
+          throw new Error('HTTP '+res.status);
+        }
+      }catch(e){
+        status.textContent = 'Ingen eksisterende data.json – starter med tom skabelon';
+        status.className='hint';
+        state.data = { brand: 'Bredsgaard Info', ics:'', slides:[], tasks:[] };
+        render();
+      }
+    }
+
+    // Events
+    $('#loadBtn').onclick = ()=>{
+      state.dataUrl = $('#dataUrl').value.trim() || state.dataUrl;
+      state.data.ics = $('#icsUrl').value.trim();
+      render(); load();
+    };
+
+    $('#addSlide').onclick = ()=>{
+      const s = {
+        type: $('#s_type').value,
+        title: $('#s_title').value.trim(),
+        lines: ($('#s_lines').value||'').split('|').map(x=>x.trim()).filter(Boolean),
+        image: $('#s_image').value.trim(),
+        duration: Number($('#s_duration').value||12)
+      };
+      if(!s.title){ alert('Titel mangler'); return; }
+      if(s.type==='image' && !s.image){ alert('Billede-URL mangler'); return; }
+      state.data.slides.push(s); render();
+      $('#s_title').value=''; $('#s_lines').value=''; $('#s_image').value='';
+    };
+
+    $('#clearSlides').onclick = ()=>{
+      if(confirm('Slet ALLE slides?')){ state.data.slides = []; render(); }
+    };
+
+    $('#addTask').onclick = ()=>{
+      const list = $('#t_name').value.trim();
+      const text = $('#t_text').value.trim();
+      const date = $('#t_date').value;
+      if(!list || !text || !date){ alert('Udfyld Liste, Tekst og Dato'); return; }
+      state.data.tasks.push({list, text, date});
+      render();
+      $('#t_text').value=''; // behold liste & dato for hurtig indtastning
+    };
+
+    // Generér mandage næste 12 uger
+    $('#genMondays').onclick = ()=>{
+      const list = $('#t_name').value.trim() || 'Vedligehold';
+      const text = $('#t_text').value.trim() || 'Tøm maskine';
+      const start = new Date(); // i dag
+      for(let i=0;i<12;i++){
+        const d = new Date(start);
+        // find næste mandag (1 = mandag)
+        d.setDate(d.getDate() + ((1 - d.getDay() + 7) % 7) + (i*7));
+        const iso = d.toISOString().slice(0,10);
+        state.data.tasks.push({list, text, date: iso});
+      }
+      render();
+    };
+
+    // Download opdateret data.json
+    $('#downloadBtn').onclick = ()=>{
+      state.data.ics = $('#icsUrl').value.trim();
+      const blob = new Blob([JSON.stringify(state.data,null,2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'data.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      alert('Filen data.json er hentet – upload den til dit GitHub repo for at opdatere skærmen.');
+    };
+
+    // init
+    load();
+  </script>
+</body>
+</html>
