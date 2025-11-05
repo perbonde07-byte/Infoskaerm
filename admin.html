@@ -1,151 +1,253 @@
 <!doctype html>
 <html lang="da">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin – Infoskærm</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin · Infoskaerm</title>
   <style>
-    body{margin:0;background:#0b1220;color:#e8eefb;font-family:system-ui,Segoe UI,Roboto,Arial}
-    header{display:flex;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);
-      background:linear-gradient(180deg,rgba(255,255,255,.04),transparent)}
-    h1{font-size:18px;margin:0}
-    main{max-width:1000px;margin:24px auto;padding:0 16px;display:grid;gap:22px}
-    .card{background:#111a2d;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
-    .row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center;margin:8px 0}
-    input,textarea,select{width:100%;padding:10px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.15)}
-    textarea{min-height:72px}
-    button{padding:10px 14px;border-radius:10px;border:0;background:#5aa2ff;color:#081325;font-weight:700;cursor:pointer}
-    .ghost{background:#24324f;color:#e8eefb}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:14px}
-    .hint{opacity:.7;font-size:12px}
-    .ok{color:#9fe29f}
-    .err{color:#ff9c9c}
+    :root{
+      --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff; --card:#111a2d;
+      --ok:#38d39f; --err:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font-family:system-ui,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+    }
+    header{
+      display:flex; align-items:center; gap:16px;
+      padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);
+    }
+    h1{font-size:18px; margin:0}
+    main{max-width:980px; margin:20px auto; padding:0 16px}
+    .card{background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px; margin-bottom:16px}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .row > *{flex:1}
+    label{display:block; font-size:12px; color:var(--muted); margin:6px 0}
+    input[type=text], input[type=number], textarea, select{
+      width:100%; background:#0f172a; color:var(--fg); border:1px solid rgba(255,255,255,.1);
+      padding:10px 12px; border-radius:10px; outline:none;
+    }
+    textarea{min-height:90px; resize:vertical}
+    .btn{background:#18233a; color:var(--fg); border:1px solid rgba(255,255,255,.12); padding:10px 14px; border-radius:10px; cursor:pointer}
+    .btn.primary{background:var(--acc); color:#001225; border:0}
+    .btn.ghost{background:transparent; border:1px solid rgba(255,255,255,.2)}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+    table{width:100%; border-collapse:collapse; overflow:hidden; border-radius:12px}
+    th,td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); text-align:left; font-size:14px}
+    th{color:var(--muted); font-weight:600; background:rgba(255,255,255,.02)}
+    .hint{font-size:12px; color:var(--muted)}
+    .hint.ok{color:var(--ok)} .hint.err{color:var(--err)}
+    .right{display:flex; gap:10px; margin-left:auto}
   </style>
 </head>
 <body>
-  <header>
-    <h1>Admin • Infoskærm</h1>
-    <div style="margin-left:auto" id="status" class="hint">Indlæser data…</div>
-  </header>
-  <main>
-    <section class="card">
-      <h2 style="margin:0 0 6px;font-size:16px">Datakilde</h2>
-      <div class="hint">Denne admin-side læser <code>data.json</code> fra dit repo og lader dig downloade en opdateret fil, som du derefter uploader i GitHub.</div>
-      <div class="row"><label>Adresse til data.json</label>
-        <input id="dataUrl" placeholder="https://perbonde07-byte.github.io/Infoskaerm/data.json">
+
+<header>
+  <h1>Admin · Infoskaerm</h1>
+  <div class="right">
+    <span id="status" class="hint">Klar</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Datakilde -->
+  <section class="card">
+    <p class="hint">Denne admin-side læser <b>data.json</b> fra dit repo og kan gemme en opdateret fil via din Vercel API.</p>
+
+    <label>Adresse til <b>data.json</b></label>
+    <input id="dataUrl" type="text" readonly />
+
+    <div class="row" style="margin-top:10px">
+      <button id="loadBtn" class="btn">Hent data</button>
+      <button id="downloadBtn" class="btn">Download ny data.json</button>
+      <button id="saveBtn" class="btn primary">Gem til server</button>
+    </div>
+  </section>
+
+  <!-- Slides form -->
+  <section class="card">
+    <h3 style="margin:6px 0 8px">Slides</h3>
+
+    <div class="row">
+      <div>
+        <label>Type</label>
+        <select id="s_type">
+          <option value="bullets">bullets (punktliste)</option>
+          <option value="image">image (fuldskærmsbillede)</option>
+        </select>
       </div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-<button id="save_btn" style="margin-left:8px;">Gem til server</button>
-
+      <div>
+        <label>Titel</label>
+        <input id="s_title" type="text" placeholder="Titel..." />
       </div>
-    </section>
+    </div>
 
-    <section class="card">
-      <h2 style="margin:0 0 6px;font-size:16px">Slides</h2>
-      <div class="row"><label>Type</label>
-        <select id="s_type"><option>bullets</option><option>image</option></select>
+    <div class="row">
+      <div>
+        <label>Linjer (brug | til flere)</label>
+        <textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
       </div>
-      <div class="row"><label>Titel</label><input id="s_title"></div>
-      <div class="row"><label>Linjer</label><textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea></div>
-      <div class="row"><label>Billede (URL)</label><input id="s_image" placeholder="https://... (kun til type=image)"></div>
-      <div class="row"><label>Varighed (sek.)</label><input id="s_duration" type="number" value="12" min="3"></div>
-      <div style="display:flex;gap:8px"><button id="addSlide">Tilføj slide</button><button class="ghost" id="clearSlides">Tøm alle slides</button></div>
-      <div style="margin-top:12px;overflow:auto">
-        <table id="slidesTable"><thead><tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr></thead><tbody></tbody></table>
+      <div>
+        <label>Billede (URL) – kun for type=image</label>
+        <input id="s_image" type="text" placeholder="https://..." />
       </div>
-    </section>
+      <div style="max-width:180px">
+        <label>Varighed (sek.)</label>
+        <input id="s_duration" type="number" min="1" value="12" />
+      </div>
+    </div>
 
-  </main>
+    <div class="row" style="margin-top:8px">
+      <button id="addSlide" class="btn primary">Tilføj slide</button>
+      <button id="clearSlides" class="btn ghost">Tøm alle slides</button>
+    </div>
 
-  <script>
-    const ADMIN_KEY = "0705"; // ← brug din kode her
+    <div style="margin-top:12px; overflow:auto">
+      <table id="slidesTable">
+        <thead>
+          <tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
-    (function gate(){
-      const p = new URLSearchParams(location.search).get('admin');
-      if(p===ADMIN_KEY){ localStorage.setItem('admin_ok','1'); }
-      if(localStorage.getItem('admin_ok')!=='1'){
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b1220;color:#e8eefb;font-family:system-ui">Ingen adgang – åbn med ?admin=0705</div>';
-      }
-    })();
+</main>
 
-    const state = {
-      dataUrl: 'https://perbonde07-byte.github.io/Infoskaerm/data.json',
-      data: { brand:'Bredsgaard Info', slides:[] }
-    };
-
-    const $ = (s)=>document.querySelector(s);
-    const status = $('#status');
-
-    function render(){
-      const tbody = $('#slidesTable tbody'); tbody.innerHTML='';
-      state.data.slides.forEach((s,i)=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${i+1}</td><td>${s.type}</td><td>${s.title}</td><td>${s.type==='image'?s.image:(s.lines||[]).join(' | ')}</td>
-                      <td><button data-i="${i}" class="ghost del-slide">Slet</button></td>`;
-        tbody.appendChild(tr);
-      });
-      tbody.querySelectorAll('.del-slide').forEach(b=>b.onclick=e=>{
-        const i=+e.target.dataset.i; state.data.slides.splice(i,1); render();
-      });
-      status.textContent='Klar'; status.className='hint ok';
-    }
-
-    async function load(){
-      try{
-        status.textContent='Henter data...';
-        const res=await fetch(state.dataUrl+'?v='+Date.now());
-        if(res.ok){ state.data=await res.json(); render(); }
-        else throw new Error('HTTP '+res.status);
-      }catch(e){
-        status.textContent='Ingen eksisterende data.json – starter tomt'; state.data={brand:'Bredsgaard Info',slides:[]};
-        render();
-      }
-    }
-
-    $('#loadBtn').onclick=()=>load();
-    $('#addSlide').onclick=()=>{
-      const s={type:$('#s_type').value,title:$('#s_title').value.trim(),
-               lines:($('#s_lines').value||'').split('|').map(x=>x.trim()).filter(Boolean),
-               image:$('#s_image').value.trim(),duration:+$('#s_duration').value||12};
-      state.data.slides.push(s); render();
-    };
-    $('#clearSlides').onclick=()=>{if(confirm('Slet alt?')){state.data.slides=[];render();}};
-    $('#downloadBtn').onclick=()=>{
-      const blob=new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'});
-      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
-    };
-
-    load();
 <script>
-document.getElementById("save_btn").addEventListener("click", async () => {
-  const dataStr = localStorage.getItem("slides");
-  if (!dataStr) {
-    alert("Ingen data at gemme!");
-    return;
-  }
-
-  try {
-    const res = await fetch("/api/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: dataStr
-    });
-
-    if (res.ok) {
-      alert("✅ Data gemt til server!");
-    } else {
-      const txt = await res.text();
-      alert("Fejl under gemning: " + txt);
+  /* ====== Adgangs-gate ====== */
+  const ADMIN_KEY = "0705"; // ← din admin-kode
+  (function gate(){
+    const p = new URLSearchParams(location.search).get('admin');
+    if (p === ADMIN_KEY) localStorage.setItem('admin_ok','1');
+    if (localStorage.getItem('admin_ok') !== '1') {
+      document.body.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b1220;color:#e8eefb;font-family:system-ui">Ingen adgang – åbn med <code>?admin=' + ADMIN_KEY + '</code></div>';
     }
-  } catch (err) {
-    alert("Fejl: " + err.message);
+  })();
+
+  /* ====== State ====== */
+  const state = {
+    dataUrl: 'https://perbonde07-byte.github.io/Infoskaerm/data.json',
+    data: { brand: 'Bredsgaard Info', slides: [] }
+  };
+
+  const $ = s => document.querySelector(s);
+  const statusEl = $('#status');
+  $('#dataUrl').value = state.dataUrl;
+
+  function setStatus(txt, cls='') {
+    statusEl.textContent = txt;
+    statusEl.className = 'hint ' + cls;
   }
-});
+
+  function render() {
+    const tbody = $('#slidesTable tbody');
+    tbody.innerHTML = '';
+    state.data.slides.forEach((s, i) => {
+      const tr = document.createElement('tr');
+      const preview = s.type === 'image'
+        ? (s.image || '')
+        : (s.lines || []).join(' | ');
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td>${s.type}</td>
+        <td>${s.title || ''}</td>
+        <td>${preview}</td>
+        <td><button class="btn ghost del" data-i="${i}">Slet</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('.del').forEach(btn => {
+      btn.onclick = e => {
+        const i = +e.currentTarget.dataset.i;
+        state.data.slides.splice(i,1);
+        render();
+      };
+    });
+    setStatus('Klar','ok');
+  }
+
+  async function load() {
+    try {
+      setStatus('Henter data...');
+      const res = await fetch(state.dataUrl + '?v=' + Date.now());
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      state.data = await res.json();
+      render();
+      setStatus('Data hentet','ok');
+    } catch (e) {
+      // Start tom hvis der ikke findes data.json endnu
+      state.data = { brand: 'Bredsgaard Info', slides: [] };
+      render();
+      setStatus('Ingen eksisterende data.json – starter tomt','');
+    }
+  }
+
+  // UI handlers
+  $('#loadBtn').onclick = load;
+
+  $('#s_type').addEventListener('change', () => {
+    const isImg = $('#s_type').value === 'image';
+    $('#s_lines').disabled = isImg;
+    $('#s_image').disabled = !isImg;
+  });
+  $('#s_type').dispatchEvent(new Event('change'));
+
+  $('#addSlide').onclick = () => {
+    const s = {
+      type: $('#s_type').value,
+      title: $('#s_title').value.trim(),
+      lines: ($('#s_lines').value || '')
+               .split('|').map(x => x.trim()).filter(Boolean),
+      image: $('#s_image').value.trim(),
+      duration: +$('#s_duration').value || 12
+    };
+    state.data.slides.push(s);
+    render();
+  };
+
+  $('#clearSlides').onclick = () => {
+    if (confirm('Slet alle slides?')) { state.data.slides = []; render(); }
+  };
+
+  // Download til fil (fallback)
+  $('#downloadBtn').onclick = () => {
+    const blob = new Blob([JSON.stringify(state.data, null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'data.json'; a.click();
+  };
+
+  // Gem direkte til GitHub via Vercel API
+  $('#saveBtn').onclick = async () => {
+    try {
+      setStatus('Gemmer…');
+      const res = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(state.data)
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        setStatus('Fejl ved gemning', 'err');
+        alert('Fejl under gemning:\n' + t);
+        return;
+      }
+      setStatus('✅ Data gemt til server', 'ok');
+      alert('✅ Data gemt til server!');
+    } catch (err) {
+      setStatus('Fejl: ' + err.message, 'err');
+      alert('Fejl: ' + err.message);
+    }
+  };
+
+  // Første indlæsning
+  load();
 </script>
 
-    
-  </script>
 </body>
 </html>
-
