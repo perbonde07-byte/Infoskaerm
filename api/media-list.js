@@ -1,55 +1,36 @@
 // api/media-list.js
-// Returnerer liste over billedfiler i en repo-mappe (fx "media/")
+// ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
 
 export default async function handler(req, res) {
-  try {
-    const {
-      GITHUB_TOKEN,
-      OWNER,
-      REPO,
-      BRANCH = 'main',
-      MEDIA_DIR = 'media',
-    } = process.env;
+  const need = ['GITHUB_TOKEN','OWNER','REPO','BRANCH','MEDIA_DIR'];
+  const miss = need.filter(k => !process.env[k]);
+  if (miss.length) return res.status(400).json({ error: `Missing required ENV vars: ${miss.join(', ')}` });
 
-    if (!GITHUB_TOKEN || !OWNER || !REPO) {
-      return res.status(500).json({ error: 'Missing required ENV vars' });
+  try{
+    const token   = process.env.GITHUB_TOKEN;
+    const OWNER   = process.env.OWNER;
+    const REPO    = process.env.REPO;
+    const BRANCH  = process.env.BRANCH;
+    const MEDIA   = process.env.MEDIA_DIR.replace(/\/+$/,'');
+
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(MEDIA)}?ref=${encodeURIComponent(BRANCH)}`;
+    const r = await fetch(url, { headers: { Authorization:`Bearer ${token}`, Accept:'application/vnd.github+json' } });
+    if (!r.ok) {
+      const detail = await r.text();
+      return res.status(r.status).json({ error:'list failed', detail });
     }
 
-    const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(MEDIA_DIR)}?ref=${encodeURIComponent(BRANCH)}`;
-
-    const resp = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    });
-
-    if (resp.status === 404) {
-      // Mappen findes ikke (tom liste)
-      return res.status(200).json({ items: [] });
-    }
-
-    if (!resp.ok) {
-      const txt = await resp.text();
-      return res.status(400).json({ error: 'list failed', detail: txt });
-    }
-
-    const arr = await resp.json(); // array af filer/dirs
-    const files = Array.isArray(arr) ? arr : [];
-
-    // Kun filer, lav raw URL’er:
-    const items = files
+    const itemsRaw = await r.json();  // array
+    const items = (Array.isArray(itemsRaw) ? itemsRaw : [])
       .filter(x => x.type === 'file')
       .map(x => ({
         name: x.name,
         size: x.size,
-        url: `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${encodeURIComponent(MEDIA_DIR)}/${encodeURIComponent(x.name)}`
+        url: `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${MEDIA}/${x.name}`
       }));
 
     return res.status(200).json({ items });
-  } catch (e) {
-    return res.status(500).json({ error: String(e) });
+  }catch(e){
+    return res.status(500).json({ error: e.message || String(e) });
   }
 }
-
