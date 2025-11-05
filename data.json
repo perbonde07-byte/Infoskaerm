@@ -1,4 +1,23 @@
 {
   "brand": "Bredsgaard Info",
-  "slides": []
+  "slides": [
+    {
+      "type": "bullets",
+      "title": "ertert",
+      "lines": [
+        "ertert"
+      ],
+      "image": "",
+      "duration": 12
+    },
+    {
+      "type": "bullets",
+      "title": "piop",
+      "lines": [
+        "ertertiopiop\n\niop"
+      ],
+      "image": "",
+      "duration": 12
+    }
+  ]
 }
