@@ -1,0 +1,23 @@
+{
+  "brand": "Bredsgaard Info",
+  "slides": [
+    {
+      "type": "bullets",
+      "title": "test 1",
+      "lines": [
+        "her skal der være lidt test info"
+      ],
+      "image": "",
+      "duration": 12
+    },
+    {
+      "type": "bullets",
+      "title": "test 1",
+      "lines": [
+        "her skal der være lidt test info"
+      ],
+      "image": "https://bredsgaard.dk/images/logo.png",
+      "duration": 12
+    }
+  ]
+}
