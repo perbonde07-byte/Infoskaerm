@@ -1,36 +1,55 @@
+// api/media-list.js
+// Returnerer liste over billedfiler i en repo-mappe (fx "media/")
+
 export default async function handler(req, res) {
   try {
-    const { OWNER, REPO, BRANCH, GITHUB_TOKEN, MEDIA_DIR = 'media' } = process.env;
+    const {
+      GITHUB_TOKEN,
+      OWNER,
+      REPO,
+      BRANCH = 'main',
+      MEDIA_DIR = 'media',
+    } = process.env;
 
-    if (req.method !== 'GET') return res.status(405).send('Method Not Allowed');
-    if (!OWNER || !REPO || !BRANCH || !GITHUB_TOKEN) {
-      return res.status(500).json({ error: 'Missing env vars' });
+    if (!GITHUB_TOKEN || !OWNER || !REPO) {
+      return res.status(500).json({ error: 'Missing required ENV vars' });
     }
 
-    const ghUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${MEDIA_DIR}?ref=${BRANCH}`;
-    const resp = await fetch(ghUrl, {
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(MEDIA_DIR)}?ref=${encodeURIComponent(BRANCH)}`;
+
+    const resp = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github+json'
-      }
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
     });
 
-    if (!resp.ok) {
-      const t = await resp.text();
-      return res.status(resp.status).json({ error: 'GitHub list failed', detail: t });
+    if (resp.status === 404) {
+      // Mappen findes ikke (tom liste)
+      return res.status(200).json({ items: [] });
     }
 
-    const items = await resp.json();
-    const files = (Array.isArray(items) ? items : [])
+    if (!resp.ok) {
+      const txt = await resp.text();
+      return res.status(400).json({ error: 'list failed', detail: txt });
+    }
+
+    const arr = await resp.json(); // array af filer/dirs
+    const files = Array.isArray(arr) ? arr : [];
+
+    // Kun filer, lav raw URL’er:
+    const items = files
       .filter(x => x.type === 'file')
       .map(x => ({
         name: x.name,
         size: x.size,
-        raw: `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${MEDIA_DIR}/${encodeURIComponent(x.name)}`
+        url: `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${encodeURIComponent(MEDIA_DIR)}/${encodeURIComponent(x.name)}`
       }));
 
-    res.status(200).json({ ok: true, files });
+    return res.status(200).json({ items });
   } catch (e) {
-    res.status(500).json({ error: e.message || String(e) });
+    return res.status(500).json({ error: String(e) });
   }
 }
+
