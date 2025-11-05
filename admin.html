@@ -54,9 +54,11 @@
 
 <main>
 
-  <!-- Datakilde -->
+  <!-- Datakilde / handlinger -->
   <section class="card">
-    <p class="hint">Denne admin-side læser <b>data.json</b> fra dit repo og kan gemme en opdateret fil via din Vercel API.</p>
+    <p class="hint">
+      Denne admin-side læser <b>data.json</b> fra dit repo og kan gemme en opdateret fil via din Vercel API.
+    </p>
 
     <label>Adresse til <b>data.json</b></label>
     <input id="dataUrl" type="text" readonly />
@@ -68,7 +70,7 @@
     </div>
   </section>
 
-  <!-- Slides form -->
+  <!-- Form til slide -->
   <section class="card">
     <h3 style="margin:6px 0 8px">Slides</h3>
 
@@ -88,11 +90,11 @@
 
     <div class="row">
       <div>
-        <label>Linjer (brug | til flere)</label>
+        <label>Linjer (brug | til flere) – udfyldes frit uanset type</label>
         <textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
       </div>
       <div>
-        <label>Billede (URL) – kun for type=image</label>
+        <label>Billede (URL) – brug til type=image</label>
         <input id="s_image" type="text" placeholder="https://..." />
       </div>
       <div style="max-width:180px">
@@ -119,8 +121,8 @@
 </main>
 
 <script>
-  /* ====== Adgangs-gate ====== */
-  const ADMIN_KEY = "0705"; // ← din admin-kode
+  /* ====== Adgang ====== */
+  const ADMIN_KEY = "0705"; // ← din kode
   (function gate(){
     const p = new URLSearchParams(location.search).get('admin');
     if (p === ADMIN_KEY) localStorage.setItem('admin_ok','1');
@@ -136,6 +138,11 @@
     data: { brand: 'Bredsgaard Info', slides: [] }
   };
 
+  // API-endpoint: virker på både vercel.app og github.io
+  const SAVE_API = location.hostname.endsWith('vercel.app')
+    ? '/api/save'
+    : 'https://infoskaerm.vercel.app/api/save';
+
   const $ = s => document.querySelector(s);
   const statusEl = $('#status');
   $('#dataUrl').value = state.dataUrl;
@@ -149,10 +156,11 @@
     const tbody = $('#slidesTable tbody');
     tbody.innerHTML = '';
     state.data.slides.forEach((s, i) => {
+      const preview =
+        s.type === 'image'
+          ? (s.image || '')
+          : (s.lines || []).join(' | ');
       const tr = document.createElement('tr');
-      const preview = s.type === 'image'
-        ? (s.image || '')
-        : (s.lines || []).join(' | ');
       tr.innerHTML = `
         <td>${i+1}</td>
         <td>${s.type}</td>
@@ -174,30 +182,24 @@
 
   async function load() {
     try {
-      setStatus('Henter data...');
+      setStatus('Henter data…');
       const res = await fetch(state.dataUrl + '?v=' + Date.now());
       if (!res.ok) throw new Error('HTTP ' + res.status);
       state.data = await res.json();
       render();
       setStatus('Data hentet','ok');
     } catch (e) {
-      // Start tom hvis der ikke findes data.json endnu
+      // Start tom hvis data.json ikke findes endnu
       state.data = { brand: 'Bredsgaard Info', slides: [] };
       render();
-      setStatus('Ingen eksisterende data.json – starter tomt','');
+      setStatus('Ingen eksisterende data.json – starter tomt');
     }
   }
 
   // UI handlers
   $('#loadBtn').onclick = load;
 
-  $('#s_type').addEventListener('change', () => {
-    const isImg = $('#s_type').value === 'image';
-    $('#s_lines').disabled = isImg;
-    $('#s_image').disabled = !isImg;
-  });
-  $('#s_type').dispatchEvent(new Event('change'));
-
+  // (Ændrer ikke længere felter – du kan altid skrive i “Linjer”)
   $('#addSlide').onclick = () => {
     const s = {
       type: $('#s_type').value,
@@ -215,7 +217,7 @@
     if (confirm('Slet alle slides?')) { state.data.slides = []; render(); }
   };
 
-  // Download til fil (fallback)
+  // Download (fallback)
   $('#downloadBtn').onclick = () => {
     const blob = new Blob([JSON.stringify(state.data, null, 2)], { type:'application/json' });
     const a = document.createElement('a');
@@ -226,26 +228,26 @@
   $('#saveBtn').onclick = async () => {
     try {
       setStatus('Gemmer…');
-      const res = await fetch('/api/save', {
+      const res = await fetch(SAVE_API, {
         method: 'POST',
         headers: { 'Content-Type':'application/json' },
         body: JSON.stringify(state.data)
       });
+      const txt = await res.text();
       if (!res.ok) {
-        const t = await res.text();
         setStatus('Fejl ved gemning', 'err');
-        alert('Fejl under gemning:\n' + t);
+        alert('Fejl under gemning:\n' + txt);
         return;
       }
       setStatus('✅ Data gemt til server', 'ok');
       alert('✅ Data gemt til server!');
     } catch (err) {
-      setStatus('Fejl: ' + err.message, 'err');
+      setStatus('Fejl', 'err');
       alert('Fejl: ' + err.message);
     }
   };
 
-  // Første indlæsning
+  // Start
   load();
 </script>
 
