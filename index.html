@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TV Info Skærm</title>
+  <style>
+    :root{
+      --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff;
+      --card:#111a2d; --card2:#0e172a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      overflow:hidden;
+    }
+    .screen{display:flex; flex-direction:column; height:100%;}
+    header{
+      flex:0 0 auto; display:flex; align-items:center; gap:20px; padding:24px 32px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.04), transparent);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .brand{font-weight:700; font-size: clamp(22px, 3vw, 36px)}
+    .clock{margin-left:auto; font-variant-numeric:tabular-nums; color:var(--muted); font-size: clamp(18px, 2.4vw, 28px)}
+    main{flex:1 1 auto; position:relative;}
+    .slide{position:absolute; inset:0; display:none; padding:32px;}
+    .slide.active{display:block;}
+    .card{height:100%; width:100%; background: radial-gradient(1000px 600px at 10% 10%, rgba(255,255,255,0.06), transparent),
+                         radial-gradient(800px 500px at 80% 80%, rgba(90,162,255,0.08), transparent);
+          border:1px solid rgba(255,255,255,0.06); border-radius:24px; padding:40px;}
+    .title{font-size: clamp(28px, 4vw, 52px); font-weight:800; margin:0 0 20px}
+    .bullets{display:grid; gap:14px; margin-top:8px;}
+    .bullet{font-size: clamp(20px, 2.6vw, 34px); line-height:1.2; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:14px 18px; border-radius:16px}
+    .image-wrap{height:calc(100% - 64px); display:flex; align-items:center; justify-content:center}
+    .image-wrap img{max-width:100%; max-height:100%; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.35)}
+    footer{position:absolute; left:24px; bottom:18px; right:24px; display:flex; align-items:center; gap:14px; color:var(--muted); opacity:.9}
+    .progress{height:6px; background:#223; border-radius:999px; overflow:hidden; flex:1}
+    .progress > i{display:block; height:100%; width:0%; background:linear-gradient(90deg, var(--acc), #9ad);}
+    .help{position:absolute; right:24px; top:24px; font-size:14px; color:var(--muted)}
+    .help kbd{background:#223; padding:2px 6px; border-radius:6px; border:1px solid rgba(255,255,255,0.1)}
+    </style>
+  <script>
+    // === ADMIN/INTEGRATION KONFIG ===
+    // Vælg gratis løsning uden egen hjemmeside:
+    // 1) **GitHub Pages** (gratis hosting) + **Google Sheets** som "admin/CMS".
+    //    - Læsning: Publicér arket som CSV (public on the web) og sæt SHEET_CSV_URL.
+    //    - Skrivning: Lav et Google Apps Script (webapp) der modtager POST og skriver til arket; sæt APPS_SCRIPT_URL.
+    // 2) Alternativt: brug kun data.json i repo og redigér via GitHub web-UI (ingen admin-UI nødvendig).
+
+    const INTEGRATION = {
+      USE_SHEET: false, // start simpelt: kør kun med indbygget data.json/fallback. Skift til true når du er klar til Google Sheet
+      SHEET_CSV_URL: "", // <- (valgfri) CSV-URL fra Google Sheets
+      APPS_SCRIPT_URL: "", // <- (valgfri) Apps Script Web App URL til at skrive rækker
+      ADMIN_KEY: "skift-mig" // adgangsnøgle til admin-tilstand (?admin=skift-mig)
+    };
+  </script>
+  <script>
+    // === SIKKERHED (valgfri) ===
+    // Let tilgangskode + (simpel) begrænsning til bestemte værter/domæner.
+    // OBS: På GitHub Pages er dette kun "klientside" og kan skjules af en teknisk bruger,
+    // men det stopper nysgerrige blikke/tilfældige brugere.
+    const SECURITY = {
+      VIEW_PIN: "1234",              // tom streng = ingen kodekrav for at SE skærmen
+      ALLOWED_HOSTS: [
+        "perbonde07-byte.github.io"
+      ]
+    };
+  </script>
+</head>
+<body>
+<div id="gate" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:99999">
+  <div style="width:min(92vw,420px);background:#111a2d;color:#e8eefb;border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);padding:20px">
+    <h2 style="margin:0 0 10px;font-size:20px">Indtast kode for at åbne skærmen</h2>
+    <input id="pin" type="password" placeholder="Kode" inputmode="numeric" style="width:100%;padding:12px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.15)" />
+    <button id="pin_ok" style="margin-top:10px;width:100%;padding:12px;border-radius:10px;background:#5aa2ff;border:0;color:#081325;font-weight:700;cursor:pointer">Åbn</button>
+    <p id="pin_msg" style="margin:8px 0 0;color:#9fb2d1;font-size:12px"></p>
+  </div>
+</div>
+<div class="screen">
+  <header>
+    <div class="brand" id="brand">Info Skærm</div>
+    <div class="clock" id="clock">--:--</div>
+  </header>
+  <main id="slides"></main>
+  <div class="help">Pil <kbd>◀</kbd>/<kbd>▶</kbd> skifter slide · <kbd>F11</kbd> fuldskærm</div>
+</div>
+<script>
+  // === KONFIGURATION ===
+  const CONFIG = {
+    DATA_URL: 'data.json',            // fallback kilde (bruges hvis USE_SHEET=false eller sheet fejler)
+    REFRESH_SECONDS: 60,              // hent data igen hvert minut
+    DEFAULT_SLIDE_SECONDS: 12,        // varighed pr slide
+    BRAND: 'Bredsgaard Info'          // vises øverst til venstre
+  };
+
+  // Eksempeldata (bruges hvis data.json ikke findes)
+  const FALLBACK = {
+    brand: CONFIG.BRAND,
+    slides: [
+      { type: 'bullets', title: 'Velkommen!', duration: 10, lines: [
+          'Dette er en gratis TV-infoskærm som kører i din browser.',
+          'Redigér data.json for at ændre indholdet.',
+          'Tryk F11 for fuldskærm på TV’et.'
+        ] },
+      { type: 'bullets', title: 'Dagens program', lines: [
+          '09:00 – Morgenmøde i kantinen',
+          '11:30 – Frokost',
+          '14:00 – Kundebesøg: Lager',
+          '16:00 – Afslutning'
+        ] },
+      { type: 'image', title: 'Ugens billede', image: 'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=1200&auto=format&fit=crop', duration: 14 }
+    ]
+  };
+
+  const state = { slides: [], idx: 0, timer: null, progressTimer: null, seconds: 0 };
+
+  function fmtClock(d){
+    return d.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
+  }
+  function tickClock(){ document.getElementById('clock').textContent = fmtClock(new Date()); }
+  setInterval(tickClock, 1000); tickClock();
+
+  async function loadData(){
+    try {
+      // 1) Forsøg Google Sheet (CSV) hvis valgt
+      if (INTEGRATION.USE_SHEET && INTEGRATION.SHEET_CSV_URL) {
+        const res = await fetch(INTEGRATION.SHEET_CSV_URL + (INTEGRATION.SHEET_CSV_URL.includes('?')?'&':'?') + 'v=' + Date.now());
+        if(!res.ok) throw new Error('CSV HTTP '+res.status);
+        const csv = await res.text();
+        const data = csvToData(csv);
+        buildUI(data);
+        return;
+      }
+      // 2) Ellers klassisk data.json
+      if(!CONFIG.DATA_URL){ throw new Error('No DATA_URL'); }
+      const res = await fetch(CONFIG.DATA_URL + '?v=' + Date.now());
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const ct = res.headers.get('content-type')||'';
+      let data;
+      if(ct.includes('application/json')){
+        data = await res.json();
+      } else if(ct.includes('text/csv')){
+        data = csvToData(await res.text());
+      } else {
+        data = await res.json();
+      }
+      buildUI(data);
+    } catch(err){
+      console.warn('Bruger fallback data pga:', err);
+      buildUI(FALLBACK);
+    }
+  }
+
+  function csvToData(csv){
+    // Simpel CSV -> slides (kolonner: type,title,line,image,duration)
+    const lines = csv.split(/\r?\n/).filter(Boolean);
+    const [head, ...rows] = lines.map(l=>l.split(','));
+    const idx = Object.fromEntries(head.map((h,i)=>[h.trim().toLowerCase(), i]));
+    const slides = rows.map(r=>({
+      type: (r[idx.type]||'bullets').trim(),
+      title: (r[idx.title]||'').trim(),
+      lines: (r[idx.line]||'').split('|').filter(Boolean),
+      image: (r[idx.image]||'').trim(),
+      duration: Number(r[idx.duration]||CONFIG.DEFAULT_SLIDE_SECONDS)
+    }));
+    return { brand: CONFIG.BRAND, slides };
+  }
+
+  function buildUI(data){
+    const brand = (data.brand||CONFIG.BRAND);
+    document.getElementById('brand').textContent = brand;
+
+    const mount = document.getElementById('slides');
+    mount.innerHTML = '';
+    state.slides = (data.slides||[]).map((s,i)=>{
+      const el = document.createElement('section');
+      el.className = 'slide';
+      el.dataset.index = i;
+      el.innerHTML = renderSlide(s);
+      mount.appendChild(el);
+      return { ...s, el, duration: Number(s.duration||CONFIG.DEFAULT_SLIDE_SECONDS) };
+    });
+
+    state.idx = 0; showSlide(0);
+    restartAutoplay();
+  }
+
+  function renderSlide(s){
+    const prog = `<footer><div class="progress"><i id="prog"></i></div></footer>`;
+    if(s.type === 'image'){
+      return `<div class="card"><h1 class="title">${esc(s.title||'')}</h1><div class="image-wrap"><img src="${esc(s.image||'')}" alt="" /></div>${prog}</div>`;
+    }
+    // bullets default
+    const items = (s.lines||[]).map(t=>`<div class="bullet">${esc(t)}</div>`).join('');
+    return `<div class="card"><h1 class="title">${esc(s.title||'')}</h1><div class="bullets">${items}</div>${prog}</div>`;
+  }
+
+  function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",
+    ">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
+  function showSlide(i){
+    state.slides.forEach((s,idx)=>{ s.el.classList.toggle('active', idx===i); });
+    state.idx = i; state.seconds = 0; updateProgress();
+  }
+
+  function next(n=1){ if(!state.slides.length) return; showSlide((state.idx + n + state.slides.length)%state.slides.length); restartAutoplay(); }
+  function prev(){ next(-1); }
+
+  function restartAutoplay(){
+    clearInterval(state.timer); clearInterval(state.progressTimer);
+    state.timer = setInterval(()=>{ next(1); }, (state.slides[state.idx]?.duration||CONFIG.DEFAULT_SLIDE_SECONDS)*1000);
+    state.progressTimer = setInterval(()=>{ state.seconds++; updateProgress(); }, 1000);
+  }
+
+  function updateProgress(){
+    const bar = document.getElementById('prog');
+    if(!bar) return;
+    const total = (state.slides[state.idx]?.duration||CONFIG.DEFAULT_SLIDE_SECONDS);
+    const pct = Math.max(0, Math.min(100, (state.seconds/total)*100));
+    bar.style.width = pct + '%';
+  }
+
+  addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight') next(1);
+    if(e.key==='ArrowLeft') prev();
+  });
+
+  function startApp(){
+    loadData();
+    setInterval(loadData, CONFIG.REFRESH_SECONDS*1000);
+    window.addEventListener('load', mountAdmin);
+  }
+
+  // === GATE / PIN + HOSTNAME CHECK ===
+  (function gate(){
+    const hostOk = !SECURITY.ALLOWED_HOSTS.length || SECURITY.ALLOWED_HOSTS.includes(location.hostname);
+    if(!hostOk){
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b1220;color:#e8eefb;font-family:system-ui">Adgang nægtet: Domænet er ikke godkendt.</div>';
+      return;
+    }
+    const needsPin = (SECURITY.VIEW_PIN||'').trim().length>0;
+    if(!needsPin){ startApp(); return; }
+    // vis overlay
+    const gateEl = document.getElementById('gate');
+    gateEl.style.display='flex';
+    const pinInput = document.getElementById('pin');
+    const okBtn = document.getElementById('pin_ok');
+    const msg = document.getElementById('pin_msg');
+    function tryOpen(){
+      if(pinInput.value === SECURITY.VIEW_PIN){
+        gateEl.remove();
+        startApp();
+      } else {
+        msg.textContent = 'Forkert kode – prøv igen';
+        pinInput.select();
+      }
+    }
+    okBtn.onclick = tryOpen;
+    pinInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryOpen(); });
+    setTimeout(()=>pinInput.focus(), 50);
+  })();
+// ======== ADMIN UI (valgfri) =========
+  function isAdmin(){
+    const p = new URLSearchParams(location.search).get('admin');
+    if(p && p === INTEGRATION.ADMIN_KEY){ localStorage.setItem('admin_ok','1'); }
+    return localStorage.getItem('admin_ok')==='1';
+  }
+
+  function mountAdmin(){
+    if(!isAdmin()) return;
+    const wrap = document.createElement('div');
+    wrap.style.position='fixed'; wrap.style.right='20px'; wrap.style.bottom='20px';
+    wrap.style.width='420px'; wrap.style.maxHeight='80vh'; wrap.style.overflow='auto';
+    wrap.style.background='rgba(17,26,45,.95)'; wrap.style.border='1px solid rgba(255,255,255,.08)';
+    wrap.style.borderRadius='16px'; wrap.style.boxShadow='0 10px 40px rgba(0,0,0,.4)';
+    wrap.style.padding='16px'; wrap.style.zIndex='9999';
+    wrap.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <strong style="font-size:16px">Admin</strong>
+        <span style="margin-left:auto;opacity:.7;font-size:12px">Google Sheet: ${INTEGRATION.USE_SHEET? (INTEGRATION.SHEET_CSV_URL?'tilkoblet':'mangler URL') : 'deaktiveret'}</span>
+      </div>
+      <label style="display:block;font-size:12px;opacity:.8">Type</label>
+      <select id="a_type" style="width:100%;margin:4px 0 10px;padding:8px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.1)">
+        <option value="bullets">bullets</option>
+        <option value="image">image</option>
+      </select>
+      <label style="display:block;font-size:12px;opacity:.8">Titel</label>
+      <input id="a_title" placeholder="Titel" style="width:100%;margin:4px 0 10px;padding:8px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.1)" />
+      <label style="display:block;font-size:12px;opacity:.8">Linjer (adskil med | )</label>
+      <textarea id="a_lines" rows="3" placeholder="Punkt 1 | Punkt 2 | Punkt 3" style="width:100%;margin:4px 0 10px;padding:8px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.1)"></textarea>
+      <label style="display:block;font-size:12px;opacity:.8">Billede (URL – kun til type=image)</label>
+      <input id="a_image" placeholder="https://..." style="width:100%;margin:4px 0 10px;padding:8px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.1)" />
+      <label style="display:block;font-size:12px;opacity:.8">Varighed (sek.)</label>
+      <input id="a_duration" type="number" value="12" min="3" style="width:100%;margin:4px 0 14px;padding:8px;border-radius:10px;background:#0e172a;color:#e8eefb;border:1px solid rgba(255,255,255,.1)" />
+      <div style="display:flex;gap:8px">
+        <button id="a_add" style="flex:1;padding:10px;border-radius:10px;background:#5aa2ff;border:0;color:#081325;font-weight:700;cursor:pointer">Tilføj slide</button>
+        <button id="a_reload" style="padding:10px;border-radius:10px;background:#25324a;border:0;color:#e8eefb;cursor:pointer">Opdatér</button>
+      </div>
+      <p style="font-size:12px;opacity:.7;margin:10px 0 0">Tip: Gå til <code>?admin=${INTEGRATION.ADMIN_KEY}</code> for at låse admin op på denne maskine.</p>
+    `;
+    document.body.appendChild(wrap);
+
+    wrap.querySelector('#a_reload').onclick = ()=>loadData();
+    wrap.querySelector('#a_add').onclick = async ()=>{
+      const payload = {
+        type: wrap.querySelector('#a_type').value,
+        title: wrap.querySelector('#a_title').value.trim(),
+        line: wrap.querySelector('#a_lines').value.trim(),
+        image: wrap.querySelector('#a_image').value.trim(),
+        duration: wrap.querySelector('#a_duration').value.trim()
+      };
+      try{
+        if(INTEGRATION.USE_SHEET && INTEGRATION.APPS_SCRIPT_URL){
+          const r = await fetch(INTEGRATION.APPS_SCRIPT_URL, {method:'POST', mode:'cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          alert('Tilføjet til arket. Indhold opdateres snart.');
+          loadData();
+        } else {
+          // Fallback: download en opdateret data.json lokalt (manuelt upload til GitHub)
+          const current = { brand: document.getElementById('brand').textContent, slides: state.slides.map(s=>({type:s.type,title:s.title,lines:s.lines,image:s.image,duration:s.duration})) };
+          current.slides.push({
+            type: payload.type,
+            title: payload.title,
+            lines: payload.line.split('|').map(s=>s.trim()).filter(Boolean),
+            image: payload.image,
+            duration: Number(payload.duration||CONFIG.DEFAULT_SLIDE_SECONDS)
+          });
+          const blob = new Blob([JSON.stringify(current, null, 2)], {type:'application/json'});
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'data.json';
+          a.click();
+          URL.revokeObjectURL(a.href);
+          alert('data.json hentet – upload filen til GitHub for at opdatere.');
+        }
+      }catch(e){
+        alert('Kunne ikke gemme: '+e.message);
+      }
+    };
+  }
+
+  // admin mount flyttet ind i startApp() for at sikre, at gate er passeret
+</script>
+
+<!--
+=============================================
+Sådan bruger du den (helt gratis):
+1) Læg denne HTML + en valgfri data.json i et GitHub repository.
+2) Slå GitHub Pages til (Settings → Pages → Source: "Deploy from a branch").
+3) Åbn den udgivne URL på en computer eller Smart‑TV og tryk F11 for fuldskærm.
+
+Eksempel på data.json:
+{
+  "brand": "Bredsgaard Info",
+  "slides": [
+    { "type": "bullets", "title": "Velkommen!", "duration": 10,
+      "lines": ["Ny infoskærm 🍃", "Opdater data.json for at ændre indhold", "Kører gratis via GitHub Pages"] },
+    { "type": "bullets", "title": "Dagens program",
+      "lines": ["09:00 – Morgenmøde", "11:30 – Frokost", "14:00 – Kundebesøg", "16:00 – Tak for i dag"] },
+    { "type": "image", "title": "Ugens billede",
+      "image": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=1600&auto=format&fit=crop",
+      "duration": 14 }
+  ]
+}
+
+Alternativ datakilde (Google Sheets som CSV):
+- I Google Sheets: Fil → Publicér på nettet → vælg arket → få linket.
+- Sæt INTEGRATION.USE_SHEET=true og udfyld SHEET_CSV_URL med linket.
+- Kolonner: type,title,line,image,duration. Brug | til flere punkter i "line".
+
+Sikkerhed:
+- Denne fil har simpel PIN (klientside) og valgfri host-begrænsning.
+- For stærk netværks-begrænsning skal du hoste bag et internt netværk eller en omvendt proxy med adgangskontrol.
+=============================================
+-->
+</body>
+</html>
