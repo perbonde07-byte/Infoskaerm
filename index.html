@@ -62,12 +62,14 @@ const INTEGRATION = {
     // Let tilgangskode + (simpel) begrænsning til bestemte værter/domæner.
     // OBS: På GitHub Pages er dette kun "klientside" og kan skjules af en teknisk bruger,
     // men det stopper nysgerrige blikke/tilfældige brugere.
-    const SECURITY = {
-      VIEW_PIN: "1234",              // tom streng = ingen kodekrav for at SE skærmen
-      ALLOWED_HOSTS: [
-        "perbonde07-byte.github.io"
-      ]
-    };
+const SECURITY = {
+  VIEW_PIN: "1234",
+  ALLOWED_HOSTS: [
+    "perbonde07-byte.github.io",
+    "infoskaerm.vercel.app"
+  ]
+};
+
   </script>
 </head>
 <body>
