@@ -1,7 +1,7 @@
-// api/upload-image.js
-// ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
-export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
+// /api/upload-image.js
+export const config = { runtime: 'nodejs' };
 
+// ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
 
@@ -10,17 +10,17 @@ export default async function handler(req, res) {
   if (miss.length) return res.status(400).json({ error: `Missing required ENV vars: ${miss.join(', ')}` });
 
   try {
-    const token = process.env.GITHUB_TOKEN;
-    const OWNER = process.env.OWNER;
-    const REPO = process.env.REPO;
-    const BRANCH = process.env.BRANCH;
+    const token   = process.env.GITHUB_TOKEN;
+    const OWNER   = process.env.OWNER;
+    const REPO    = process.env.REPO;
+    const BRANCH  = process.env.BRANCH;
     const MEDIA_DIR = process.env.MEDIA_DIR.replace(/\/+$/,'');
     const { name, data } = await (req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.body||'{}'));
     if (!name || !data) return res.status(400).json({ error: 'Missing {name, data}' });
 
     const path = `${MEDIA_DIR}/${name}`;
 
-    // find sha hvis eksisterer
+    // find sha hvis eksisterer (for update)
     let sha = null;
     {
       const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(BRANCH)}`, {
@@ -54,5 +54,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message || String(e) });
   }
 }
+
 
 
