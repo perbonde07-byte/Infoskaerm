@@ -2,28 +2,22 @@
   "brand": "Bredsgaard • Infoskaerm",
   "logoUrl": "",
   "logoPos": "top-right",
-  "media": {
-    "baseUrl": "",
-    "key": ""
-  },
+  "media": { "baseUrl": "", "key": "optional" },
   "settings": {
     "calendarUrl": "",
     "empties": {
-      "weekdays": [],
-      "skip": [],
-      "names": []
+      "weekdays": ["mon","wed","fri"],
+      "skip": ["2025-12-24","2025-12-31"],
+      "names": ["Per","Martin","Kasper"]
     },
-    "birthdays": []
+    "birthdays": [
+      { "name": "Per", "date": "1986-05-07", "photo": "" }
+    ]
   },
   "slides": [
-    {
-      "type": "bullets",
-      "title": "Tesee",
-      "lines": [
-        "Hehe"
-      ],
-      "image": "",
-      "duration": 12
-    }
+    { "type": "bullets", "title": "Nyheder", "lines": ["Punkt 1","Punkt 2"], "duration": 12 },
+    { "type": "image", "title": "Kampagne", "image": "https://via.placeholder.com/1200x700.png?text=Billede", "duration": 12 },
+    { "type": "empties", "title": "Tømning", "duration": 12 },
+    { "type": "birthday", "title": "Tillykke", "duration": 12 }
   ]
 }
