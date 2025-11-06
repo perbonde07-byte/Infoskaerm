@@ -1,12 +1,21 @@
 {
   "brand": "Bredsgaard • Infoskaerm",
   "logoUrl": "",
-  "logoPos": "",
+  "logoPos": "top-right",
   "media": {
     "baseUrl": "",
     "key": ""
   },
-  "slides": [],
+  "slides": [
+    {
+      "type": "bullets",
+      "title": "test",
+      "duration": 12,
+      "lines": [
+        "serserser"
+      ]
+    }
+  ],
   "logo": {
     "url": "",
     "pos": "top-right"
