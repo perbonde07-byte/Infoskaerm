@@ -105,33 +105,24 @@
   </div>
 
 <script>
-/* ----------------------- CONFIG ----------------------- */
-const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json"; // samme som admin
-const AUTO_RELOAD_MS = 60000;   // hent ny data hvert minut
+const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
+const AUTO_RELOAD_MS = 60000;
 
-/* ----------------------- STATE ------------------------ */
 let data = { brand:"Infoskærm", slides:[] };
 let idx = 0;
 let timer = null;
-let progressT = null;
 
-/* ----------------------- HELPERS ---------------------- */
 const $ = s => document.querySelector(s);
-
-function fmtTime(d=new Date()){
-  return d.toLocaleTimeString('da-DK',{hour:'2-digit', minute:'2-digit'});
-}
+function fmtTime(d=new Date()){ return d.toLocaleTimeString('da-DK',{hour:'2-digit', minute:'2-digit'}); }
 function setStatus(t){ $("#status").textContent = t; }
 function clearNode(el){ while(el.firstChild) el.removeChild(el.firstChild); }
 
-/* ----------------------- RENDER ----------------------- */
 function slideDOM(s){
   const wrap = document.createElement('div');
   wrap.className = 'slide';
   const card = document.createElement('div');
   card.className = 'card';
 
-  // title
   const h = document.createElement('div');
   h.className = 'title';
   h.innerHTML = `<span class="dot"></span>${s.title || ''}`;
@@ -145,9 +136,7 @@ function slideDOM(s){
     img.alt = s.title || 'slide-image';
     box.appendChild(img);
     card.appendChild(box);
-
   }else{
-    // bullets
     const ul = document.createElement('ul');
     ul.className = 'bullets';
     (s.lines || []).forEach(line=>{
@@ -155,7 +144,6 @@ function slideDOM(s){
     });
     card.appendChild(ul);
   }
-
   wrap.appendChild(card);
   return wrap;
 }
@@ -167,28 +155,25 @@ function renderSlides(){
   stage.appendChild(frag);
 }
 
-function show(i, withAnim=true){
+function show(i){
   const slides = [...document.querySelectorAll('.slide')];
   slides.forEach(s=>s.classList.remove('active'));
   const s = slides[i]; if(!s) return;
   s.classList.add('active');
 
-  // progress bar
   const dur = Math.max(2, +(data.slides[i].duration||12));
   const bar = $("#bar"); bar.style.transition = 'none'; bar.style.width='0%';
   void bar.offsetWidth; // reflow
   bar.style.transition = `width ${dur}s linear`;
   bar.style.width = '100%';
 
-  if(timer){ clearTimeout(timer); }
+  if(timer) clearTimeout(timer);
   timer = setTimeout(()=> next(), dur*1000);
 }
 
-/* ----------------------- NAV -------------------------- */
 function next(){ idx = (idx+1) % Math.max(1, data.slides.length); show(idx); }
 function prev(){ idx = (idx-1+data.slides.length) % Math.max(1, data.slides.length); show(idx); }
 
-/* ----------------------- DATA ------------------------- */
 async function loadData(){
   try{
     setStatus('Henter data…');
@@ -200,25 +185,18 @@ async function loadData(){
     idx = 0; show(0);
     setStatus('Klar');
   }catch(e){
-    setStatus('Kunne ikke hente data');
-    console.error(e);
+    setStatus('Kunne ikke hente data'); console.error(e);
   }
 }
 
-/* ----------------------- CLOCK/RELOAD ----------------- */
 setInterval(()=>{ $("#clock").textContent = fmtTime(); }, 1000);
 setInterval(()=>{ loadData(); }, AUTO_RELOAD_MS);
-
-/* ----------------------- KEYS ------------------------- */
 window.addEventListener('keydown', (ev)=>{
   if(ev.key==='ArrowRight') next();
   else if(ev.key==='ArrowLeft') prev();
   else if(ev.key.toLowerCase()==='r') loadData();
 });
-
-/* ----------------------- START ------------------------ */
 loadData();
 </script>
 </body>
 </html>
-
