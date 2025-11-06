@@ -1,46 +1,12 @@
 {
   "brand": "Bredsgaard • Infoskaerm",
-  "logoUrl": "https://…/logo.png",
+  "logoUrl": "",
   "logoPos": "top-right",
-  "media": {
-    "baseUrl": "https://1drv.ms/u/s!.../media", 
-    "key": "optional"
-  },
+  "media": { "baseUrl": "", "key": "" },
   "settings": {
-    "calendarUrl": "https://…/din-kalender-delingslink.ics",
-    "empties": {
-      "weekdays": ["mon", "wed", "fri"],
-      "skip": ["2025-12-24", "2025-12-31"],
-      "names": ["Per", "Martin", "Kasper"]
-    },
-    "birthdays": [
-      { "name": "Per", "date": "1986-05-07", "photo": "https://…/per.jpg" },
-      { "name": "Viktor", "date": "1991-10-14", "photo": "" }
-    ]
+    "calendarUrl": "",
+    "empties": { "weekdays": [], "skip": [], "names": [] },
+    "birthdays": []
   },
-  "slides": [
-    {
-      "type": "bullets",
-      "title": "Nyheder",
-      "lines": ["Punkt 1", "Punkt 2", "Punkt 3"],
-      "duration": 12
-    },
-    {
-      "type": "image",
-      "title": "Kampagne",
-      "image": "plakat.jpg",
-      "duration": 12
-    },
-    {
-      "type": "empties",
-      "title": "Tømning",
-      "duration": 12
-    },
-    {
-      "type": "birthday",
-      "title": "Tillykke",
-      "duration": 12
-    }
-  ]
+  "slides": []
 }
-
