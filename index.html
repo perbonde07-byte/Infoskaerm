@@ -1,151 +1,174 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Infoskærm</title>
-<style>
-  :root{--bg:#0b1220;--card:#0e1526;--text:#e8eefb;--muted:#203258;--accent:#5aa2ff}
-  html,body{margin:0;height:100%;background:linear-gradient(180deg,#0b1220,#0a1120);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-  .stage{position:relative;display:flex;align-items:center;justify-content:center;height:100%;padding:40px}
-  .card{width:100%;height:100%;border-radius:22px;background:radial-gradient(1200px 800px at 70% 30%,#12203a 0%,#0e1526 60%);box-shadow:0 6px 30px rgba(0,0,0,.6);padding:34px;overflow:hidden}
-  h1,h2,h3{margin:0 0 10px}
-  .bullets ul{font-size:40px;list-style:disc;padding-left:28px;line-height:1.4}
-  .imgwrap{display:flex;align-items:center;justify-content:center;height:100%}
-  .imgwrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
-  table{width:100%;border-collapse:collapse;font-size:22px;margin-top:10px}
-  th,td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
-  th{opacity:.85;text-align:left}
-  .footer{position:absolute;left:24px;right:24px;bottom:14px;display:flex;justify-content:space-between;opacity:.8;font-size:14px}
-  .logo{position:absolute;max-width:180px;max-height:120px;opacity:.9}
-  .top-right{top:16px;right:16px}.top-left{top:16px;left:16px}.bottom-right{bottom:60px;right:16px}.bottom-left{bottom:60px;left:16px}
-  .center{display:flex;align-items:center;justify-content:center;height:100%}
-  .big{font-size:72px;font-weight:800;text-align:center}
-  .muted{opacity:.7}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Infoskærm</title>
+  <style>
+    :root{--bg:#0b1220;--panel:#0f172a;--text:#e8eefb;--muted:#243147;--accent:#5aa2ff}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    #root{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:32px}
+    .card{width:100%;height:100%;background:linear-gradient(180deg,#0f172a 0%,#0b1220 100%);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .logo{position:absolute;max-width:260px;max-height:90px;opacity:.95}
+    .tr{top:22px;right:26px}.tl{top:22px;left:26px}.br{bottom:22px;right:26px}.bl{bottom:22px;left:26px}
+    .title{font-size:44px;font-weight:800;margin:0 0 10px}
+    .list{font-size:28px;line-height:1.45;margin:14px 0 0}
+    .footer{position:absolute;left:26px;bottom:10px;font-size:12px;opacity:.65}
+    .img{display:block;max-width:100%;max-height:68vh;margin:0 auto;border-radius:12px}
+    table{width:70%;border-collapse:collapse;font-size:22px}
+    td,th{border-bottom:1px solid var(--muted);padding:10px 12px;text-align:left}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+    .muted{opacity:.8}
+    .center{display:flex;align-items:center;justify-content:center}
+  </style>
 </head>
 <body>
-<div class="stage">
-  <div class="card" id="root">
-    <div class="center"><div class="big muted">Indlæser…</div></div>
-  </div>
-</div>
-<script>
-  const qs = new URLSearchParams(location.search);
-  const DATA = qs.get('data') || 'https://perbonde07-byte.github.io/Infoskaerm/data.json';
+  <div id="root"><div class="card" id="card">
+    <div id="logo"></div>
+    <div id="content"></div>
+    <div class="footer" id="footer"></div>
+  </div></div>
 
-  const root = document.getElementById('root');
-  let cfg = null, idx = -1, timer = null;
+  <script>
+    const QS = s => document.querySelector(s);
+    const content = QS('#content'), footer = QS('#footer'), logoBox = QS('#logo');
 
-  const fmtDa = d => d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const escapeHtml = s => (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    const urlParam = new URLSearchParams(location.search).get('data');
+    const DATA_URL = urlParam || 'https://perbonde07-byte.github.io/Infoskaerm/data.json';
 
-  function logoHtml(){
-    if(!cfg.logoUrl) return '';
-    const pos = cfg.logoPos || 'top-right';
-    return `<img class="logo ${pos}" src="${escapeHtml(cfg.logoUrl)}" alt="logo"/>`;
+    let DATA = null, idx = -1, timer = null;
+
+    function setLogo(url,pos){
+      logoBox.innerHTML = '';
+      if(!url) return;
+      const img = new Image();
+      img.src = url; img.className = 'logo ' + (pos==='top-left'?'tl':pos==='bottom-right'?'br':pos==='bottom-left'?'bl':'tr');
+      logoBox.appendChild(img);
+    }
+    function setFooter(brand){
+      footer.textContent = brand ? brand : 'Infoskærm';
+    }
+    function fmtDa(iso){
+      const d = new Date(iso);
+      if(Number.isNaN(d.getTime())) return iso;
+      return d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'});
+    }
+    function withinWeek(d){
+      const date = new Date(d); if(Number.isNaN(date)) return false;
+      const now = new Date(); const monday = new Date(now); const sunday = new Date(now);
+      const day = (now.getDay()+6)%7; // Mon=0
+      monday.setDate(now.getDate()-day); monday.setHours(0,0,0,0);
+      sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999);
+      return date>=monday && date<=sunday;
     }
 
-  function slideBullets(s){
-    const lines = (s.lines||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
-    root.innerHTML = `
-      ${logoHtml()}
-      <h1>${escapeHtml(s.title||'')}</h1>
-      <div class="bullets"><ul>${lines}</ul></div>
-      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
-  }
+    function renderSlide(s){
+      content.innerHTML = '';
+      const wrap = document.createElement('div');
 
-  function slideImage(s){
-    let src = s.image||'';
-    if(src && !/^https?:\/\//i.test(src) && cfg.media?.baseUrl){
-      src = cfg.media.baseUrl.replace(/\/+$/,'')+'/'+src.replace(/^\/+/,'');
-    }
-    root.innerHTML = `
-      ${logoHtml()}
-      <div class="imgwrap"><img src="${escapeHtml(src)}" alt=""/></div>
-      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
-  }
-
-  function slideEmpties(s){
-    const e = cfg.settings?.empties || {weekdays:[],skip:[],names:[]};
-    const out = [];
-    if(!e.weekdays?.length || !e.names?.length){
-      root.innerHTML = `${logoHtml()}<div class="center"><div class="big muted">Tømningstabel mangler opsætning</div></div>`; return;
-    }
-    const today = new Date(); today.setHours(0,0,0,0);
-    let i=0, nameIdx = 0;
-    const skipSet = new Set((e.skip||[]));
-    // find startnavn baseret på uge (simpel rotation)
-    const baseWeek = Math.floor((today - new Date('2025-01-01'))/(7*864e5));
-    nameIdx = ((baseWeek% e.names.length)+e.names.length)%e.names.length;
-
-    for(let d=0; out.length<10; d++){
-      const dt = new Date(today); dt.setDate(dt.getDate()+d);
-      const wd = ['sun','mon','tue','wed','thu','fri','sat'][dt.getDay()];
-      const iso = dt.toISOString().slice(0,10);
-      if(e.weekdays.includes(wd) && !skipSet.has(iso)){
-        out.push({date: dt, name: e.names[nameIdx]});
-        nameIdx = (nameIdx+1)%e.names.length;
+      if(s.type==='bullets'){
+        wrap.innerHTML = `<h1 class="title">${s.title||''}</h1>`;
+        const ul = document.createElement('ul'); ul.className='list';
+        (s.lines||[]).forEach(line=>{
+          const li = document.createElement('li'); li.textContent = line; ul.appendChild(li);
+        });
+        wrap.appendChild(ul);
       }
-    }
-    const rows = out.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td>${fmtDa(r.date)}</td></tr>`).join('');
-    root.innerHTML = `
-      ${logoHtml()}
-      <h1>${escapeHtml(s.title||'Tømning')}</h1>
-      <table><thead><tr><th>Navn</th><th>Dato</th></tr></thead><tbody>${rows}</tbody></table>
-      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
-  }
-
-  function slideBirthday(s){
-    const list = (cfg.settings?.birthdays||[]).filter(b=>{
-      const d = new Date(new Date().getFullYear()+'-'+b.date.slice(5));
-      const now = new Date(); const start = new Date(now); start.setDate(now.getDate()-now.getDay()+1); start.setHours(0,0,0,0);
-      const end = new Date(start); end.setDate(start.getDate()+6);
-      return d>=start && d<=end;
-    });
-    if(!list.length){
-      root.innerHTML = `${logoHtml()}<div class="center"><div class="big">Ingen fødselsdage i denne uge 🎉</div></div>
-        <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
-      return;
-    }
-    const rows = list.map(b=>{
-      const when = new Date(new Date().getFullYear()+'-'+b.date.slice(5));
-      let img = b.photo||'';
-      if(img && !/^https?:\/\//i.test(img) && cfg.media?.baseUrl){
-        img = cfg.media.baseUrl.replace(/\/+$/,'')+'/'+img.replace(/^\/+/,'');
+      else if(s.type==='image'){
+        wrap.innerHTML = `<h1 class="title">${s.title||''}</h1>`;
+        const img = new Image(); img.src = s.image; img.className='img'; wrap.appendChild(img);
       }
-      return `<tr><td>${escapeHtml(b.name)}</td><td>${fmtDa(when)}</td><td>${img?`<img src="${escapeHtml(img)}" style="height:64px;border-radius:8px">`:''}</td></tr>`;
-    }).join('');
-    root.innerHTML = `
-      ${logoHtml()}
-      <h1>${escapeHtml(s.title||'Tillykke!')}</h1>
-      <table><thead><tr><th>Navn</th><th>Dato</th><th>Foto</th></tr></thead><tbody>${rows}</tbody></table>
-      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
-  }
+      else if(s.type==='empties'){
+        wrap.innerHTML = `<h1 class="title">${s.title||'Tømning'}</h1>`;
+        const grid = document.createElement('div'); grid.className='grid';
+        const table = document.createElement('table');
+        table.innerHTML = `<thead><tr><th class="muted">Navn</th><th class="muted">Dato</th></tr></thead>`;
+        const tb = document.createElement('tbody');
 
-  function show(i){
-    const slides = cfg.slides||[]; if(!slides.length){ root.innerHTML = `<div class="center"><div class="big muted">Ingen slides<br><br><span style="font-size:20px">Tilføj i admin</span></div></div>`; return; }
-    const s = slides[i]; const dur = Math.max(3, +s.duration || 12);
-    if(s.type==='image') slideImage(s);
-    else if(s.type==='empties') slideEmpties(s);
-    else if(s.type==='birthday') slideBirthday(s);
-    else slideBullets(s);
-    clearTimeout(timer); timer = setTimeout(next, dur*1000);
-  }
-  function next(){ idx = (idx+1) % (cfg.slides?.length||1); show(idx); }
+        const names = DATA?.settings?.empties?.names||[];
+        const weekdays = DATA?.settings?.empties?.weekdays||[];
+        const skip = new Set((DATA?.settings?.empties?.skip||[]));
 
-  async function boot(){
-    try{
-      const r = await fetch(DATA+'?v='+Date.now()); cfg = await r.json();
-    }catch{ cfg = { brand:'Bredsgaard • Infoskærm', slides:[] }; }
-    document.title = (cfg.brand||'Infoskærm');
-    idx = -1; next();
-    // auto-refresh hver 5. minut
-    setInterval(async()=>{
-      try{ const r = await fetch(DATA+'?v='+Date.now()); const fresh = await r.json(); cfg = fresh; }catch{}
-    }, 5*60*1000);
-  }
-  boot();
-</script>
+        // næste ~10 forekomster på angivne ugedage
+        const out = [];
+        const addDays = (d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+        const mapWD = {mon:1,tue:2,wed:3,thu:4,fri:5};
+        let day = new Date(); day.setHours(0,0,0,0);
+        for(let i=0; out.length<10 && i<200; i++){
+          const d = addDays(day,i);
+          const wd = d.getDay(); // 1..5
+          const key = ['sun','mon','tue','wed','thu','fri','sat'][wd];
+          if(weekdays.includes(key) && !skip.has(d.toISOString().slice(0,10))){
+            out.push(new Date(d));
+          }
+        }
+        out.forEach((d,i)=>{
+          const tr = document.createElement('tr');
+          const who = names[i % Math.max(1,names.length)] || '-';
+          tr.innerHTML = `<td>${who}</td><td>${fmtDa(d.toISOString())}</td>`;
+          tb.appendChild(tr);
+        });
+        table.appendChild(tb); grid.appendChild(table);
+        wrap.appendChild(grid);
+      }
+      else if(s.type==='birthday'){
+        wrap.innerHTML = `<h1 class="title">${s.title||'Fødselsdage'}</h1>`;
+        const box = document.createElement('div'); box.className='list';
+        const list = (DATA?.settings?.birthdays||[]).filter(b=>withinWeek(b.date));
+        if(!list.length){
+          box.innerHTML = `<div class="muted">Ingen fødselsdage i denne uge.</div>`;
+        }else{
+          list.forEach(b=>{
+            const row = document.createElement('div');
+            row.innerHTML = `<strong>${b.name}</strong> – ${fmtDa(b.date)}`;
+            box.appendChild(row);
+          });
+        }
+        wrap.appendChild(box);
+      }
+      else {
+        wrap.innerHTML = `<h1 class="title">Ingen slides</h1><div class="list"><li>Tilføj slides i admin.</li></div>`;
+      }
+
+      content.appendChild(wrap);
+    }
+
+    function tick(){
+      if(!DATA?.slides?.length){
+        renderSlide({type:'none'});
+        setLogo(DATA?.logoUrl, DATA?.logoPos);
+        setFooter(DATA?.brand || 'Bredsgaard • Infoskaerm');
+        return setTimeout(tick, 5000);
+      }
+      idx = (idx+1) % DATA.slides.length;
+      const s = DATA.slides[idx];
+
+      setLogo(DATA?.logoUrl, DATA?.logoPos);
+      setFooter(DATA?.brand || 'Bredsgaard • Infoskaerm');
+      renderSlide(s);
+
+      clearTimeout(timer);
+      const dur = Math.max(3, +s.duration || 12);
+      timer = setTimeout(tick, dur*1000);
+    }
+
+    async function boot(){
+      try{
+        const r = await fetch(DATA_URL + '?v=' + Date.now());
+        DATA = await r.json();
+      }catch(e){
+        DATA = {brand:'Bredsgaard • Infoskaerm', slides:[]};
+      }
+      tick();
+      setInterval(async ()=>{
+        try{
+          const r2 = await fetch(DATA_URL + '?v=' + Date.now());
+          const fresh = await r2.json();
+          DATA = fresh;
+        }catch{}
+      }, 60000);
+    }
+    boot();
+  </script>
 </body>
 </html>
