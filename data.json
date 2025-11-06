@@ -20,6 +20,15 @@
       ],
       "image": "",
       "duration": 12
+    },
+    {
+      "type": "bullets",
+      "title": "Fredag",
+      "lines": [
+        "så er det snart weekend"
+      ],
+      "image": "",
+      "duration": 12
     }
   ],
   "settings": {
