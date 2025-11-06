@@ -1,6 +1,7 @@
-export const config = { runtime: 'nodejs' };
-
+// api/save.js
+// Gemmer hele JSON-body som FILEPATH på BRANCH i OWNER/REPO
 // ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, FILEPATH
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
 
@@ -48,5 +49,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message || String(e) });
   }
 }
-
-
