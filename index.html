@@ -1,202 +1,183 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="da">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Infoskærm</title>
   <style>
-    :root{
-      --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff;
-      --card:#10172b; --shadow:0 10px 40px rgba(0,0,0,.35);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background:radial-gradient(1200px 700px at 50% -100px, #142042 0%, #0b1220 55%, #090f1d 100%);
-      color:var(--fg); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial;
-      overflow:hidden;
-    }
-    .screen{
-      position:relative; width:100%; height:100%;
-      display:flex; flex-direction:column;
-    }
-    header{
-      flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
-      padding:14px 20px; background:rgba(255,255,255,.02); border-bottom:1px solid rgba(255,255,255,.06);
-      backdrop-filter: blur(8px);
-    }
-    header .brand{font-weight:700; letter-spacing:.4px}
-    header .status{color:var(--muted); font-size:13px}
-    main{
-      position:relative; flex:1 1 auto; display:flex; align-items:center; justify-content:center;
-      padding:24px;
-    }
-    .slide{
-      position:absolute; inset:0; display:flex;
-      align-items:center; justify-content:center;
-      padding:4vw 5vw;
-      opacity:0; transform:translateY(10px) scale(.98);
-      transition:opacity .45s ease, transform .45s ease;
-    }
-    .slide.active{opacity:1; transform:none}
-    .card{
-      width:min(1300px, 95vw); min-height:50vh; background:var(--card);
-      border:1px solid rgba(255,255,255,.08); border-radius:24px; box-shadow:var(--shadow);
-      padding:clamp(20px, 4vw, 48px);
-      display:flex; flex-direction:column; gap:clamp(16px, 2vw, 24px);
-    }
-    .title{
-      font-size: clamp(22px, 3.4vw, 42px);
-      font-weight: 800; letter-spacing:.4px;
-      display:flex; align-items:center; gap:.6em;
-    }
-    .title .dot{width:.7em; height:.7em; border-radius:50%; background:var(--acc); box-shadow:0 0 0 6px rgba(90,162,255,.15)}
-    .bullets{
-      display:flex; flex-direction:column; gap:clamp(10px, 1.2vw, 14px);
-      font-size: clamp(18px, 2.2vw, 28px);
-    }
-    .bullets li{ list-style:none; padding-left:0; position:relative }
-    .bullets li::before{
-      content:"•"; color:var(--acc);
-      display:inline-block; margin-right:.6em;
-      transform:translateY(-.05em); font-weight:700;
-    }
-    .image-wrap{
-      position:relative; width:100%; height:62vh; min-height:360px; border-radius:18px;
-      overflow:hidden; border:1px solid rgba(255,255,255,.08); background:#0a1020;
-    }
-    .image-wrap img{
-      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-      filter:saturate(1.05) contrast(1.05);
-    }
-    footer{
-      flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
-      gap:18px; padding:10px 20px; color:var(--muted); font-size:13px;
-      background:rgba(255,255,255,.02); border-top:1px solid rgba(255,255,255,.06);
-    }
-    .progress{
-      position:relative; height:4px; background:rgba(255,255,255,.07); border-radius:999px; overflow:hidden; flex:1;
-    }
-    .progress > i{ position:absolute; inset:0; width:0%; background:linear-gradient(90deg,#5aa2ff,#7fc8ff); }
-    .controls{ display:flex; gap:10px }
-    .kbd{ padding:2px 6px; border:1px solid rgba(255,255,255,.25); border-radius:6px; font-size:12px; color:#cfe3ff }
-    @media (max-width:900px){
-      .image-wrap{ height:50vh }
-    }
+    :root{--bg:#0b1220;--panel:#111a2d;--muted:#96a2be;--fg:#e8eefb;--acc:#5aa2ff}
+    html,body{height:100%;margin:0}
+    body{background:var(--bg);color:var(--fg);font-family:system-ui,Segoe UI,Roboto,Arial}
+    .screen{display:flex;align-items:center;justify-content:center;height:100%}
+    .slide{width:min(95vw,1200px);min-height:70vh;background:linear-gradient(180deg,#0f1830,#0e162a);
+           border:1px solid rgba(255,255,255,.08);border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,.35);
+           padding:28px 32px;display:flex;flex-direction:column}
+    .title{font-size:40px;font-weight:800;letter-spacing:.02em;margin:0 0 16px}
+    .body{flex:1;display:flex;gap:24px}
+    .bullets{display:flex;flex-direction:column;gap:14px;font-size:28px}
+    .image-wrap{display:flex;align-items:center;justify-content:center;flex:1}
+    .image-wrap img{max-width:100%;max-height:62vh;border-radius:18px;object-fit:contain}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:14px;overflow:hidden}
+    th,td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+    th{font-weight:600;color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:.08em}
+    tr:last-child td{border-bottom:none}
+    tr.today{background:rgba(90,162,255,.22)}
+    td.date{white-space:nowrap}
+    .brand{position:fixed;left:16px;bottom:12px;color:var(--muted);font-size:12px;letter-spacing:.08em}
   </style>
 </head>
 <body>
-  <div class="screen">
-    <header>
-      <div class="brand" id="brand">Infoskærm</div>
-      <div class="status" id="status">Indlæser…</div>
-    </header>
+  <div class="screen"><div id="mount"></div></div>
+  <div class="brand">Bredsgaard • Infoskærm</div>
 
-    <main id="stage"></main>
+  <script>
+    // === KONFIG ===
+    const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
+    const SLIDE_MS = 12000; // fallback, men hvert slide kan have duration
 
-    <footer>
-      <div class="controls">
-        <span class="kbd">←</span> / <span class="kbd">→</span> skift &nbsp;|&nbsp;
-        <span class="kbd">R</span> genindlæs
-      </div>
-      <div class="progress"><i id="bar"></i></div>
-      <div id="clock"></div>
-    </footer>
-  </div>
+    // === HJÆLPERE ===
+    const WD = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 };
+    function escapeHTML(s){return (s||"").replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+    function parseISO(d){const t=d.split('-').map(Number);return new Date(t[0],t[1]-1,t[2]);}
+    function fmtDate(date){return date.toLocaleDateString('da-DK',{day:'numeric',month:'short',year:'numeric'}).replace('.','');}
+    function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+    function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
 
-<script>
-const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
-const AUTO_RELOAD_MS = 60000;
+    // Frame
+    function makeFrame(title=""){
+      const root=document.createElement('div');root.className="slide";
+      root.innerHTML=`<h2 class="title">${escapeHTML(title)}</h2><div class="body"></div>`;
+      return root;
+    }
 
-let data = { brand:"Infoskærm", slides:[] };
-let idx = 0;
-let timer = null;
+    // === RENDER: BULLETS ===
+    function renderBullets(s){
+      const el=makeFrame(s.title||"");
+      const body=el.querySelector(".body");
+      const lines=(s.lines||[]).filter(Boolean);
+      body.innerHTML=`<div class="bullets">${lines.map(x=>`<div>• ${escapeHTML(x)}</div>`).join("")}</div>`;
+      return el;
+    }
 
-const $ = s => document.querySelector(s);
-function fmtTime(d=new Date()){ return d.toLocaleTimeString('da-DK',{hour:'2-digit', minute:'2-digit'}); }
-function setStatus(t){ $("#status").textContent = t; }
-function clearNode(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+    // === RENDER: IMAGE ===
+    function renderImage(s){
+      const el=makeFrame(s.title||"");
+      const body=el.querySelector(".body");
+      body.innerHTML=`<div class="image-wrap">${s.image?`<img src="${escapeHTML(s.image)}" alt="">`:"(intet billede)"}</div>`;
+      return el;
+    }
 
-function slideDOM(s){
-  const wrap = document.createElement('div');
-  wrap.className = 'slide';
-  const card = document.createElement('div');
-  card.className = 'card';
+    // === RENDER: ROTA ===
+    function computeRotaSchedule(cfg, fromDate=new Date()){
+      const start=parseISO(cfg.startDate);
+      const wdSet=new Set((cfg.weekdays||[]).map(k=>WD[k]));
+      const names=cfg.names||[];
+      const placeholder=cfg.placeholder||"Ingen";
+      const blackouts=new Set((cfg.blackouts||[]));
+      const overrides=cfg.overrides||{};
+      const weeksToShow=cfg.weeksToShow||10;
 
-  const h = document.createElement('div');
-  h.className = 'title';
-  h.innerHTML = `<span class="dot"></span>${s.title || ''}`;
-  card.appendChild(h);
+      // 1) find index i rotationen frem til i dag
+      let rotIndex=0;
+      let cursor=new Date(start);
+      const today=new Date(fromDate.getFullYear(),fromDate.getMonth(),fromDate.getDate());
+      while(cursor<today){
+        if(wdSet.has(cursor.getDay())){
+          const iso=cursor.toISOString().slice(0,10);
+          const over=overrides[iso];
+          const isPlaceholder=(over&&over.trim()===placeholder);
+          if(blackouts.has(iso)||isPlaceholder){ /* forbrug ikke */ }
+          else{ rotIndex++; }
+        }
+        cursor=addDays(cursor,1);
+      }
 
-  if(s.type === 'image'){
-    const box = document.createElement('div');
-    box.className = 'image-wrap';
-    const img = document.createElement('img');
-    img.src = s.image || '';
-    img.alt = s.title || 'slide-image';
-    box.appendChild(img);
-    card.appendChild(box);
-  }else{
-    const ul = document.createElement('ul');
-    ul.className = 'bullets';
-    (s.lines || []).forEach(line=>{
-      const li=document.createElement('li'); li.textContent=line; ul.appendChild(li);
-    });
-    card.appendChild(ul);
-  }
-  wrap.appendChild(card);
-  return wrap;
-}
+      // 2) fremad: saml datoer
+      const needed=weeksToShow*2; // heuristik (2 pr uge, justér hvis du har 3+ dage/uge)
+      const out=[];
+      cursor=new Date(today);
+      while(out.length<needed){
+        if(wdSet.has(cursor.getDay())){
+          const iso=cursor.toISOString().slice(0,10);
+          let name=null;
+          if(iso in overrides){
+            name=overrides[iso];
+            const isPlaceholder=name.trim()===placeholder;
+            if(!isPlaceholder) rotIndex++; // override forbruger rotation
+          }else if(blackouts.has(iso)){
+            name=placeholder; // tæller ikke
+          }else{
+            if(names.length>0){ name=names[rotIndex%names.length]; rotIndex++; }
+            else{ name=placeholder; }
+          }
+          out.push({date:new Date(cursor),iso,name});
+        }
+        cursor=addDays(cursor,1);
+      }
+      return out;
+    }
 
-function renderSlides(){
-  const stage = $("#stage"); clearNode(stage);
-  const frag = document.createDocumentFragment();
-  data.slides.forEach(s => frag.appendChild(slideDOM(s)));
-  stage.appendChild(frag);
-}
+    function renderRota(s){
+      const el=makeFrame(s.title||"TØMNINGS DAGE");
+      const body=el.querySelector(".body");
 
-function show(i){
-  const slides = [...document.querySelectorAll('.slide')];
-  slides.forEach(s=>s.classList.remove('active'));
-  const s = slides[i]; if(!s) return;
-  s.classList.add('active');
+      const rows=computeRotaSchedule(s);
+      const half=Math.ceil(rows.length/2);
+      const left=rows.slice(0,half), right=rows.slice(half);
 
-  const dur = Math.max(2, +(data.slides[i].duration||12));
-  const bar = $("#bar"); bar.style.transition = 'none'; bar.style.width='0%';
-  void bar.offsetWidth; // reflow
-  bar.style.transition = `width ${dur}s linear`;
-  bar.style.width = '100%';
+      const renderCol=list=>`
+        <table>
+          <thead><tr><th>Navn</th><th>Dato</th></tr></thead>
+          <tbody>
+            ${list.map(r=>{
+              const todayCls=sameDay(r.date,new Date())?' class="today"':'';
+              return `<tr${todayCls}><td>${escapeHTML(r.name||"")}</td><td class="date">${fmtDate(r.date)}</td></tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
 
-  if(timer) clearTimeout(timer);
-  timer = setTimeout(()=> next(), dur*1000);
-}
+      body.innerHTML=`<div class="row"><div>${renderCol(left)}</div><div>${renderCol(right)}</div></div>`;
+      return el;
+    }
 
-function next(){ idx = (idx+1) % Math.max(1, data.slides.length); show(idx); }
-function prev(){ idx = (idx-1+data.slides.length) % Math.max(1, data.slides.length); show(idx); }
+    // === APP ===
+    function renderSlide(s){
+      switch(s.type){
+        case "bullets": return renderBullets(s);
+        case "image":  return renderImage(s);
+        case "rota":   return renderRota(s);
+        default:       return renderBullets({title:"Ukendt slide",lines:[JSON.stringify(s)]});
+      }
+    }
 
-async function loadData(){
-  try{
-    setStatus('Henter data…');
-    const r = await fetch(DATA_URL+'?v='+Date.now());
-    const j = await r.json();
-    data = j || data;
-    $("#brand").textContent = data.brand || 'Infoskærm';
-    renderSlides();
-    idx = 0; show(0);
-    setStatus('Klar');
-  }catch(e){
-    setStatus('Kunne ikke hente data'); console.error(e);
-  }
-}
+    async function main(){
+      const mount=document.getElementById("mount");
+      let data={ slides:[] };
+      try{
+        const r=await fetch(DATA_URL+"?v="+Date.now());
+        data=await r.json();
+      }catch(e){
+        data={ slides:[{type:"bullets",title:"Ingen data",lines:["Kunne ikke hente data.json"]}] };
+      }
+      if(!Array.isArray(data.slides)||data.slides.length===0){
+        data.slides=[{type:"bullets",title:"Ingen slides",lines:["Tilføj slides i admin."]}];
+      }
 
-setInterval(()=>{ $("#clock").textContent = fmtTime(); }, 1000);
-setInterval(()=>{ loadData(); }, AUTO_RELOAD_MS);
-window.addEventListener('keydown', (ev)=>{
-  if(ev.key==='ArrowRight') next();
-  else if(ev.key==='ArrowLeft') prev();
-  else if(ev.key.toLowerCase()==='r') loadData();
-});
-loadData();
-</script>
+      let i=0;
+      async function showNext(){
+        mount.innerHTML="";
+        const s=data.slides[i%data.slides.length];
+        const el=renderSlide(s);
+        mount.appendChild(el);
+        i++;
+        const ms=Math.max(3000, (s.duration||12)*1000);
+        setTimeout(showNext, ms);
+      }
+      showNext();
+    }
+    main();
+  </script>
 </body>
 </html>
