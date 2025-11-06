@@ -1,3 +1,6 @@
+export const config = { runtime: 'nodejs' };
+
+
 // api/upload-image.js
 // ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
 
