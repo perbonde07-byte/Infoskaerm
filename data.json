@@ -42,6 +42,15 @@
       ],
       "image": "",
       "duration": 12
+    },
+    {
+      "type": "bullets",
+      "title": "sdf",
+      "lines": [
+        "ssssssdfsdfsdf"
+      ],
+      "image": "",
+      "duration": 12
     }
   ],
   "logoUrl": "",
