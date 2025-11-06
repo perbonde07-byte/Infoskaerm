@@ -2,173 +2,211 @@
 <html lang="da">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Infoskærm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bredsgaard • Infoskærm</title>
   <style>
-    :root{--bg:#0b1220;--panel:#0f172a;--text:#e8eefb;--muted:#243147;--accent:#5aa2ff}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    #root{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:32px}
-    .card{width:100%;height:100%;background:linear-gradient(180deg,#0f172a 0%,#0b1220 100%);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-    .logo{position:absolute;max-width:260px;max-height:90px;opacity:.95}
-    .tr{top:22px;right:26px}.tl{top:22px;left:26px}.br{bottom:22px;right:26px}.bl{bottom:22px;left:26px}
-    .title{font-size:44px;font-weight:800;margin:0 0 10px}
-    .list{font-size:28px;line-height:1.45;margin:14px 0 0}
-    .footer{position:absolute;left:26px;bottom:10px;font-size:12px;opacity:.65}
-    .img{display:block;max-width:100%;max-height:68vh;margin:0 auto;border-radius:12px}
-    table{width:70%;border-collapse:collapse;font-size:22px}
-    td,th{border-bottom:1px solid var(--muted);padding:10px 12px;text-align:left}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
-    .muted{opacity:.8}
-    .center{display:flex;align-items:center;justify-content:center}
+    :root{ --bg:#0b1220; --panel:#0f172a; --text:#e8eefb; --muted:#243147; --accent:#5aa2ff; }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    .stage{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;padding:40px}
+    .card{width:100%;height:100%;background:radial-gradient(80% 80% at 50% 30%, #123 0%, #0b1220 70%);border-radius:22px;border:1px solid rgba(255,255,255,.06);padding:40px;overflow:hidden}
+    h1,h2,h3{margin:0 0 12px}
+    .brand{position:fixed;left:10px;bottom:8px;opacity:.7;font-size:12px}
+    .logo{position:fixed;max-height:64px;max-width:180px;opacity:.95}
+    .top-right{top:10px;right:10px}.top-left{top:10px;left:10px}.bottom-right{bottom:10px;right:10px}.bottom-left{bottom:10px;left:10px}
+    ul{margin:0;padding-left:22px;font-size:34px;line-height:1.35}
+    .center{display:flex;align-items:center;justify-content:center;height:100%}
+    .img{max-width:100%;max-height:100%;object-fit:contain;display:block;margin:0 auto}
+    table{border-collapse:collapse;width:70%;min-width:720px;margin-top:20px;background:rgba(0,0,0,.25);border-radius:12px;overflow:hidden}
+    th,td{border-bottom:1px solid rgba(255,255,255,.1);padding:12px 16px;text-align:left;font-size:24px}
+    th{background:rgba(255,255,255,.06)}
+    .row-highlight{background:rgba(90,162,255,.18)}
+    .msg{font-size:40px;opacity:.75}
   </style>
 </head>
 <body>
-  <div id="root"><div class="card" id="card">
-    <div id="logo"></div>
-    <div id="content"></div>
-    <div class="footer" id="footer"></div>
-  </div></div>
+  <div class="stage">
+    <div class="card" id="card">
+      <div id="content" class="center"><div class="msg">Indlæser…</div></div>
+    </div>
+  </div>
+  <div class="brand" id="brand">Bredsgaard • Infoskærm</div>
+  <img id="logo" class="logo top-right" alt="" />
 
   <script>
-    const QS = s => document.querySelector(s);
-    const content = QS('#content'), footer = QS('#footer'), logoBox = QS('#logo');
+    // -------- konfig --------
+    const DATA_URL_DEFAULT = 'https://perbonde07-byte.github.io/Infoskaerm/data.json';
+    const POLL_MS = 60_000;  // hent data.json hvert minut
+    // ------------------------
 
-    const urlParam = new URLSearchParams(location.search).get('data');
-    const DATA_URL = urlParam || 'https://perbonde07-byte.github.io/Infoskaerm/data.json';
+    const $ = s => document.querySelector(s);
+    const content = $('#content'), brandEl = $('#brand'), logoEl = $('#logo');
 
-    let DATA = null, idx = -1, timer = null;
+    const state = { dataUrl: DATA_URL_DEFAULT, data:null, idx:0, timer:null };
 
-    function setLogo(url,pos){
-      logoBox.innerHTML = '';
-      if(!url) return;
-      const img = new Image();
-      img.src = url; img.className = 'logo ' + (pos==='top-left'?'tl':pos==='bottom-right'?'br':pos==='bottom-left'?'bl':'tr');
-      logoBox.appendChild(img);
+    function resolveMedia(src){
+      if(!src) return '';
+      const base = state.data?.media?.baseUrl || '';
+      if(/^https?:\/\//i.test(src)) return src;
+      if(base) return base.replace(/\/+$/,'') + '/' + String(src).replace(/^\/+/,'');
+      return src;
     }
-    function setFooter(brand){
-      footer.textContent = brand ? brand : 'Infoskærm';
+
+    function setLogo(){
+      const url = state.data?.logoUrl || '';
+      const pos = state.data?.logoPos || 'top-right';
+      logoEl.src = url || '';
+      logoEl.className = 'logo ' + pos;
+      logoEl.style.display = url ? 'block' : 'none';
     }
-    function fmtDa(iso){
-      const d = new Date(iso);
-      if(Number.isNaN(d.getTime())) return iso;
-      return d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'});
-    }
-    function withinWeek(d){
-      const date = new Date(d); if(Number.isNaN(date)) return false;
-      const now = new Date(); const monday = new Date(now); const sunday = new Date(now);
-      const day = (now.getDay()+6)%7; // Mon=0
-      monday.setDate(now.getDate()-day); monday.setHours(0,0,0,0);
-      sunday.setDate(monday.getDate()+6); sunday.setHours(23,59,59,999);
-      return date>=monday && date<=sunday;
+
+    function setBrand(){
+      brandEl.textContent = state.data?.brand || 'Infoskærm';
     }
 
     function renderSlide(s){
-      content.innerHTML = '';
-      const wrap = document.createElement('div');
-
+      if(!s){ content.innerHTML = '<div class="center"><div class="msg">Ingen slides • Tilføj i admin.</div></div>'; return; }
+      const el = document.createElement('div');
       if(s.type==='bullets'){
-        wrap.innerHTML = `<h1 class="title">${s.title||''}</h1>`;
-        const ul = document.createElement('ul'); ul.className='list';
-        (s.lines||[]).forEach(line=>{
-          const li = document.createElement('li'); li.textContent = line; ul.appendChild(li);
-        });
-        wrap.appendChild(ul);
+        el.innerHTML = `<h1>${escapeHtml(s.title||'')}</h1>
+          <ul>${(s.lines||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')}</ul>`;
+      }else if(s.type==='image' || (s.type==='birthday' && s.image)){
+        const img = resolveMedia(s.image);
+        el.innerHTML = `<h1>${escapeHtml(s.title||'')}</h1>
+          <div class="center"><img class="img" src="${escapeHtml(img)}" alt=""/></div>`;
+      }else if(s.type==='empties'){
+        el.append(renderEmpties());
+      }else if(s.type==='birthday'){
+        el.append(renderBirthdays());
+      }else{
+        el.innerHTML = `<div class="center"><div class="msg">Ukendt type</div></div>`;
       }
-      else if(s.type==='image'){
-        wrap.innerHTML = `<h1 class="title">${s.title||''}</h1>`;
-        const img = new Image(); img.src = s.image; img.className='img'; wrap.appendChild(img);
-      }
-      else if(s.type==='empties'){
-        wrap.innerHTML = `<h1 class="title">${s.title||'Tømning'}</h1>`;
-        const grid = document.createElement('div'); grid.className='grid';
-        const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th class="muted">Navn</th><th class="muted">Dato</th></tr></thead>`;
-        const tb = document.createElement('tbody');
-
-        const names = DATA?.settings?.empties?.names||[];
-        const weekdays = DATA?.settings?.empties?.weekdays||[];
-        const skip = new Set((DATA?.settings?.empties?.skip||[]));
-
-        // næste ~10 forekomster på angivne ugedage
-        const out = [];
-        const addDays = (d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
-        const mapWD = {mon:1,tue:2,wed:3,thu:4,fri:5};
-        let day = new Date(); day.setHours(0,0,0,0);
-        for(let i=0; out.length<10 && i<200; i++){
-          const d = addDays(day,i);
-          const wd = d.getDay(); // 1..5
-          const key = ['sun','mon','tue','wed','thu','fri','sat'][wd];
-          if(weekdays.includes(key) && !skip.has(d.toISOString().slice(0,10))){
-            out.push(new Date(d));
-          }
-        }
-        out.forEach((d,i)=>{
-          const tr = document.createElement('tr');
-          const who = names[i % Math.max(1,names.length)] || '-';
-          tr.innerHTML = `<td>${who}</td><td>${fmtDa(d.toISOString())}</td>`;
-          tb.appendChild(tr);
-        });
-        table.appendChild(tb); grid.appendChild(table);
-        wrap.appendChild(grid);
-      }
-      else if(s.type==='birthday'){
-        wrap.innerHTML = `<h1 class="title">${s.title||'Fødselsdage'}</h1>`;
-        const box = document.createElement('div'); box.className='list';
-        const list = (DATA?.settings?.birthdays||[]).filter(b=>withinWeek(b.date));
-        if(!list.length){
-          box.innerHTML = `<div class="muted">Ingen fødselsdage i denne uge.</div>`;
-        }else{
-          list.forEach(b=>{
-            const row = document.createElement('div');
-            row.innerHTML = `<strong>${b.name}</strong> – ${fmtDa(b.date)}`;
-            box.appendChild(row);
-          });
-        }
-        wrap.appendChild(box);
-      }
-      else {
-        wrap.innerHTML = `<h1 class="title">Ingen slides</h1><div class="list"><li>Tilføj slides i admin.</li></div>`;
-      }
-
-      content.appendChild(wrap);
+      content.innerHTML = ''; content.appendChild(el);
     }
 
-    function tick(){
-      if(!DATA?.slides?.length){
-        renderSlide({type:'none'});
-        setLogo(DATA?.logoUrl, DATA?.logoPos);
-        setFooter(DATA?.brand || 'Bredsgaard • Infoskaerm');
-        return setTimeout(tick, 5000);
-      }
-      idx = (idx+1) % DATA.slides.length;
-      const s = DATA.slides[idx];
-
-      setLogo(DATA?.logoUrl, DATA?.logoPos);
-      setFooter(DATA?.brand || 'Bredsgaard • Infoskaerm');
-      renderSlide(s);
-
-      clearTimeout(timer);
-      const dur = Math.max(3, +s.duration || 12);
-      timer = setTimeout(tick, dur*1000);
+    function renderEmpties(){
+      const wrap = document.createElement('div');
+      const cfg = state.data?.settings?.empties || {weekdays:[],skip:[],names:[]};
+      wrap.innerHTML = `<h1>Tømning</h1>`;
+      const list = computeEmptiesSchedule(cfg, 10);
+      const tbl = document.createElement('table');
+      tbl.innerHTML = `<thead><tr><th>Navn</th><th>Dato</th></tr></thead>`;
+      const tb = document.createElement('tbody');
+      const nextIdx = list.findIndex(x=>isSameDate(x.date, new Date()) || x.date > new Date());
+      list.forEach((r,i)=>{
+        const tr = document.createElement('tr');
+        if(i===nextIdx) tr.classList.add('row-highlight');
+        tr.innerHTML = `<td>${escapeHtml(r.name)}</td><td>${r.date.toLocaleDateString('da-DK')}</td>`;
+        tb.appendChild(tr);
+      });
+      tbl.appendChild(tb); wrap.appendChild(tbl);
+      return wrap;
     }
 
-    async function boot(){
+    function renderBirthdays(){
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `<h1>Fødselsdage</h1>`;
+      const week = birthdaysThisWeek(state.data?.settings?.birthdays||[]);
+      if(!week.length){ wrap.innerHTML += `<div class="msg">Ingen i denne uge.</div>`; return wrap; }
+      const tbl = document.createElement('table');
+      tbl.innerHTML = `<thead><tr><th>Navn</th><th>Dato</th><th>Foto</th></tr></thead>`;
+      const tb = document.createElement('tbody');
+      week.forEach(b=>{
+        const tr = document.createElement('tr');
+        const img = b.photo ? `<img src="${escapeHtml(resolveMedia(b.photo))}" alt="" style="height:64px;border-radius:8px">` : '';
+        tr.innerHTML = `<td>${escapeHtml(b.name)}</td><td>${new Date(b.date).toLocaleDateString('da-DK')}</td><td>${img}</td>`;
+        tb.appendChild(tr);
+      });
+      tbl.appendChild(tb); wrap.appendChild(tbl);
+      return wrap;
+    }
+
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]); }
+
+    // --- empties beregning ---
+    function computeEmptiesSchedule(cfg, count){
+      const days = {mon:1,tue:2,wed:3,thu:4,fri:5};
+      const wanted = (cfg.weekdays||[]).map(k=>days[k]).filter(Boolean).sort();
+      if(!wanted.length || !(cfg.names||[]).length) return [];
+      const skip = new Set((cfg.skip||[]).map(x=>x.trim()));
+      const out = [];
+      let cur = startOfDay(new Date());
+      let i = 0, rot = 0;
+      while(out.length < count && i < 365){
+        cur = addDays(cur,1);
+        if(wanted.includes(cur.getDay()) && !skip.has(fmtISO(cur))){
+          const who = cfg.names[rot % cfg.names.length];
+          out.push({name:who,date:new Date(cur)});
+          rot++;
+        }
+        i++;
+      }
+      return out;
+    }
+
+    function birthdaysThisWeek(list){
+      const now = new Date();
+      const monday = addDays(startOfDay(now), (1 - (now.getDay()||7)) ); // mandag i denne uge
+      const sunday = addDays(monday,6);
+      return (list||[]).filter(b=>{
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(b.date)) return false;
+        const d = startOfDay(new Date(b.date));
+        return d>=monday && d<=sunday;
+      });
+    }
+
+    // --- tid utils ---
+    function startOfDay(d){ const x = new Date(d); x.setHours(0,0,0,0); return x; }
+    function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+    function fmtISO(d){ return d.toISOString().slice(0,10); }
+    function isSameDate(a,b){ return fmtISO(a)===fmtISO(b); }
+
+    // loop
+    function nextSlide(){
+      const slides = state.data?.slides || [];
+      if(!slides.length){ renderSlide(null); return; }
+      state.idx = (state.idx % slides.length + slides.length) % slides.length;
+      const cur = slides[state.idx];
+      renderSlide(cur);
+      const dur = Math.max(3, +cur.duration || 12);
+      clearTimeout(state.timer);
+      state.timer = setTimeout(()=>{ state.idx=(state.idx+1)%slides.length; nextSlide(); }, dur*1000);
+    }
+
+    async function loadData(){
+      // tvungen opdatering flag?
       try{
-        const r = await fetch(DATA_URL + '?v=' + Date.now());
-        DATA = await r.json();
-      }catch(e){
-        DATA = {brand:'Bredsgaard • Infoskaerm', slides:[]};
-      }
-      tick();
-      setInterval(async ()=>{
-        try{
-          const r2 = await fetch(DATA_URL + '?v=' + Date.now());
-          const fresh = await r2.json();
-          DATA = fresh;
-        }catch{}
-      }, 60000);
+        const f = localStorage.getItem('infoscreen_forceReloadAt');
+        if(f && (!state.lastForce || +f > +state.lastForce)){ state.lastForce = +f; await fetchNow(); return; }
+      }catch{}
+      await fetchNow();
     }
-    boot();
+
+    async function fetchNow(){
+      try{
+        const res = await fetch(state.dataUrl + '?v=' + Date.now(), {cache:'no-store'});
+        if(!res.ok) throw new Error(res.status);
+        const json = await res.json();
+        const changed = JSON.stringify(json)!==JSON.stringify(state.data);
+        state.data = json;
+        setLogo(); setBrand();
+        if(changed) nextSlide();
+      }catch(e){
+        // første indlæsning
+        if(!state.data){
+          state.data = { brand:'Infoskærm', slides:[] };
+          setBrand(); nextSlide();
+        }
+      }
+    }
+
+    // init
+    (async function(){
+      const p = new URLSearchParams(location.search).get('data');
+      if(p) state.dataUrl = p; // mulighed for at pege på anden data.json
+      await loadData();
+      setInterval(loadData, POLL_MS);
+    })();
   </script>
 </body>
 </html>
