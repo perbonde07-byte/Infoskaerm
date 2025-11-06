@@ -1,3 +1,6 @@
+export const config = { runtime: 'nodejs' };
+
+
 // === DEBUG ENV VARS (MIDLERITIDIG FIL) ===
 // Denne fil bruges kun til at tjekke hvilke miljøvariabler (ENV vars) der faktisk er tilgængelige.
 // Når alt virker, kan du roligt slette HELE denne fil fra /api-mappen igen.
