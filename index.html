@@ -2,84 +2,223 @@
 <html lang="da">
 <head>
   <meta charset="utf-8" />
-  <title>TV Info Skærm</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Infoskærm</title>
   <style>
-    :root{ --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff }
+    :root{
+      --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff;
+      --card:#10172b; --shadow:0 10px 40px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; background:var(--bg); color:var(--fg);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+      margin:0; background:radial-gradient(1200px 700px at 50% -100px, #142042 0%, #0b1220 55%, #090f1d 100%);
+      color:var(--fg); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial;
       overflow:hidden;
     }
-    header{padding:18px; border-bottom:1px solid rgba(255,255,255,.06)}
-    .screen{height:calc(100% - 70px); display:flex; align-items:center; justify-content:center}
-    .card{max-width:1200px; padding:32px; border-radius:18px; background:#0e172a; border:1px solid rgba(255,255,255,.06)}
-    h1{margin:0 0 12px}
-    ul{margin:8px 0 0 20px}
-    img{max-width:96vw; max-height:70vh; border-radius:16px; border:1px solid rgba(255,255,255,.06)}
-    .muted{color:var(--muted)}
-    .topbar{display:flex; align-items:center; gap:14px; justify-content:space-between}
+    .screen{
+      position:relative; width:100%; height:100%;
+      display:flex; flex-direction:column;
+    }
+    header{
+      flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
+      padding:14px 20px; background:rgba(255,255,255,.02); border-bottom:1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(8px);
+    }
+    header .brand{font-weight:700; letter-spacing:.4px}
+    header .status{color:var(--muted); font-size:13px}
+    main{
+      position:relative; flex:1 1 auto; display:flex; align-items:center; justify-content:center;
+      padding:24px;
+    }
+    .slide{
+      position:absolute; inset:0; display:flex;
+      align-items:center; justify-content:center;
+      padding:4vw 5vw;
+      opacity:0; transform:translateY(10px) scale(.98);
+      transition:opacity .45s ease, transform .45s ease;
+    }
+    .slide.active{opacity:1; transform:none}
+    .card{
+      width:min(1300px, 95vw); min-height:50vh; background:var(--card);
+      border:1px solid rgba(255,255,255,.08); border-radius:24px; box-shadow:var(--shadow);
+      padding:clamp(20px, 4vw, 48px);
+      display:flex; flex-direction:column; gap:clamp(16px, 2vw, 24px);
+    }
+    .title{
+      font-size: clamp(22px, 3.4vw, 42px);
+      font-weight: 800; letter-spacing:.4px;
+      display:flex; align-items:center; gap:.6em;
+    }
+    .title .dot{width:.7em; height:.7em; border-radius:50%; background:var(--acc); box-shadow:0 0 0 6px rgba(90,162,255,.15)}
+    .bullets{
+      display:flex; flex-direction:column; gap:clamp(10px, 1.2vw, 14px);
+      font-size: clamp(18px, 2.2vw, 28px);
+    }
+    .bullets li{ list-style:none; padding-left:0; position:relative }
+    .bullets li::before{
+      content:"•"; color:var(--acc);
+      display:inline-block; margin-right:.6em;
+      transform:translateY(-.05em); font-weight:700;
+    }
+    .image-wrap{
+      position:relative; width:100%; height:62vh; min-height:360px; border-radius:18px;
+      overflow:hidden; border:1px solid rgba(255,255,255,.08); background:#0a1020;
+    }
+    .image-wrap img{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+      filter:saturate(1.05) contrast(1.05);
+    }
+    footer{
+      flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
+      gap:18px; padding:10px 20px; color:var(--muted); font-size:13px;
+      background:rgba(255,255,255,.02); border-top:1px solid rgba(255,255,255,.06);
+    }
+    .progress{
+      position:relative; height:4px; background:rgba(255,255,255,.07); border-radius:999px; overflow:hidden; flex:1;
+    }
+    .progress > i{ position:absolute; inset:0; width:0%; background:linear-gradient(90deg,#5aa2ff,#7fc8ff); }
+    .controls{ display:flex; gap:10px }
+    .kbd{ padding:2px 6px; border:1px solid rgba(255,255,255,.25); border-radius:6px; font-size:12px; color:#cfe3ff }
+    @media (max-width:900px){
+      .image-wrap{ height:50vh }
+    }
   </style>
 </head>
 <body>
-<header class="topbar">
-  <div style="padding-left:10px"><b id="brand">Info</b></div>
-  <div class="muted" style="padding-right:10px">
-    <span id="clock"></span>
-  </div>
-</header>
+  <div class="screen">
+    <header>
+      <div class="brand" id="brand">Infoskærm</div>
+      <div class="status" id="status">Indlæser…</div>
+    </header>
 
-<div class="screen">
-  <div class="card" id="slideBox">Indlæser…</div>
-</div>
+    <main id="stage"></main>
+
+    <footer>
+      <div class="controls">
+        <span class="kbd">←</span> / <span class="kbd">→</span> skift &nbsp;|&nbsp;
+        <span class="kbd">R</span> genindlæs
+      </div>
+      <div class="progress"><i id="bar"></i></div>
+      <div id="clock"></div>
+    </footer>
+  </div>
 
 <script>
-  const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
-  let slides = [], idx = 0, timer = null;
+/* ----------------------- CONFIG ----------------------- */
+const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json"; // samme som admin
+const AUTO_RELOAD_MS = 60000;   // hent ny data hvert minut
 
-  function fmtClock(){
-    const d = new Date();
-    return d.toLocaleTimeString('da-DK', { hour:'2-digit', minute:'2-digit'});
+/* ----------------------- STATE ------------------------ */
+let data = { brand:"Infoskærm", slides:[] };
+let idx = 0;
+let timer = null;
+let progressT = null;
+
+/* ----------------------- HELPERS ---------------------- */
+const $ = s => document.querySelector(s);
+
+function fmtTime(d=new Date()){
+  return d.toLocaleTimeString('da-DK',{hour:'2-digit', minute:'2-digit'});
+}
+function setStatus(t){ $("#status").textContent = t; }
+function clearNode(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+
+/* ----------------------- RENDER ----------------------- */
+function slideDOM(s){
+  const wrap = document.createElement('div');
+  wrap.className = 'slide';
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  // title
+  const h = document.createElement('div');
+  h.className = 'title';
+  h.innerHTML = `<span class="dot"></span>${s.title || ''}`;
+  card.appendChild(h);
+
+  if(s.type === 'image'){
+    const box = document.createElement('div');
+    box.className = 'image-wrap';
+    const img = document.createElement('img');
+    img.src = s.image || '';
+    img.alt = s.title || 'slide-image';
+    box.appendChild(img);
+    card.appendChild(box);
+
+  }else{
+    // bullets
+    const ul = document.createElement('ul');
+    ul.className = 'bullets';
+    (s.lines || []).forEach(line=>{
+      const li=document.createElement('li'); li.textContent=line; ul.appendChild(li);
+    });
+    card.appendChild(ul);
   }
-  setInterval(()=>{ document.getElementById('clock').textContent = fmtClock(); }, 1000);
 
-  function show(slide){
-    const box = document.getElementById('slideBox');
-    if (!slide) { box.textContent = 'Ingen slides'; return; }
+  wrap.appendChild(card);
+  return wrap;
+}
 
-    if (slide.type === 'image' && slide.image){
-      box.innerHTML = `<img src="${slide.image}" alt="">`;
-    } else {
-      const lines = (slide.lines||[]).map(x=>`<li>${x}</li>`).join('');
-      box.innerHTML = `<h1>${slide.title||''}</h1><ul>${lines}</ul>`;
-    }
+function renderSlides(){
+  const stage = $("#stage"); clearNode(stage);
+  const frag = document.createDocumentFragment();
+  data.slides.forEach(s => frag.appendChild(slideDOM(s)));
+  stage.appendChild(frag);
+}
+
+function show(i, withAnim=true){
+  const slides = [...document.querySelectorAll('.slide')];
+  slides.forEach(s=>s.classList.remove('active'));
+  const s = slides[i]; if(!s) return;
+  s.classList.add('active');
+
+  // progress bar
+  const dur = Math.max(2, +(data.slides[i].duration||12));
+  const bar = $("#bar"); bar.style.transition = 'none'; bar.style.width='0%';
+  void bar.offsetWidth; // reflow
+  bar.style.transition = `width ${dur}s linear`;
+  bar.style.width = '100%';
+
+  if(timer){ clearTimeout(timer); }
+  timer = setTimeout(()=> next(), dur*1000);
+}
+
+/* ----------------------- NAV -------------------------- */
+function next(){ idx = (idx+1) % Math.max(1, data.slides.length); show(idx); }
+function prev(){ idx = (idx-1+data.slides.length) % Math.max(1, data.slides.length); show(idx); }
+
+/* ----------------------- DATA ------------------------- */
+async function loadData(){
+  try{
+    setStatus('Henter data…');
+    const r = await fetch(DATA_URL+'?v='+Date.now());
+    const j = await r.json();
+    data = j || data;
+    $("#brand").textContent = data.brand || 'Infoskærm';
+    renderSlides();
+    idx = 0; show(0);
+    setStatus('Klar');
+  }catch(e){
+    setStatus('Kunne ikke hente data');
+    console.error(e);
   }
+}
 
-  function rotate(){
-    if (!slides.length) return;
-    const s = slides[idx % slides.length];
-    show(s);
-    clearTimeout(timer);
-    const dur = Math.max(3, +s.duration || 12) * 1000;
-    timer = setTimeout(()=>{
-      idx++; rotate();
-    }, dur);
-  }
+/* ----------------------- CLOCK/RELOAD ----------------- */
+setInterval(()=>{ $("#clock").textContent = fmtTime(); }, 1000);
+setInterval(()=>{ loadData(); }, AUTO_RELOAD_MS);
 
-  async function boot(){
-    try{
-      const r = await fetch(DATA_URL + '?v=' + Date.now());
-      const data = await r.json();
-      document.getElementById('brand').textContent = data.brand || 'Info';
-      slides = data.slides || [];
-      idx = 0;
-      rotate();
-    } catch(e){
-      document.getElementById('slideBox').textContent = 'Kan ikke hente data.json';
-    }
-  }
-  boot();
+/* ----------------------- KEYS ------------------------- */
+window.addEventListener('keydown', (ev)=>{
+  if(ev.key==='ArrowRight') next();
+  else if(ev.key==='ArrowLeft') prev();
+  else if(ev.key.toLowerCase()==='r') loadData();
+});
+
+/* ----------------------- START ------------------------ */
+loadData();
 </script>
 </body>
 </html>
+
