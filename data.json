@@ -18,7 +18,53 @@
     },
     "birthdays": []
   },
-  "slides": [],
+  "slides": [
+    {
+      "type": "birthday",
+      "title": "test",
+      "lines": [
+        "234"
+      ],
+      "image": "",
+      "duration": 12
+    },
+    {
+      "type": "bullets",
+      "title": "test234234",
+      "lines": [
+        "234"
+      ],
+      "image": "",
+      "duration": 12
+    },
+    {
+      "type": "empties",
+      "title": "",
+      "lines": [],
+      "image": "",
+      "duration": 12
+    }
+  ],
   "logoUrl": "",
-  "logoPos": "Øverst højre"
+  "logoPos": "Øverst højre",
+  "media": {
+    "baseUrl": "",
+    "key": ""
+  },
+  "empties": {
+    "weekdays": [
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "skipDates": [],
+    "names": [
+      "per",
+      "kas",
+      "mads",
+      "vagn"
+    ]
+  }
 }
