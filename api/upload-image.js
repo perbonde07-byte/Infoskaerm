@@ -1,52 +1,55 @@
-export const config = { runtime: 'nodejs' };
-
-
-// api/upload-image.js
+// /api/upload-image.js
 // ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
 
-export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
+export const config = { runtime: 'nodejs', api: { bodyParser: { sizeLimit: '12mb' } } };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
 
-  const need = ['GITHUB_TOKEN','OWNER','REPO','BRANCH','MEDIA_DIR'];
-  const miss = need.filter(k => !process.env[k]);
+  const NEED = ['GITHUB_TOKEN', 'OWNER', 'REPO', 'BRANCH', 'MEDIA_DIR'];
+  const miss = NEED.filter(k => !process.env[k]);
   if (miss.length) return res.status(400).json({ error: `Missing required ENV vars: ${miss.join(', ')}` });
 
   try {
-    const token  = process.env.GITHUB_TOKEN;
-    const OWNER  = process.env.OWNER;
-    const REPO   = process.env.REPO;
-    const BRANCH = process.env.BRANCH;
-    const DIR    = process.env.MEDIA_DIR.replace(/\/+$/,'');
+    const token   = process.env.GITHUB_TOKEN;
+    const OWNER   = process.env.OWNER;
+    const REPO    = process.env.REPO;
+    const BRANCH  = process.env.BRANCH;
+    const MEDIA   = process.env.MEDIA_DIR.replace(/\/+$/,''); // uden trailing /
 
-    const body = (req.body && typeof req.body==='object') ? req.body : JSON.parse(req.body||'{}');
-    const { name, data } = body;
-    if (!name || !data) return res.status(400).json({ error: 'Missing {name, data}' });
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { name, data } = body || {};
+    if (!name || !data) return res.status(400).json({ error: 'Missing {name, data(base64)}' });
 
-    const path = `${DIR}/${name}`;
+    const path = `${MEDIA}/${name}`;
 
-    // sha hvis findes
+    // find sha (for update)
     let sha = null;
-    {
-      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(BRANCH)}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-      });
-      if (r.ok) sha = (await r.json()).sha;
-    }
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(BRANCH)}`,
+        { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
+      );
+      if (r.ok) { const j = await r.json(); sha = j.sha || null; }
+    } catch {}
 
-    const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: sha ? `Update image ${name}` : `Add image ${name}`,
-        content: data, branch: BRANCH, ...(sha ? { sha } : {})
-      })
-    });
+    const put = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`,
+      {
+        method : 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body   : JSON.stringify({
+          message: sha ? `Update image ${name}` : `Add image ${name}`,
+          content: data,
+          branch : BRANCH,
+          ...(sha ? { sha } : {})
+        })
+      }
+    );
 
     if (!put.ok) {
       const detail = await put.text();
@@ -55,9 +58,10 @@ export default async function handler(req, res) {
 
     const rawUrl = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${path}`;
     const cdnUrl = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${path}`;
-    return res.status(200).json({ ok:true, path, rawUrl, cdnUrl });
+    return res.status(200).json({ ok: true, path, rawUrl, cdnUrl });
   } catch (e) {
-    return res.status(500).json({ error: e.message || String(e) });
+    return res.status(500).json({ error: e?.message || String(e) });
   }
 }
+
 
