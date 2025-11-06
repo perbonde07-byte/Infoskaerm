@@ -1,52 +1,23 @@
 {
   "brand": "Bredsgaard • Infoskaerm",
-  "logoUrl": "",
+  "logoUrl": "https://.../logo.png",
   "logoPos": "top-right",
-  "media": {
-    "baseUrl": "https://1drv.ms/f/c/792e38b1461afc7a/Eplpi3PfgjBIj8mIIGrNKNABub-ZzZiCb2Ig70PiecCG1w?e=FCeTEU",
-    "key": ""
+  "media": { "baseUrl": "https://.../media/", "key": "optional" },
+  "settings": {
+    "calendarUrl": "https://... (din kalender-delingslink/ics/embed)",
+    "empties": {
+      "weekdays": ["mon","wed","fri"],
+      "skip": ["2025-12-24","2025-12-31"],
+      "names": ["Per","Martin","Kasper"]
+    },
+    "birthdays": [
+      {"name":"Per", "date":"1986-05-07", "photo":"https://.../per.jpg"}
+    ]
   },
   "slides": [
-    {
-      "type": "bullets",
-      "title": "test",
-      "duration": 12,
-      "lines": [
-        "serserser"
-      ]
-    }
-  ],
-  "logo": {
-    "url": "",
-    "pos": "top-right"
-  },
-  "settings": {
-    "empties": {
-      "weekdays": [
-        "mon"
-      ],
-      "skip": [],
-      "names": [
-        "Per",
-        "Mads",
-        "Kasper"
-      ]
-    },
-    "birthdays": []
-  },
-  "empties": {
-    "weekdays": [
-      true,
-      false,
-      false,
-      false,
-      false
-    ],
-    "skipDates": [],
-    "names": [
-      "per",
-      "fer",
-      "mne"
-    ]
-  }
+    {"type":"bullets","title":"Nyheder","lines":["Punkt 1","Punkt 2"],"duration":12},
+    {"type":"image","title":"Kampagne","image":"https://.../img.jpg","duration":12},
+    {"type":"empties","title":"Tømning","duration":12},
+    {"type":"birthday","title":"Tillykke","duration":12}
+  ]
 }
