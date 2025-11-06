@@ -1,6 +1,18 @@
 {
   "brand": "Bredsgaard Info",
-  "slides": [],
+  "slides": [
+    {
+      "type": "bullets",
+      "title": "Torsdag",
+      "lines": [
+        "det er tosdag 16 / 10 2025",
+        "det er godt vejer kig ud og se",
+        "hvad skal vi teste"
+      ],
+      "image": "",
+      "duration": 12
+    }
+  ],
   "settings": {
     "mediaFolder": "",
     "mediaKey": "",
