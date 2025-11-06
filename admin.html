@@ -222,28 +222,18 @@
   <script>
     const $ = s => document.querySelector(s);
     const els = {
-      // top
       status: $('#status'), saveBtn: $('#saveBtn'),
       dataUrlView: $('#dataUrlView'), dataUrl: $('#dataUrl'), setUrlBtn: $('#setUrlBtn'),
       loadBtn: $('#loadBtn'), downloadBtn: $('#downloadBtn'),
-
-      // settings
       brand: $('#brand'), logoUrl: $('#logoUrl'), logoPos: $('#logoPos'),
       mediaBase: $('#mediaBase'), mediaKey: $('#mediaKey'), calendarUrl: $('#calendarUrl'),
-
-      // slides creator
       s_type: $('#s_type'), s_title: $('#s_title'), s_duration: $('#s_duration'),
       s_lines: $('#s_lines'), addLineBtn: $('#addLineBtn'),
       s_image: $('#s_image'), s_imgfile: $('#s_imgfile'), uploadBtn: $('#uploadBtn'),
       box_bullets: $('#box_bullets'), box_image: $('#box_image'),
-      addSlide: $('#addSlide'), clearSlides: $('#clearSlides'),
-      slidesTable: $('#slidesTable'),
-
-      // empties
+      addSlide: $('#addSlide'), clearSlides: $('#clearSlides'), slidesTable: $('#slidesTable'),
       wd: Array.from(document.querySelectorAll('.wd')),
       skipDates: $('#skipDates'), emptyNames: $('#emptyNames'),
-
-      // birthdays
       bd_name: $('#bd_name'), bd_date: $('#bd_date'), bd_photo: $('#bd_photo'),
       bd_add: $('#bd_add'), bd_table: $('#bd_table'),
     };
@@ -270,16 +260,13 @@
     }
     function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]); }
 
-    // ---------- UI toggle for slide type ----------
     function toggleTypeUI(){
       const t = els.s_type.value;
       els.box_bullets.classList.toggle('hide', t!=='bullets');
       els.box_image.classList.toggle('hide', t!=='image' && t!=='birthday');
     }
 
-    // ---------- Render ----------
     function render(){
-      // settings → inputs
       els.brand.value = state.data.brand || '';
       els.logoUrl.value = state.data.logoUrl || '';
       els.logoPos.value = state.data.logoPos || 'top-right';
@@ -287,17 +274,14 @@
       els.mediaKey.value = state.data.media?.key || '';
       els.calendarUrl.value = state.data.settings?.calendarUrl || '';
 
-      // empties
       const e = state.data.settings?.empties || {weekdays:[],skip:[],names:[]};
       const set = new Set(e.weekdays||[]);
       els.wd.forEach(cb => cb.checked = set.has(cb.value));
       els.skipDates.value = (e.skip||[]).join(', ');
       els.emptyNames.value = (e.names||[]).join(', ');
 
-      // birthdays
       renderBirthdays();
 
-      // slides table
       els.slidesTable.innerHTML = '';
       (state.data.slides||[]).forEach((s,idx)=>{
         const prev =
@@ -315,7 +299,6 @@
         b.onclick = () => { state.data.slides.splice(+b.dataset.del,1); render(); };
       });
 
-      // top view
       els.dataUrl.value = state.dataUrl;
       els.dataUrlView.textContent = state.dataUrl;
     }
@@ -335,7 +318,6 @@
       });
     }
 
-    // ---------- Load / Save ----------
     async function load(){
       try{
         els.status.textContent = 'Henter…';
@@ -343,7 +325,6 @@
         if(!res.ok) throw new Error('HTTP '+res.status);
         const json = await res.json();
 
-        // migrate/ensure structure
         const base = {
           brand:'Bredsgaard • Infoskaerm',
           logoUrl:'', logoPos:'top-right',
@@ -352,7 +333,7 @@
           slides:[]
         };
         state.data = Object.assign(base, json);
-        // slides bullets: hvis nogen stadig er pipe-strenge, split dem
+
         (state.data.slides||[]).forEach(s=>{
           if(s.type==='bullets'){
             if (Array.isArray(s.lines)) { /* ok */ }
@@ -360,6 +341,7 @@
             else s.lines = [];
           }
         });
+
         render();
         els.status.textContent = 'Data hentet';
       }catch(e){
@@ -376,18 +358,15 @@
     }
 
     async function save(){
-      // sync inputs -> state
       state.data.brand   = els.brand.value.trim();
       state.data.logoUrl = els.logoUrl.value.trim();
       state.data.logoPos = els.logoPos.value;
       state.data.media   = { baseUrl: els.mediaBase.value.trim(), key: els.mediaKey.value.trim() };
 
-      // settings
       state.data.settings ||= {};
       state.data.settings.calendarUrl = els.calendarUrl.value.trim();
 
-      // empties
-      const weekdays = els.wd.filter(cb=>cb.checked).map(cb=>cb.value); // ["mon","wed",...]
+      const weekdays = els.wd.filter(cb=>cb.checked).map(cb=>cb.value);
       const skip = (els.skipDates.value||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
       const names= (els.emptyNames.value||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
       state.data.settings.empties = { weekdays, skip, names };
@@ -416,7 +395,6 @@
       }
     }
 
-    // ---------- Upload (valgfri) ----------
     async function uploadImage(){
       const f = els.s_imgfile.files?.[0];
       if(!f) return alert('Vælg et billede først.');
@@ -437,8 +415,6 @@
       reader.readAsDataURL(f);
     }
 
-    // ---------- Events ----------
-    // Datakilde
     els.setUrlBtn.onclick = ()=>{ state.dataUrl = els.dataUrl.value.trim(); els.dataUrlView.textContent = state.dataUrl; };
     els.loadBtn.onclick   = load;
     els.downloadBtn.onclick = ()=>{
@@ -446,15 +422,12 @@
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'data.json'; a.click();
     };
 
-    // Gem
     els.saveBtn.onclick = save;
 
-    // Slides
     els.s_type.onchange = toggleTypeUI;
     toggleTypeUI();
 
     els.addLineBtn.onclick = ()=>{
-      // indsæt tom ny linje
       const v = els.s_lines.value;
       els.s_lines.value = v ? (v.endsWith('\n') ? v : v+'\n') : '';
       els.s_lines.focus();
@@ -489,7 +462,6 @@
       }
     };
 
-    // Fødselsdage
     els.bd_add.onclick = ()=>{
       state.data.settings ||= {};
       state.data.settings.birthdays ||= [];
@@ -505,10 +477,8 @@
       renderBirthdays();
     };
 
-    // Upload
     els.uploadBtn.onclick = uploadImage;
 
-    // Init
     (function init(){
       const p = new URLSearchParams(location.search).get('data');
       if(p) state.dataUrl = p;
