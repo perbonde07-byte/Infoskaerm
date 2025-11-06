@@ -5,7 +5,16 @@
       "type": "bullets",
       "title": "test",
       "lines": [
-        "test"
+        "testtest"
+      ],
+      "image": "",
+      "duration": 12
+    },
+    {
+      "type": "bullets",
+      "title": "testtest",
+      "lines": [
+        "testtesttest234234"
       ],
       "image": "",
       "duration": 12
