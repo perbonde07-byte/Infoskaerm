@@ -2,420 +2,341 @@
 <html lang="da">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin • Infoskaerm</title>
   <style>
-    :root{--bg:#0b1220;--panel:#111a2d;--muted:#243147;--text:#e8eefb;--accent:#5aa2ff}
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    .wrap{max-width:1100px;margin:86px auto 80px;padding:0 18px}
-    h1{margin:0 0 10px}
-    h2{margin:18px 0 10px}
-    section{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 16px 6px;margin:14px 0}
-    label{display:block;margin:10px 0 6px}
-    input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--muted);background:#0f172a;color:var(--text)}
-    textarea{min-height:84px}
-    small{opacity:.8}
-    .row{display:grid;gap:14px}
-    .g2{grid-template-columns:1fr 1fr}
-    .g3{grid-template-columns:1fr 1fr 1fr}
-    .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#071022;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-    .btn.subtle{background:#1a2440;color:#cfe0ff}
-    .btn.danger{background:#d25b5b;color:#1a0909}
-    .topbar{
-      position:fixed;inset:0 0 auto 0;height:64px;background:rgba(15,23,42,.9);backdrop-filter:blur(6px);
-      border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;padding:0 16px;z-index:10
+    :root{
+      --bg:#0b1220;--panel:#111a2d;--muted:#243147;--text:#e8eefb;--brand:#5aa2ff;
     }
-    .spacer{flex:1}
-    .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:#0f1b34;border:1px solid #203258}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    h1{margin:20px} h2{margin:8px 0 12px}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .panel{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:12px 0}
+    label{display:block;margin:10px 0 6px}
+    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--muted);background:#0f172a;color:var(--text);font-size:15px}
+    textarea{min-height:90px}
+    .row{display:grid;gap:12px}
+    .row.cols-2{grid-template-columns:1fr 1fr}
+    .btn{display:inline-block;background:var(--brand);border:0;color:#061022;font-weight:700;padding:10px 14px;border-radius:8px;cursor:pointer}
+    .btn.sub{background:#273955;color:#cfe1ff}
+    .btn.small{padding:6px 10px;font-weight:600}
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{border-bottom:1px solid var(--muted);padding:8px 10px;text-align:left}
-    th{opacity:.8;font-weight:600}
-    .sticky-save{position:fixed;right:16px;bottom:16px;display:none}
-    details>summary{cursor:pointer;list-style:none;font-weight:700;margin:-6px 0 6px}
-    details>summary::marker, details>summary::-webkit-details-marker{display:none}
-    .hide{display:none}
-    .note{font-size:13px;color:#bcd2ff;opacity:.85}
+    th,td{border-bottom:1px solid var(--muted);padding:8px}
+    th{text-align:left;opacity:.8}
+    .right{display:flex;gap:10px;justify-content:flex-end}
+    .muted{opacity:.8}
+    .success{color:#81f69b} .error{color:#ff8c8c}
+    .inline{display:flex;gap:8px;align-items:center}
+    .hint{font-size:12px;opacity:.75;margin-top:4px}
   </style>
 </head>
 <body>
-  <!-- top bar with always-visible SAVE -->
-  <div class="topbar">
-    <strong>Infoskærm • Admin</strong>
-    <span class="pill">Data: <code id="dataUrlView"></code></span>
-    <button class="btn subtle" id="loadBtn">Hent data</button>
-    <div class="spacer"></div>
-    <span id="status" class="pill">Klar</span>
-    <button class="btn" id="saveBtn">Gem ændringer</button>
-  </div>
-
   <div class="wrap">
-    <section>
-      <details>
-        <summary>Datakilde</summary>
-        <label>Adresse til <code>data.json</code></label>
-        <input id="dataUrl" />
-        <div style="display:flex;gap:10px;margin-top:10px">
-          <button class="btn subtle" id="setUrlBtn">Brug denne adresse</button>
-          <button class="btn subtle" id="downloadBtn">Download ny data.json</button>
-        </div>
-        <p class="note">Tip: Brug din GitHub Pages-URL, fx <code>https://perbonde07-byte.github.io/Infoskaerm/data.json</code></p>
-      </details>
+    <h1>Admin • Infoskaerm</h1>
+
+    <!-- Datakilde -->
+    <section class="panel">
+      <h2>Datakilde</h2>
+      <label>Adresse til <code>data.json</code></label>
+      <input id="dataUrl" value="https://perbonde07-byte.github.io/Infoskaerm/data.json" />
+      <div class="actions">
+        <button class="btn sub" id="loadBtn">Hent data</button>
+        <button class="btn sub" id="downloadBtn">Download ny data.json</button>
+        <button class="btn" id="saveBtn">Gem ændringer</button>
+        <span id="status" class="muted"></span>
+      </div>
     </section>
 
-    <section>
+    <!-- Indstillinger -->
+    <section class="panel">
       <h2>Indstillinger</h2>
-      <div class="row g2">
-        <div>
-          <label>Brand (vises i bunden på skærmen)</label>
-          <input id="brand">
-        </div>
+      <label>Brand (vises i bunden)</label>
+      <input id="brand" placeholder="Bredsgaard • Infoskaerm" />
+
+      <div class="row cols-2">
         <div>
           <label>Logo URL (valgfrit)</label>
-          <input id="logoUrl" placeholder="https://...">
+          <input id="logoUrl" placeholder="https://.../logo.png"/>
         </div>
-      </div>
-      <div class="row g2">
         <div>
           <label>Logo placering</label>
           <select id="logoPos">
-            <option>Øverst højre</option>
-            <option>Øverst venstre</option>
-            <option>Nederst højre</option>
-            <option>Nederst venstre</option>
+            <option value="top-right">Øverst højre</option>
+            <option value="top-left">Øverst venstre</option>
+            <option value="bottom-right">Nederst højre</option>
+            <option value="bottom-left">Nederst venstre</option>
           </select>
         </div>
-        <div>
-          <label>Medie-mappe (OneDrive/Dropbox/Share) – link</label>
-          <input id="mediaBase" placeholder="https://... (delt mappe-URL)">
-          <small class="note">Brug et delt mappe-link. Vi gemmer det i data.json så viewer kan vise billeder via fulde URLs.</small>
-        </div>
       </div>
-      <div class="row g2">
+
+      <div class="row cols-2">
         <div>
-          <label>Kode / nøgle (valgfrit – hvis din mappe kræver det)</label>
-          <input id="mediaKey" placeholder="fx note eller adgangskode">
+          <label>Media-mappe (OneDrive/GitHub/CDN) – base-URL (valgfrit)</label>
+          <input id="mediaBase" placeholder="https://.../media/"/>
+          <div class="hint">Hvis angivet, kan du nøjes med blot filnavn til billeder.</div>
         </div>
-        <div></div>
+        <div>
+          <label>Nøgle/kode til delt mappe (valgfrit)</label>
+          <input id="mediaKey" placeholder="fx adgangskode"/>
+        </div>
       </div>
     </section>
 
-    <section>
+    <!-- Slides -->
+    <section class="panel">
       <h2>Slides</h2>
-      <div class="row g3">
+
+      <div class="row cols-2">
         <div>
-          <label>Skabelon</label>
+          <label>Type</label>
           <select id="s_type">
-            <option value="bullets">Bullets (tekst)</option>
+            <option value="bullets">Bullets (punktliste)</option>
             <option value="image">Billede (fuldskærm)</option>
-            <option value="empties">Tømningstabel</option>
-            <option value="birthday">Fødselsdag</option>
           </select>
         </div>
         <div>
           <label>Titel</label>
-          <input id="s_title" placeholder="Titel...">
+          <input id="s_title" placeholder="Titel…"/>
         </div>
+      </div>
+
+      <div id="bulletsBox">
+        <label>Linjer (én pr. linje)</label>
+        <div class="inline">
+          <textarea id="s_lines" placeholder="Punkt 1&#10;Punkt 2&#10;Punkt 3"></textarea>
+          <button class="btn small sub" id="addLineBtn" type="button">+ Tilføj punkt</button>
+        </div>
+      </div>
+
+      <div id="imageBox" style="display:none">
+        <label>Billede URL</label>
+        <input id="s_image" placeholder="https://…  eller kun filnavn hvis du har sat Media-base"/>
+      </div>
+
+      <div class="row cols-2">
         <div>
           <label>Varighed (sek.)</label>
-          <input id="s_duration" type="number" value="12" min="3">
+          <input id="s_duration" type="number" value="12"/>
         </div>
-      </div>
-
-      <div class="row g2">
-        <div>
-          <label>Linjer (brug | for nye punkter)</label>
-          <textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
+        <div class="right" style="align-items:flex-end">
+          <button class="btn" id="addSlide">Tilføj slide</button>
+          <button class="btn sub" id="clearSlides">Tøm alle slides</button>
         </div>
-        <div>
-          <label>Billede URL (kun for skabelon = Billede/Fødselsdag)</label>
-          <input id="s_image" placeholder="https://...">
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;margin:8px 0 10px">
-        <button class="btn" id="addSlide">Tilføj slide</button>
-        <button class="btn danger" id="clearSlides">Tøm alle slides</button>
       </div>
 
       <table id="slidesTable">
-        <thead><tr><th style="width:36px">#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th style="width:90px"></th></tr></thead>
+        <thead>
+          <tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr>
+        </thead>
         <tbody></tbody>
       </table>
     </section>
 
-    <section>
-      <h2>Tømmeplan</h2>
-      <div class="row g2">
-        <div>
-          <label>Ugedage</label>
-          <div style="display:flex;gap:18px;padding:8px 0">
-            <label><input type="checkbox" class="wd" data-i="0"> Man</label>
-            <label><input type="checkbox" class="wd" data-i="1"> Tir</label>
-            <label><input type="checkbox" class="wd" data-i="2"> Ons</label>
-            <label><input type="checkbox" class="wd" data-i="3"> Tor</label>
-            <label><input type="checkbox" class="wd" data-i="4"> Fre</label>
-          </div>
-
-          <label>Spring over datoer (YYYY-MM-DD, komma eller linjeskift)</label>
-          <textarea id="skipDates" placeholder="2025-12-24, 2025-12-31"></textarea>
-        </div>
-        <div>
-          <label>Navneliste (ét pr. linje eller komma-separeret – roterer i rækkefølge)</label>
-          <textarea id="emptyNames" placeholder="Per, Martin, Kasper"></textarea>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <h2>Fødselsdage</h2>
-      <div class="row g3">
-        <div>
-          <label>Navn</label>
-          <input id="bd_name" placeholder="Navn">
-        </div>
-        <div>
-          <label>Fødselsdag (YYYY-MM-DD)</label>
-          <input id="bd_date" placeholder="1986-05-07">
-        </div>
-        <div>
-          <label>Foto URL (valgfrit)</label>
-          <input id="bd_photo" placeholder="https://...">
-        </div>
-      </div>
-      <div style="margin-top:10px">
-        <button class="btn" id="addBd">Tilføj</button>
-      </div>
-
-      <table id="bdTable">
-        <thead><tr><th>Navn</th><th>Dato</th><th>Foto</th><th style="width:90px"></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <p class="note">Viewer viser automatisk fødselsdags-slides i den uge (man–søn) hvor fødselsdagen falder.</p>
-    </section>
-
-    <!-- sticky mini save if man scroller langt ned -->
-    <button class="btn sticky-save" id="saveBtn2">Gem ændringer</button>
+    <p class="muted">Tip: Hvis “Gem ændringer” fejler, åbn <code>/api/debug-env</code> på Vercel-domænet for at se ENV’er.</p>
   </div>
 
   <script>
-    // ---------- MODEL ----------
-    const DEFAULT_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
+    // --- STATE & DOM refs -----------------------------------------------------
+    const $  = s => document.querySelector(s);
+    const els = {
+      dataUrl:   $('#dataUrl'),
+      status:    $('#status'),
+      saveBtn:   $('#saveBtn'),
+
+      brand:     $('#brand'),
+      logoUrl:   $('#logoUrl'),
+      logoPos:   $('#logoPos'),
+      mediaBase: $('#mediaBase'),
+      mediaKey:  $('#mediaKey'),
+
+      s_type:    $('#s_type'),
+      s_title:   $('#s_title'),
+      s_lines:   $('#s_lines'),
+      addLineBtn:$('#addLineBtn'),
+      s_image:   $('#s_image'),
+      s_duration:$('#s_duration'),
+
+      bulletsBox:$('#bulletsBox'),
+      imageBox:  $('#imageBox'),
+
+      slidesTable:$('#slidesTable tbody'),
+      loadBtn:   $('#loadBtn'),
+      downloadBtn:$('#downloadBtn'),
+      addSlide:  $('#addSlide'),
+      clearSlides:$('#clearSlides')
+    };
+
     const state = {
-      dataUrl: DEFAULT_URL,
+      dataUrl: els.dataUrl.value,
       data: {
-        brand: "Bredsgaard • Infoskaerm",
-        logoUrl: "",
-        logoPos: "Øverst højre",
-        media: { baseUrl: "", key: "" },
-        empties: { weekdays: [true,false,false,false,false], skipDates: [], names: [] },
-        birthdays: [],
+        brand: 'Bredsgaard • Infoskaerm',
+        logoUrl: '',
+        logoPos: 'top-right',
+        media: { baseUrl: '', key: '' },
         slides: []
       }
     };
 
-    // ---------- DOM ----------
-    const $ = (s)=>document.querySelector(s);
-    const els = {
-      // top
-      dataUrlView: $("#dataUrlView"), dataUrl: $("#dataUrl"), setUrlBtn: $("#setUrlBtn"),
-      loadBtn: $("#loadBtn"), saveBtn: $("#saveBtn"), saveBtn2: $("#saveBtn2"), status: $("#status"),
-      downloadBtn: $("#downloadBtn"),
+    // --- UI helpers ----------------------------------------------------------
+    function render(){
+      // indstillinger
+      els.brand.value     = state.data.brand || '';
+      els.logoUrl.value   = state.data.logoUrl || '';
+      els.logoPos.value   = state.data.logoPos || 'top-right';
+      els.mediaBase.value = state.data.media?.baseUrl || '';
+      els.mediaKey.value  = state.data.media?.key || '';
 
-      // settings
-      brand: $("#brand"), logoUrl: $("#logoUrl"), logoPos: $("#logoPos"),
-      mediaBase: $("#mediaBase"), mediaKey: $("#mediaKey"),
-
-      // slides creator
-      s_type: $("#s_type"), s_title: $("#s_title"), s_duration: $("#s_duration"),
-      s_lines: $("#s_lines"), s_image: $("#s_image"),
-      addSlide: $("#addSlide"), clearSlides: $("#clearSlides"), slidesTable: $("#slidesTable tbody"),
-
-      // empties
-      wd: Array.from(document.querySelectorAll(".wd")), skipDates: $("#skipDates"), emptyNames: $("#emptyNames"),
-
-      // birthdays
-      bd_name: $("#bd_name"), bd_date: $("#bd_date"), bd_photo: $("#bd_photo"),
-      addBd: $("#addBd"), bdTable: $("#bdTable tbody"),
-    };
-
-    // ---------- RENDER ----------
-    function bindSettings(){
-      els.brand.value       = state.data.brand || "";
-      els.logoUrl.value     = state.data.logoUrl || "";
-      els.logoPos.value     = state.data.logoPos || "Øverst højre";
-      els.mediaBase.value   = (state.data.media && state.data.media.baseUrl) || "";
-      els.mediaKey.value    = (state.data.media && state.data.media.key) || "";
-
-      // empties
-      const e = state.data.empties || {weekdays:[true,false,false,false,false],skipDates:[],names:[]};
-      els.wd.forEach((c,i)=> c.checked = !!e.weekdays?.[i]);
-      els.skipDates.value = (e.skipDates||[]).join(", ");
-      els.emptyNames.value = (e.names||[]).join(", ");
-    }
-
-    function renderSlides(){
-      els.slidesTable.innerHTML = "";
-      (state.data.slides||[]).forEach((s,idx)=>{
-        const tr = document.createElement("tr");
-        const prev = s.type==="image" ? (s.image||"(intet)") :
-                     s.type==="empties" ? "Tømningstabel" :
-                     s.type==="birthday"? "Fødselsdag" :
-                     (s.lines||[]).join(" | ");
-        tr.innerHTML = `
-          <td>${idx+1}</td>
-          <td>${s.type}</td>
-          <td>${escapeHtml(s.title||"")}</td>
-          <td>${escapeHtml(prev)}</td>
-          <td><button class="btn danger" data-del="${idx}">Slet</button></td>`;
+      // slides
+      els.slidesTable.innerHTML = '';
+      state.data.slides.forEach((s, i) => {
+        const tr = document.createElement('tr');
+        const preview = s.type === 'image'
+          ? (s.image || '(intet)')
+          : (s.lines || []).join(' • ');
+        tr.innerHTML =
+          `<td>${i+1}</td>
+           <td>${s.type}</td>
+           <td>${s.title || ''}</td>
+           <td>${preview}</td>
+           <td><button class="btn small sub" data-i="${i}">Slet</button></td>`;
         els.slidesTable.appendChild(tr);
       });
-      els.slidesTable.querySelectorAll("[data-del]").forEach(b=>{
-        b.onclick = () => { state.data.slides.splice(+b.dataset.del,1); renderSlides(); dirty(); };
+      els.slidesTable.querySelectorAll('button[data-i]').forEach(b=>{
+        b.onclick = e => { const i = +e.target.dataset.i; state.data.slides.splice(i,1); render(); };
       });
     }
 
-    function renderBirthdays(){
-      els.bdTable.innerHTML = "";
-      (state.data.birthdays||[]).forEach((b,idx)=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(b.name||"")}</td>
-          <td>${escapeHtml(b.date||"")}</td>
-          <td>${b.photo?`<a href="${escapeHtml(b.photo)}" target="_blank">link</a>`:""}</td>
-          <td><button class="btn danger" data-delbd="${idx}">Slet</button></td>`;
-        els.bdTable.appendChild(tr);
-      });
-      els.bdTable.querySelectorAll("[data-delbd]").forEach(b=>{
-        b.onclick = ()=>{ state.data.birthdays.splice(+b.dataset.delbd,1); renderBirthdays(); dirty(); };
-      });
+    function toggleTypeUI(){
+      const t = els.s_type.value;
+      els.bulletsBox.style.display = (t === 'bullets') ? '' : 'none';
+      els.imageBox.style.display   = (t === 'image')   ? '' : 'none';
     }
 
-    function renderAll(){
-      els.dataUrl.value = state.dataUrl;
-      els.dataUrlView.textContent = state.dataUrl;
-      bindSettings();
-      renderSlides();
-      renderBirthdays();
-      clean();
-    }
-
-    // ---------- HELPERS ----------
-    function escapeHtml(s){ return (s||"").replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-    function dirty(msg="Ikke gemt"){ els.status.textContent = msg; document.querySelector(".sticky-save").style.display="inline-flex"; }
-    function clean(){ els.status.textContent = "Klar"; document.querySelector(".sticky-save").style.display="none"; }
-
-    // ---------- LOAD / SAVE ----------
+    // --- LOAD / SAVE ----------------------------------------------------------
     async function load(){
       try{
-        els.status.textContent = "Henter...";
-        const res = await fetch(state.dataUrl + "?v=" + Date.now());
-        state.data = await res.json();
-        renderAll();
+        els.status.textContent = 'Henter data…';
+        const res = await fetch(state.dataUrl + '?v=' + Date.now());
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const json = await res.json();
+
+        // migration fra pipe -> newline, hvis nødvendigt
+        (json.slides||[]).forEach(s=>{
+          if(s.type==='bullets' && Array.isArray(s.lines)){
+            // ok som array
+          } else if (s.type==='bullets' && typeof s.lines==='string'){
+            s.lines = s.lines.split('|').map(x=>x.trim()).filter(Boolean);
+          }
+        });
+
+        state.data = Object.assign({
+          brand:'Bredsgaard • Infoskaerm',
+          logoUrl:'', logoPos:'top-right',
+          media:{ baseUrl:'', key:'' },
+          slides:[]
+        }, json);
+
+        render();
+        els.status.textContent = 'Data hentet';
       }catch(e){
-        // init tom hvis ingen fil
-        console.warn("Ingen eksisterende data.json – starter tom");
-        state.data = {
-          brand: "Bredsgaard • Infoskaerm",
-          logoUrl:"", logoPos:"Øverst højre",
-          media:{baseUrl:"", key:""},
-          empties:{weekdays:[true,false,false,false,false],skipDates:[],names:[]},
-          birthdays:[], slides:[]
-        };
-        renderAll();
+        state.data = { brand:'Bredsgaard • Infoskaerm', logoUrl:'', logoPos:'top-right', media:{baseUrl:'',key:''}, slides:[] };
+        render();
+        els.status.textContent = 'Ingen eksisterende data.json – starter tomt';
       }
     }
 
     async function save(){
-      // sync from inputs -> state
-      state.data.brand = els.brand.value.trim();
-      state.data.logoUrl = els.logoUrl.value.trim();
-      state.data.logoPos = els.logoPos.value;
-      state.data.media = { baseUrl: els.mediaBase.value.trim(), key: els.mediaKey.value.trim() };
-
-      const weekdays = els.wd.map(cb=>cb.checked);
-      const skipDates = (els.skipDates.value||"").split(/[, \n]+/).map(x=>x.trim()).filter(Boolean);
-      const names = (els.emptyNames.value||"").split(/[, \n]+/).map(x=>x.trim()).filter(Boolean);
-      state.data.empties = { weekdays, skipDates, names };
+      // sync inputs -> state
+      state.data.brand               = els.brand.value.trim();
+      state.data.logoUrl             = els.logoUrl.value.trim();
+      state.data.logoPos             = els.logoPos.value;
+      state.data.media.baseUrl       = els.mediaBase.value.trim();
+      state.data.media.key           = els.mediaKey.value.trim();
 
       try{
-        els.status.textContent = "Gemmer…";
-        els.saveBtn.disabled = els.saveBtn2.disabled = true;
-        const res = await fetch("/api/save", {
-          method:"POST", headers:{ "Content-Type":"application/json" },
+        els.status.textContent = 'Gemmer…';
+        els.saveBtn.disabled = true;
+
+        const res = await fetch('/api/save',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
           body: JSON.stringify(state.data)
         });
+        const txt = await res.text();
         if(!res.ok){
-          const t = await res.text();
-          throw new Error(t || ("HTTP "+res.status));
+          let msg = txt;
+          try { const j = JSON.parse(txt); msg = j.error || j.detail || txt; } catch {}
+          throw new Error(`HTTP ${res.status} – ${msg}`);
         }
-        els.status.textContent = "✅ Data gemt på GitHub!";
-        els.saveBtn.disabled = els.saveBtn2.disabled = false;
-        clean();
+        els.status.textContent = '✅ Data gemt på GitHub!';
       }catch(e){
-        els.saveBtn.disabled = els.saveBtn2.disabled = false;
-        els.status.textContent = "Fejl: "+ (e.message||e);
+        els.status.textContent = 'Fejl: ' + (e.message || e);
+        alert('Gemning fejlede:\n\n' + (e.message||e));
+      }finally{
+        els.saveBtn.disabled = false;
       }
     }
 
-    // ---------- UI EVENTS ----------
-    els.setUrlBtn.onclick = ()=>{ state.dataUrl = els.dataUrl.value.trim() || DEFAULT_URL; renderAll(); };
+    // --- EVENTS ---------------------------------------------------------------
+    els.dataUrl.oninput = () => (state.dataUrl = els.dataUrl.value);
     els.loadBtn.onclick = load;
     els.saveBtn.onclick = save;
-    els.saveBtn2.onclick = save;
-    els.downloadBtn.onclick = ()=>{
-      const blob = new Blob([JSON.stringify(state.data,null,2)],{type:"application/json"});
-      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "data.json"; a.click();
+    $('#downloadBtn').onclick = () => {
+      const blob = new Blob([JSON.stringify(state.data,null,2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'data.json'; a.click();
     };
 
-    // track dirty
-    ["brand","logoUrl","logoPos","mediaBase","mediaKey","skipDates","emptyNames"].forEach(id=>{
-      $("#"+id).addEventListener("input",()=>dirty());
-    });
-    els.wd.forEach(cb=>cb.addEventListener("change",()=>dirty()));
+    els.s_type.onchange = toggleTypeUI;
+    toggleTypeUI();
 
-    // slides
-    els.addSlide.onclick = ()=>{
-      const s = {
-        type: els.s_type.value,
-        title: els.s_title.value.trim(),
-        lines: (els.s_lines.value||"").split("|").map(x=>x.trim()).filter(Boolean),
-        image: els.s_image.value.trim(),
-        duration: Math.max(3, +els.s_duration.value || 12)
-      };
-      state.data.slides.push(s);
-      renderSlides();
-      dirty("Ikke gemt");
-    };
-    els.clearSlides.onclick = ()=>{
-      if(!confirm("Slette alle slides?")) return;
-      state.data.slides = [];
-      renderSlides();
-      dirty();
+    els.addLineBtn.onclick = () => {
+      const v = els.s_lines.value;
+      els.s_lines.value = (v.endsWith('\n') || v==='' ? v : v+'\n');
+      els.s_lines.value += '';
+      els.s_lines.focus();
     };
 
-    // birthdays
-    els.addBd.onclick = ()=>{
-      const name = els.bd_name.value.trim();
-      const date = els.bd_date.value.trim();
-      const photo = els.bd_photo.value.trim();
-      if(!name || !date) { alert("Navn og dato er påkrævet."); return; }
-      state.data.birthdays.push({name,date,photo});
-      els.bd_name.value = els.bd_date.value = els.bd_photo.value = "";
-      renderBirthdays();
-      dirty();
+    els.addSlide.onclick = () => {
+      const type = els.s_type.value;
+      const title= els.s_title.value.trim();
+      const dur  = Math.max(1, +els.s_duration.value || 12);
+
+      const slide = { type, title, duration: dur };
+
+      if(type==='bullets'){
+        slide.lines = (els.s_lines.value||'')
+          .split('\n')
+          .map(x=>x.trim())
+          .filter(Boolean);
+        if(slide.lines.length===0){ alert('Tilføj mindst ét punkt.'); return; }
+      }
+      if(type==='image'){
+        let img = els.s_image.value.trim();
+        if(!img){ alert('Angiv billede-URL eller filnavn.'); return; }
+        // hvis der bare står filnavn og der er baseUrl, sæt fuld sti
+        if(!/^https?:\/\//i.test(img) && state.data.media.baseUrl){
+          img = state.data.media.baseUrl.replace(/\/+$/,'') + '/' + img.replace(/^\/+/,'');
+        }
+        slide.image = img;
+      }
+
+      state.data.slides.push(slide);
+      els.s_title.value=''; els.s_lines.value=''; els.s_image.value='';
+      render();
     };
 
-    // init
-    (function init(){
-      const fromUrl = new URLSearchParams(location.search).get("data");
-      if(fromUrl) state.dataUrl = fromUrl;
-      els.dataUrl.value = state.dataUrl;
-      els.dataUrlView.textContent = state.dataUrl;
-      load();
-    })();
+    els.clearSlides.onclick = () => {
+      if(confirm('Slet alle slides?')){
+        state.data.slides = [];
+        render();
+      }
+    };
+
+    load(); // initial
   </script>
 </body>
 </html>
+
 
 
