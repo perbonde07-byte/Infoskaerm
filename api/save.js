@@ -1,3 +1,6 @@
+export const config = { runtime: 'nodejs' };
+
+
 // api/save.js
 // ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, FILEPATH
 
