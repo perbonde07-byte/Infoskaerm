@@ -3,57 +3,43 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin • Infoskaerm</title>
+  <title>Admin • Infoskærm</title>
   <style>
-    :root{
-      --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff; --card:#111a2d;
-    }
+    :root{--bg:#0b1220;--fg:#e8eefb;--muted:#9fb2d1;--acc:#5aa2ff;--card:#111a2d;}
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--fg);
-      font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Arial;
-      overflow-y:scroll;
-    }
+    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial}
+    .wrap{max-width:1000px;margin:24px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:16px 0}
     h1,h2{margin:0 0 .6rem 0}
-    a{color:var(--acc); text-decoration:none}
-    .wrap{max-width:1000px; margin:24px auto; padding:0 16px}
-    .card{
-      background:var(--card); border:1px solid rgba(255,255,255,.06);
-      border-radius:12px; padding:16px; margin:16px 0;
-    }
-    label{display:block; font-weight:600; margin:.4rem 0}
-    input, textarea, select{
-      width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,.12);
-      background:#0f1830; color:var(--fg); border-radius:10px;
-      outline:none;
-    }
-    textarea{min-height:110px; resize:vertical}
-    button{
-      padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.14);
-      background:#0f1830; color:var(--fg); cursor:pointer;
-    }
-    button.primary{background:var(--acc); color:#021226; border:none}
-    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    .muted{color:var(--muted)} .ok{color:#56d364}
-    .table{width:100%; border-collapse:collapse}
-    .table th,.table td{padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.08)}
-    .hint{margin-left:8px; font-size:12px}
+    label{display:block;margin:.4rem 0;font-weight:600}
+    input,textarea,select{width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,.12);background:#0f1830;color:var(--fg);border-radius:10px;outline:none}
+    textarea{min-height:110px;resize:vertical}
+    button{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#0f1830;color:var(--fg);cursor:pointer}
+    button.primary{background:var(--acc);color:#021226;border:none}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .hint{margin-left:8px;font-size:12px;color:var(--muted)}
+    .ok{color:#56d364}
     .gate{display:flex;align-items:center;justify-content:center;height:100vh}
     .hidden{display:none}
+    code{background:#0f1830;padding:2px 6px;border-radius:6px}
   </style>
 </head>
 <body>
 
+<!-- Adgangs-gate -->
 <div id="gate" class="gate">
   <div class="card" style="max-width:440px;width:90%;text-align:center">
     <h2>Ingen adgang</h2>
-    <p class="muted">Åbn med <code>?admin=0705</code></p>
+    <p class="hint">Åbn med <code>?admin=0705</code></p>
   </div>
 </div>
 
+<!-- App -->
 <div id="app" class="wrap hidden">
-  <h1>Admin • Infoskaerm</h1>
+  <h1>Admin • Infoskærm</h1>
 
   <div class="card">
     <label>Adresse til <code>data.json</code></label>
@@ -62,7 +48,7 @@
       <button id="btnLoad">Hent data</button>
       <button id="btnDownload">Download ny data.json</button>
       <button id="btnSave" class="primary">Gem til server</button>
-      <span id="status" class="hint muted"></span>
+      <span id="status" class="hint"></span>
     </div>
   </div>
 
@@ -121,52 +107,40 @@
 </div>
 
 <script>
-/*** Gate / adgang ***/
-const ADMIN_PIN = "0705";
-(function gate(){
-  const p = new URLSearchParams(location.search).get('admin');
-  if(p===ADMIN_PIN){ localStorage.setItem('admin_ok','1'); }
+/*** Adgang ***/
+const PIN="0705";
+(function(){
+  const p=new URLSearchParams(location.search).get('admin');
+  if(p===PIN) localStorage.setItem('admin_ok','1');
   if(localStorage.getItem('admin_ok')==='1'){
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
   }
 })();
 
-/*** API-baser – så GitHub Pages kalder Vercel API automatisk ***/
-const API_BASE =
-  location.hostname.endsWith('vercel.app') || location.hostname === 'localhost'
-    ? '' // samme origin (Vercel)
-    : 'https://infoskaerm.vercel.app'; // fra GitHub Pages
+/*** API-baser (GitHub Pages -> Vercel API) ***/
+const API_BASE = (location.hostname.endsWith('vercel.app')||location.hostname==='localhost')
+  ? '' : 'https://infoskaerm.vercel.app';
 
 const SAVE_API   = `${API_BASE}/api/save`;
 const UPLOAD_API = `${API_BASE}/api/upload-image`;
 const MEDIA_API  = `${API_BASE}/api/media-list`;
 
 /*** State ***/
-const state = {
-  dataUrl: document.getElementById('dataUrl').value,
-  data: { brand: 'Bredsgaard Info', slides: [] }
-};
-
-const $ = s => document.querySelector(s);
-const tbody = $('#slidesTbody'), statusEl = $('#status');
+const $=s=>document.querySelector(s);
+const tbody=$('#slidesTbody'), statusEl=$('#status');
+const state={ dataUrl: $('#dataUrl').value, data:{brand:'Bredsgaard Info',slides:[]} };
 
 /*** Render ***/
 function render(){
-  tbody.innerHTML = '';
+  tbody.innerHTML='';
   state.data.slides.forEach((s,i)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${i+1}</td>
-      <td>${s.type}</td>
-      <td>${s.title||''}</td>
-      <td>${s.type==='image' ? (s.image||'') : (s.lines||[]).join(' | ')}</td>
-      <td><button data-i="${i}" class="del">Slet</button></td>
-    `;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${s.type}</td><td>${s.title||''}</td><td>${s.type==='image'?(s.image||''):(s.lines||[]).join(' | ')}</td><td><button data-i="${i}" class="del">Slet</button></td>`;
     tbody.appendChild(tr);
   });
-  tbody.querySelectorAll('.del').forEach(b=>{
-    b.onclick = e => { const i = +e.target.dataset.i; state.data.slides.splice(i,1); render(); };
+  tbody.querySelectorAll('.del').forEach(b=>b.onclick=e=>{
+    state.data.slides.splice(+e.target.dataset.i,1); render();
   });
 }
 
@@ -174,114 +148,84 @@ function render(){
 async function load(){
   try{
     statusEl.textContent='Henter…';
-    const r = await fetch(state.dataUrl+'?v='+Date.now());
+    const r=await fetch(state.dataUrl+'?v='+Date.now());
     if(!r.ok) throw new Error('HTTP '+r.status);
-    state.data = await r.json();
-    render();
-    statusEl.textContent='Data hentet';
-    statusEl.className='hint ok';
+    state.data=await r.json(); render();
+    statusEl.textContent='Data hentet'; statusEl.className='hint ok';
   }catch(e){
-    statusEl.textContent='Kunne ikke hente – starter tom';
-    state.data={ brand:'Bredsgaard Info', slides:[] }; render();
+    statusEl.textContent='Starter tom'; state.data={brand:'Bredsgaard Info',slides:[]}; render();
   }
 }
 
-/*** Download som fil ***/
+/*** Download ***/
 function downloadData(){
-  const blob=new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'}));
+  a.download='data.json'; a.click();
 }
 
-/*** Gem til server via Vercel API ***/
+/*** Gem ***/
 async function saveToServer(){
   try{
-    statusEl.textContent='Gemmer til server…';
-    const r = await fetch(SAVE_API, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(state.data)
-    });
-    if(!r.ok){
-      const txt=await r.text();
-      alert('Fejl under gemning: '+txt);
-      statusEl.textContent='Fejl';
-      return;
-    }
+    statusEl.textContent='Gemmer…';
+    const r=await fetch(SAVE_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state.data)});
+    const t=await r.text();
+    if(!r.ok){ alert('Fejl under gemning: '+t); statusEl.textContent='Fejl'; return; }
     statusEl.textContent='Gemt ✔'; statusEl.className='hint ok';
-  }catch(e){
-    alert('Fejl: '+e.message);
-    statusEl.textContent='Fejl';
-  }
-}
-
-/*** Tilføj / ryd slides ***/
-function addSlide(){
-  const s={
-    type: $('#s_type').value,
-    title: $('#s_title').value.trim(),
-    lines: ($('#s_lines').value||'').split('|').map(x=>x.trim()).filter(Boolean),
-    image: $('#s_image').value.trim(),
-    duration: +($('#s_duration').value||12)
-  };
-  state.data.slides.push(s); render();
-}
-function clearSlides(){ if(confirm('Slet alle slides?')){ state.data.slides=[]; render(); } }
-
-/*** Upload billede -> GitHub (MEDIA_DIR) ***/
-async function uploadImage(){
-  const fi = document.getElementById('fileInput');
-  if(!fi.files?.length){ alert('Vælg en fil først'); return; }
-  const file = fi.files[0];
-  const b64 = await fileToBase64(file);
-  const body = { name: file.name, data: b64.replace(/^data:.+;base64,/, '') };
-  try{
-    statusEl.textContent='Uploader…';
-    const r = await fetch(UPLOAD_API, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(body)
-    });
-    const out = await r.json();
-    if(!r.ok){ alert('Upload-fejl: '+(out.error||r.status)); statusEl.textContent='Fejl'; return; }
-    $('#s_image').value = out.cdnUrl || out.rawUrl || '';
-    statusEl.textContent='Upload ✔'; statusEl.className='hint ok';
   }catch(e){ alert('Fejl: '+e.message); statusEl.textContent='Fejl'; }
 }
 
-function fileToBase64(file){
-  return new Promise((res,rej)=>{
-    const fr = new FileReader();
-    fr.onload = () => res(fr.result);
-    fr.onerror = e => rej(e);
-    fr.readAsDataURL(file);
+/*** Slides ***/
+function addSlide(){
+  state.data.slides.push({
+    type:$('#s_type').value,
+    title:$('#s_title').value.trim(),
+    lines:($('#s_lines').value||'').split('|').map(x=>x.trim()).filter(Boolean),
+    image:$('#s_image').value.trim(),
+    duration:+($('#s_duration').value||12)
   });
+  render();
 }
+function clearSlides(){ if(confirm('Slet alle slides?')){ state.data.slides=[]; render(); } }
 
-/*** Hent medieliste ***/
-async function getMediaList(){
+/*** Upload billede ***/
+async function uploadImage(){
+  const fi=$('#fileInput'); if(!fi.files?.length){ alert('Vælg en fil'); return; }
+  const file=fi.files[0]; const b64=await fileToBase64(file);
+  const body={ name:file.name, data:b64.replace(/^data:.+;base64,/,'') };
   try{
-    const sel = $('#mediaSelect'); sel.innerHTML='';
-    const r = await fetch(MEDIA_API);
-    const out = await r.json();
+    statusEl.textContent='Uploader…';
+    const r=await fetch(UPLOAD_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const out=await r.json();
+    if(!r.ok){ alert('Upload-fejl: '+(out.error||r.status)); statusEl.textContent='Fejl'; return; }
+    $('#s_image').value=out.cdnUrl||out.rawUrl||'';
+    statusEl.textContent='Upload ✔'; statusEl.className='hint ok';
+  }catch(e){ alert('Fejl: '+e.message); statusEl.textContent='Fejl'; }
+}
+function fileToBase64(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
+
+/*** Medieliste ***/
+async function getMediaList(){
+  const sel=$('#mediaSelect'); sel.innerHTML='';
+  try{
+    const r=await fetch(MEDIA_API); const out=await r.json();
     if(!r.ok){ alert('Medieliste-fejl: '+(out.error||r.status)); return; }
-    out.items.forEach(item=>{
-      const opt=document.createElement('option');
-      opt.value=item.url; opt.textContent=`${item.name} (${item.size}B)`;
-      sel.appendChild(opt);
-    });
-    sel.onchange = ()=>{ $('#s_image').value = sel.value; };
+    out.items.forEach(it=>{ const o=document.createElement('option'); o.value=it.url; o.textContent=`${it.name} (${it.size}B)`; sel.appendChild(o); });
+    sel.onchange=()=>{ $('#s_image').value=sel.value; };
   }catch(e){ alert('Fejl: '+e.message); }
 }
 
 /*** Hooks ***/
-document.getElementById('btnLoad').onclick=load;
-document.getElementById('btnSave').onclick=saveToServer;
-document.getElementById('btnDownload').onclick=downloadData;
-document.getElementById('btnAdd').onclick=addSlide;
-document.getElementById('btnClear').onclick=clearSlides;
-document.getElementById('btnUpload').onclick=uploadImage;
-document.getElementById('btnMedia').onclick=getMediaList;
+$('#btnLoad').onclick=load;
+$('#btnSave').onclick=saveToServer;
+$('#btnDownload').onclick=downloadData;
+$('#btnAdd').onclick=addSlide;
+$('#btnClear').onclick=clearSlides;
+$('#btnUpload').onclick=uploadImage;
+$('#btnMedia').onclick=getMediaList;
 
-// init
 render();
 </script>
 </body>
 </html>
+
