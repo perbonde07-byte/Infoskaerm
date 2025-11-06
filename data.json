@@ -2,11 +2,28 @@
   "brand": "Bredsgaard • Infoskaerm",
   "logoUrl": "",
   "logoPos": "top-right",
-  "media": { "baseUrl": "", "key": "" },
+  "media": {
+    "baseUrl": "",
+    "key": ""
+  },
   "settings": {
     "calendarUrl": "",
-    "empties": { "weekdays": [], "skip": [], "names": [] },
+    "empties": {
+      "weekdays": [],
+      "skip": [],
+      "names": []
+    },
     "birthdays": []
   },
-  "slides": []
+  "slides": [
+    {
+      "type": "bullets",
+      "title": "Tesee",
+      "lines": [
+        "Hehe"
+      ],
+      "image": "",
+      "duration": 12
+    }
+  ]
 }
