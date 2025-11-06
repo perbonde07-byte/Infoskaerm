@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
     const content = Buffer.from(JSON.stringify(req.body, null, 2)).toString('base64');
 
-    // find sha hvis fil allerede findes
+    // Find sha hvis fil findes
     let sha = null;
     {
       const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(FILE)}?ref=${encodeURIComponent(BRANCH)}`, {
@@ -48,3 +48,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message || String(e) });
   }
 }
+
