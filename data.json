@@ -20,27 +20,11 @@
   },
   "slides": [
     {
-      "type": "birthday",
-      "title": "test",
-      "lines": [
-        "234"
-      ],
-      "image": "",
-      "duration": 12
-    },
-    {
       "type": "bullets",
-      "title": "test234234",
+      "title": "345",
       "lines": [
-        "234"
+        "345"
       ],
-      "image": "",
-      "duration": 12
-    },
-    {
-      "type": "empties",
-      "title": "",
-      "lines": [],
       "image": "",
       "duration": 12
     }
@@ -48,8 +32,8 @@
   "logoUrl": "",
   "logoPos": "Øverst højre",
   "media": {
-    "baseUrl": "https://1drv.ms/f/c/792e38b1461afc7a/Eplpi3PfgjBIj8mIIGrNKNABub-ZzZiCb2Ig70PiecCG1w?e=FCeTEU",
-    "key": "0705"
+    "baseUrl": "",
+    "key": ""
   },
   "empties": {
     "weekdays": [
@@ -60,11 +44,6 @@
       false
     ],
     "skipDates": [],
-    "names": [
-      "per",
-      "kas",
-      "mads",
-      "vagn"
-    ]
+    "names": []
   }
 }
