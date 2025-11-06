@@ -1,3 +1,6 @@
+export const config = { runtime: 'nodejs' };
+
+
 // api/media-list.js
 // ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
 
