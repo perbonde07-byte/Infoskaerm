@@ -1,245 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="da">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Infoskærm • Bredsgaard</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Infoskærm</title>
 <style>
   :root{
-    --bg:#0c1a22; --fg:#e8eefb; --muted:#9fb2c7; --accent:#5aa2ff;
+    --bg:#0b1220;--panel:#111a2d;--muted:#9fb0cb;--text:#e8eefb;--line:#243147;--accent:#5aa2ff;
   }
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);
-    font-family:system-ui, Segoe UI, Roboto, Arial}
-  .screen{position:relative; display:flex; align-items:center; justify-content:center;
-    height:100%; overflow:hidden}
-  .slide{width:100%; height:100%; display:flex; align-items:center; justify-content:center;
-    padding:48px; box-sizing:border-box}
-  .wrap{max-width:1400px; width:100%}
-  h1{font-size:72px; line-height:1.05; margin:0 0 24px}
-  p, li {font-size:36px; line-height:1.3}
-  ul{margin:0; padding-left:28px}
-
-  /* image slide */
-  .image-holder{
-    position:relative; width:100%; height:72vh; border-radius:20px; overflow:hidden;
-    box-shadow:0 10px 50px rgba(0,0,0,.45);
-    background:#0b1620 center/cover no-repeat;
-  }
-
-  /* logo overlay */
-  .logo{
-    position:absolute; z-index:5; opacity:var(--logoOpacity, .95);
-    width:var(--logoSize, 140px); height:auto; pointer-events:none;
-    filter:drop-shadow(0 6px 18px rgba(0,0,0,.5));
-  }
-  .top-left{top:24px; left:24px}
-  .top-right{top:24px; right:24px}
-  .bottom-left{bottom:24px; left:24px}
-  .bottom-right{bottom:24px; right:24px}
-
-  /* schedule table */
-  table{width:100%; border-collapse:collapse; font-size:28px; background:#0f2230;
-    border-radius:16px; overflow:hidden}
-  th,td{border-bottom:1px solid #1d3342; padding:14px 18px}
-  th{background:#123041; font-weight:700; text-transform:uppercase; letter-spacing:.02em}
-  tr.highlight{background:#18394d; color:#fff}
-  .two-cols{display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start}
-  .right-image{
-    width:100%; max-width:520px; justify-self:end; border-radius:16px; overflow:hidden;
-    aspect-ratio:1.1/1; background:#0b1620 center/cover no-repeat
-  }
-
-  /* birthday */
-  .center{display:flex; align-items:center; justify-content:center; gap:36px; text-align:center}
-  .avatar{
-    width:420px; height:420px; border-radius:999px; background:#0b1620 center/cover no-repeat;
-    box-shadow:0 10px 50px rgba(0,0,0,.45); border:4px solid rgba(255,255,255,.12)
-  }
-  .big{font-size:90px; line-height:1.05; margin:0}
-  .sub{font-size:40px; opacity:.9; margin:10px 0 0}
-  .flags{font-size:72px}
+  html,body{height:100%;background:radial-gradient(1200px 800px at 60% 40%,#16314d 0%,#0b1220 60%);color:var(--text);margin:0;font-family:system-ui,Segoe UI,Roboto,Arial}
+  .stage{position:relative;height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
+  .frame{width:100%;height:100%;border:1px solid #1b2740;border-radius:18px;background:rgba(17,26,45,.35);backdrop-filter: blur(2px);padding:28px;box-sizing:border-box}
+  .logo{position:absolute;max-height:64px;max-width:300px;opacity:.9;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+  .tl{top:24px;left:24px}.tr{top:24px;right:24px}.bl{bottom:24px;left:24px}.br{bottom:24px;right:24px}
+  h1{font-size:44px;margin:0 0 18px}
+  ul{margin:0;padding:0 0 0 20px}
+  .muted{color:var(--muted)}
+  .footer{position:absolute;left:28px;right:28px;bottom:18px;font-size:12px;color:#b9c7e0;opacity:.85;display:flex;justify-content:space-between}
+  .panel{background:rgba(8,12,24,.55);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid #1e2a42;padding:10px 12px;text-align:left}
+  th{color:#b9c7e0;font-weight:600;letter-spacing:.02em}
+  .green{background:#1f3a21;border:1px solid #2f5d32;border-radius:8px;padding:6px 10px;display:inline-block}
 </style>
 </head>
 <body>
-<div class="screen">
-  <img id="logo" class="logo top-right" alt="Logo" hidden>
-  <div id="mount" class="slide"><div class="wrap"><p>Indlæser…</p></div></div>
+<div class="stage">
+  <div class="frame panel" id="content">
+    <!-- indhold kommer her -->
+  </div>
+  <img id="logo" class="logo tr" alt="">
+  <div class="footer"><span id="brand"></span><span class="muted" id="clock"></span></div>
 </div>
 
 <script>
-(async function(){
-  const DATA_URL = (new URLSearchParams(location.search).get('data') ||
-    'https://perbonde07-byte.github.io/Infoskaerm/data.json');
+  // ========== Konfiguration ==========
+  const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
 
-  async function fetchJSON(){
-    const r = await fetch(DATA_URL + '?v=' + Date.now(), { cache: 'no-store' });
-    return await r.json();
+  // ========== Utils ==========
+  const $ = s => document.querySelector(s);
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+  function fmtDa(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    if(Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'});
+  }
+  const weekdayDa = ['søn','man','tir','ons','tor','fre','lør'];
+
+  // uge-Mandag kl 00 → Søndag 23:59
+  function weekSpan(d=new Date()){
+    const x = new Date(d); // find mandag
+    const day = (x.getDay()+6)%7; // 0=man .. 6=søn
+    x.setDate(x.getDate()-day); x.setHours(0,0,0,0);
+    const start = new Date(x);
+    const end = new Date(x); end.setDate(end.getDate()+6); end.setHours(23,59,59,999);
+    return {start,end};
   }
 
-  // Hent første data
-  let data = await fetchJSON();
-  let lastJSON = JSON.stringify(data);
+  // næste tømmedage → rotation
+  function buildEmptiesTable(settings){
+    const {weekdays=[], skip=[], names=[]} = settings?.empties || {};
+    if(!weekdays.length || !names.length) return {rows:[], highlight:-1};
 
-  initScreen(data);
+    // find næste ~9 uger, skab liste af datoer for valgte weekdays, spring over "skip"
+    const rows=[]; const now=new Date(); let highlight=-1;
+    const map = {mon:1,tue:2,wed:3,thu:4,fri:5};
+    const wanted = new Set(weekdays.map(w=>map[w]).filter(Boolean));
 
-  // Auto-refresh hvert minut
-  setInterval(async ()=>{
-    try {
-      const fresh = await fetchJSON();
-      const sFresh = JSON.stringify(fresh);
-      if(sFresh !== lastJSON){
-        console.log("🔁 Data ændret – genindlæser");
-        location.reload(); // nemmeste metode
-      }
-    } catch(e){ console.warn("Kunne ikke hente data.json", e); }
-  }, 60000);
+    // start fra denne uge
+    let d = new Date(now); d.setHours(12,0,0,0);
+    // rul tilbage til mandag
+    const back = (d.getDay()+6)%7; d.setDate(d.getDate()-back);
 
-  // === Alt fra tidligere kode (rendering mv.) ===
-  function initScreen(data){
-    // --- logo setup ---
-    const logo = document.getElementById('logo');
-    const lg = (data.settings && data.settings.logo) || {};
-    if(lg.url){
-      logo.src = lg.url;
-      logo.className = 'logo ' + (lg.position || 'top-right');
-      logo.style.setProperty('--logoOpacity', (lg.opacity ?? .95));
-      logo.style.setProperty('--logoSize', (lg.size ? lg.size+'px' : '140px'));
-      logo.hidden = false;
-    }
+    const skipSet = new Set(skip||[]);
+    let personIdx = 0;
 
-    const slides = data.slides || [];
-    let idx = 0;
+    for(let week=0; rows.length<9 && week<20; week++){
+      for(let dow=1; dow<=5; dow++){
+        const day = new Date(d); day.setDate(d.getDate() + week*7 + (dow-1));
+        const iso = day.toISOString().slice(0,10);
+        if(!wanted.has(dow)) continue;
+        if(skipSet.has(iso)) continue;
 
-    function next(){
-      let tries = 0;
-      while(tries < slides.length){
-        const s = slides[idx % slides.length];
-        if(s.type === 'birthday' && !hasActiveBirthday(data.birthdays)) { idx++; tries++; continue; }
-        renderSlide(s);
-        const dur = Math.max(4, +s.duration || 12);
-        setTimeout(()=>{ idx=(idx+1)%slides.length; next(); }, dur*1000);
-        break;
+        rows.push({ date: iso, name: names[personIdx%names.length] });
+        // highlight første kommende
+        if(highlight<0 && day >= new Date(now.toDateString())) highlight = rows.length-1;
+        personIdx++;
+        if(rows.length>=10) break;
       }
     }
+    return {rows, highlight};
+  }
 
-    function renderSlide(s){
-      const root = document.getElementById('mount');
-      if(s.type === 'image'){
-        root.innerHTML = `
-          <div class="wrap">
-            ${s.title ? `<h1>${escapeHTML(s.title)}</h1>`:''}
-            <div class="image-holder" style="background-image:url('${escapeAttr(s.image||'')}')"></div>
-          </div>`;
-        return;
-      }
-      if(s.type === 'schedule'){
-        const model = buildSchedule(data.schedule?.emptying);
-        root.innerHTML = `
-          <div class="wrap two-cols">
-            <div>
-              <h1>${escapeHTML(s.title||'TØMNINGS DAGE')}</h1>
-              ${renderScheduleTable(model)}
-            </div>
-            <div class="right-image" style="background-image:url('https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=1200&auto=format&fit=crop')"></div>
-          </div>`;
-        return;
-      }
-      if(s.type === 'birthday'){
-        const bd = getActiveBirthday(data.birthdays);
-        root.innerHTML = `
-          <div class="wrap center">
-            <div class="avatar" style="background-image:url('${escapeAttr(bd?.photo||'')}')"></div>
-            <div>
-              <h2 class="big">Tillykke med fødselsdagen, ${escapeHTML(bd?.name||'')}</h2>
-              <p class="sub">Ha' en rigtig dejlig uge! 🎉</p>
-              <div class="flags">🇩🇰🎂🇩🇰</div>
-            </div>
-          </div>`;
-        return;
-      }
-      const items = (s.lines||[]).map(x=>`<li>${escapeHTML(x)}</li>`).join('');
-      root.innerHTML = `
-        <div class="wrap">
-          ${s.title ? `<h1>${escapeHTML(s.title)}</h1>`:''}
-          <ul>${items}</ul>
-        </div>`;
-    }
+  // ========== Rendering ==========
+  function renderLogo(d){
+    const el = $('#logo');
+    const url = d.logo?.url || '';
+    el.src = url || '';
+    el.style.display = url ? 'block' : 'none';
+    el.className = 'logo ' + (
+      d.logo?.pos==='top-left' ? 'tl' :
+      d.logo?.pos==='bottom-left' ? 'bl' :
+      d.logo?.pos==='bottom-right' ? 'br' : 'tr'
+    );
+  }
 
-    // ---------- schedule helpers ----------
-    function buildSchedule(cfg){
-      const wd = (cfg?.weekdays && cfg.weekdays.length ? cfg.weekdays : [3]);
-      const names = cfg?.names || [];
-      const skip = new Set((cfg?.skipDates||[]));
-      const today = new Date(); today.setHours(0,0,0,0);
-      const items = [];
-      let cursor = new Date(today);
-      function isSkip(d){ return skip.has(d.toISOString().slice(0,10)); }
-      let i=0, nIndex=0;
-      while(items.length < 10 && i < 400){
-        cursor = new Date(today);
-        cursor.setDate(today.getDate()+i);
-        const weekday = cursor.getDay()===0 ? 7 : cursor.getDay();
-        if(wd.includes(weekday) && !isSkip(cursor)){
-          const name = names[nIndex % Math.max(1, names.length)];
-          items.push({date:new Date(cursor), name});
-          nIndex++;
+  function viewBullets(slide){
+    return `
+      <h1>${slide.title||''}</h1>
+      <ul class="muted">${(slide.lines||[]).map(li=>`<li style="margin:8px 0;font-size:22px;color:#dce6f7">${li}</li>`).join('')}</ul>
+    `;
+  }
+
+  function viewImage(slide){
+    return `
+      <h1>${slide.title||''}</h1>
+      <div style="display:flex;align-items:center;justify-content:center;height:calc(100% - 80px)">
+        ${slide.image ? `<img src="${slide.image}" alt="" style="max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 10px 24px rgba(0,0,0,.35)">`
+                       : `<div class="muted">Ingen billede-URL</div>`}
+      </div>
+    `;
+  }
+
+  function viewEmpties(d){
+    const {rows,highlight} = buildEmptiesTable(d.settings);
+    if(!rows.length) return `<h1>Tømning</h1><div class="muted">Konfigurér ugedage og navne i admin.</div>`;
+    return `
+      <h1>TØMNINGS DAGE</h1>
+      <table>
+        <thead><tr><th>Navn</th><th>Dato</th></tr></thead>
+        <tbody>
+          ${rows.map((r,i)=>`
+            <tr style="${i===highlight?'background:#142f18':''}">
+              <td>${i===highlight?`<span class="green">${r.name}</span>`:r.name}</td>
+              <td>${fmtDa(r.date)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function viewBirthday(d){
+    const list = d.settings?.birthdays||[];
+    if(!list.length) return `<h1>Fødselsdage</h1><div class="muted">Tilføj personer i admin.</div>`;
+    const {start,end} = weekSpan();
+    const weekItems = list.filter(b=>{
+      const thisYear = new Date(`${new Date().getFullYear()}-${b.date.slice(5)}`);
+      // håndter 29/02: hvis ikke skudår → flyt til 28/02
+      if(isNaN(thisYear.getTime())) return false;
+      return thisYear>=start && thisYear<=end;
+    });
+    if(!weekItems.length) return `<h1>Fødselsdage</h1><div class="muted">Ingen fødselsdage i denne uge.</div>`;
+    const it = weekItems[0];
+    return `
+      <h1 style="margin-bottom:6px">Tillykke med fødselsdagen</h1>
+      <div class="muted" style="margin-bottom:18px">${fmtDa(new Date().getFullYear()+'-'+it.date.slice(5))}</div>
+      <div style="display:flex;align-items:center;gap:24px">
+        ${it.photo ? `<img src="${it.photo}" alt="" style="width:280px;height:280px;object-fit:cover;border-radius:50%;box-shadow:0 10px 24px rgba(0,0,0,.35)">`
+                    : `<div style="width:280px;height:280px;border-radius:50%;background:#16243c;display:flex;align-items:center;justify-content:center;font-size:62px;letter-spacing:.1em">${(it.name||'?').slice(0,1).toUpperCase()}</div>`}
+        <div>
+          <div style="font-size:56px;font-weight:800">${it.name||''}</div>
+          <div class="muted" style="margin-top:10px;font-size:22px">Vi håber du får en rigtig god uge 🎉</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function run(){
+    try{
+      const res = await fetch(DATA_URL + '?v='+Date.now());
+      const data = await res.json();
+
+      $('#brand').textContent = data.brand || 'Bredsgaard • Infoskaerm';
+      renderLogo(data);
+
+      const slides = data.slides || [];
+      if(!slides.length){
+        $('#content').innerHTML = `<h1>Ingen slides</h1><ul><li>Tilføj slides i admin.</li></ul>`;
+        return;
+      }
+
+      // loop
+      while(true){
+        for(const s of slides){
+          let html='';
+          if(s.type==='bullets') html = viewBullets(s);
+          else if(s.type==='image') html = viewImage(s);
+          else if(s.type==='empties') html = viewEmpties(data);
+          else if(s.type==='birthday') html = viewBirthday(data);
+          else html = `<h1>${s.title||''}</h1>`;
+
+          $('#content').innerHTML = html;
+          await sleep((s.duration||12)*1000);
         }
-        i++;
       }
-      let hi = items.findIndex(x=>+x.date>=+today);
-      if(hi===-1) hi = 0;
-      return {items, highlightIndex:hi};
+    }catch(err){
+      $('#content').innerHTML = `<h1>Fejl</h1><div class="muted">${err.message}</div>`;
     }
-
-    function renderScheduleTable(model){
-      const left = model.items.slice(0,5);
-      const right = model.items.slice(5,10);
-      function rows(arr, baseIndex){
-        return arr.map((x,i)=>{
-          const d = fmtDate(x.date);
-          const cls = (baseIndex+i)===model.highlightIndex ? ' class="highlight"' : '';
-          return `<tr${cls}><td>${escapeHTML(x.name)}</td><td>${d}</td></tr>`;
-        }).join('');
-      }
-      return `
-        <table>
-          <thead><tr><th>Navn</th><th>Dato</th></tr></thead>
-          <tbody>${rows(left,0)}</tbody>
-        </table>
-        <div style="height:18px"></div>
-        <table>
-          <thead><tr><th>Navn</th><th>Dato</th></tr></thead>
-          <tbody>${rows(right,5)}</tbody>
-        </table>`;
-    }
-
-    // ---------- birthday helpers ----------
-    function startOfWeek(d){ const t=new Date(d); const day=(t.getDay()||7); if(day>1)t.setDate(t.getDate()-(day-1)); t.setHours(0,0,0,0); return t; }
-    function endOfWeek(d){ const s=startOfWeek(d); const e=new Date(s); e.setDate(s.getDate()+6); return e; }
-    function hasActiveBirthday(list){ return !!getActiveBirthday(list); }
-    function getActiveBirthday(list){
-      if(!Array.isArray(list)||list.length===0) return null;
-      const today=new Date(); today.setHours(0,0,0,0);
-      const sOW=startOfWeek(today), eOW=endOfWeek(today);
-      for(const p of list){
-        const [y,m,d]=p.date.split('-').map(Number);
-        const inThis=new Date(today.getFullYear(),m-1,d);
-        const inNext=new Date(today.getFullYear()+1,m-1,d);
-        if(inThis>=sOW && inThis<=eOW) return p;
-        if(inNext>=sOW && inNext<=eOW) return p;
-      }
-      return null;
-    }
-
-    // ---------- util ----------
-    function fmtDate(d){const months=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];return d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();}
-    function escapeHTML(s){return (s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-    function escapeAttr(s){return escapeHTML(s).replace(/"/g,'&quot;');}
-
-    next();
   }
-})();
+
+  // clock
+  setInterval(()=>{
+    const n = new Date();
+    $('#clock').textContent = n.toLocaleString('da-DK',{weekday:'long', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  }, 1000);
+
+  run();
 </script>
 </body>
 </html>
-
