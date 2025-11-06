@@ -2,25 +2,26 @@
 <html lang="da">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin • Infoskaerm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • Infoskærm</title>
   <style>
     :root{
       --bg:#0b1220;--panel:#111a2d;--muted:#243147;--text:#e8eefb;--accent:#5aa2ff;
-      --ok:#33d17a;--err:#ff6b6b;
+      --ok:#33d17a;--err:#ff6b6b;--warn:#f6c177;
     }
     *{box-sizing:border-box}
     html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
     .topbar{
-      position:sticky;top:0;z-index:10;height:60px;background:rgba(15,23,42,.92);backdrop-filter:blur(6px);
+      position:sticky;top:0;z-index:10;height:64px;background:rgba(15,23,42,.92);backdrop-filter:blur(6px);
       display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.08)
     }
     .pill{padding:6px 10px;border-radius:999px;background:#0f1b34;border:1px solid #203258;font-size:12px}
     .spacer{flex:1}
     .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#061022;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
     .btn.sub{background:#1a2440;color:#d6e4ff}
-    .btn.small{padding:6px 10px}
-    .btn.red{background:#a83d3d;color:#1d0a0a}
+    .btn.danger{background:#aa3c3c;color:#1a0909}
+    .btn.warn{background:var(--warn);color:#0b0b0b}
+    .btn.small{padding:7px 10px}
     .wrap{max-width:1100px;margin:18px auto;padding:0 16px 40px}
     section{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;margin:14px 0}
     h1{margin:0 0 6px 2px} h2{margin:0 0 12px}
@@ -31,86 +32,45 @@
     .g2{grid-template-columns:1fr 1fr}
     .g3{grid-template-columns:repeat(3,1fr)}
     .inline{display:flex;gap:8px;align-items:flex-start}
-    details>summary{cursor:pointer;font-weight:700;list-style:none}
-    details>summary::marker, details>summary::-webkit-details-marker{display:none}
     table{width:100%;border-collapse:collapse;margin-top:12px}
     th,td{padding:8px 10px;border-bottom:1px solid var(--muted);text-align:left}
     th{opacity:.85}
+    .tabs{display:flex;gap:6px;margin-top:8px}
+    .tabbtn{background:#0f1b34;border:1px solid #203258;color:#d6e4ff;border-radius:10px;padding:8px 12px;cursor:pointer}
+    .tabbtn.active{background:#243147}
+    .tab{display:none}
+    .tab.active{display:block}
     .hint{font-size:12px;opacity:.75;margin-top:4px}
+    .status.ok{color:var(--ok)} .status.err{color:var(--err)}
     .hide{display:none}
+    .footer{opacity:.7;font-size:12px;margin-top:20px}
   </style>
 </head>
 <body>
-  <!-- Topbar (fast Gem-knap) -->
+  <!-- Topbar: altid synlig Gem + Tvungen opdatering -->
   <div class="topbar">
     <strong>Infoskærm • Admin</strong>
     <span class="pill">Data: <code id="dataUrlView"></code></span>
-    <button class="btn sub" id="loadBtn" type="button">Hent data</button>
     <div class="spacer"></div>
     <span id="status" class="pill">Klar</span>
-    <button class="btn" id="saveBtn" type="button">Gem ændringer</button>
+    <button class="btn sub" id="forceBtn" title="Få skærmen til at opdatere nu">Tvungen opdatering</button>
+    <button class="btn" id="saveBtn">Gem ændringer</button>
   </div>
 
   <div class="wrap">
-    <!-- Datakilde (foldbar) -->
-    <section>
-      <details>
-        <summary>Datakilde</summary>
-        <label>Adresse til <code>data.json</code></label>
-        <input id="dataUrl" value="https://perbonde07-byte.github.io/Infoskaerm/data.json" />
-        <div class="inline" style="gap:10px;margin-top:10px">
-          <button class="btn sub" id="setUrlBtn" type="button">Brug denne adresse</button>
-          <button class="btn sub" id="downloadBtn" type="button">Download ny data.json</button>
-        </div>
-        <div class="hint">Typisk: <code>https://USERNAME.github.io/REPO/data.json</code></div>
-      </details>
-    </section>
+    <h1>Administration</h1>
 
-    <!-- Indstillinger -->
-    <section>
-      <h2>Indstillinger</h2>
-      <div class="row g2">
-        <div>
-          <label>Brand (vises i bunden på skærm)</label>
-          <input id="brand" placeholder="Bredsgaard • Infoskaerm" />
-        </div>
-        <div>
-          <label>Kalender-link (Outlook/ics/embeds – til kalenderskærm)</label>
-          <input id="calendarUrl" placeholder="https://..." />
-        </div>
-      </div>
-
-      <div class="row g2">
-        <div>
-          <label>Logo URL (valgfrit)</label>
-          <input id="logoUrl" placeholder="https://.../logo.png" />
-        </div>
-        <div>
-          <label>Logo placering</label>
-          <select id="logoPos">
-            <option value="top-right">Øverst højre</option>
-            <option value="top-left">Øverst venstre</option>
-            <option value="bottom-right">Nederst højre</option>
-            <option value="bottom-left">Nederst venstre</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row g2">
-        <div>
-          <label>Media base-URL (OneDrive/Dropbox/GitHub/CDN)</label>
-          <input id="mediaBase" placeholder="https://delt-mappe/.../media/" />
-          <div class="hint">Hvis udfyldt, kan du i slides skrive fx <code>billede.jpg</code> — så bygges fuld URL automatisk.</div>
-        </div>
-        <div>
-          <label>Media-nøgle/kode (valgfrit)</label>
-          <input id="mediaKey" placeholder="adgangskode eller note" />
-        </div>
-      </div>
-    </section>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tabbtn active" data-tab="slides">Slides</button>
+      <button class="tabbtn" data-tab="empties">Tømmeplan</button>
+      <button class="tabbtn" data-tab="bday">Fødselsdage</button>
+      <button class="tabbtn" data-tab="settings">Indstillinger</button>
+      <button class="tabbtn" data-tab="source">Datakilde</button>
+    </div>
 
     <!-- Slides -->
-    <section>
+    <section class="tab active" id="tab_slides">
       <h2>Slides</h2>
       <div class="row g3">
         <div>
@@ -134,38 +94,42 @@
 
       <!-- Bullets -->
       <div id="box_bullets">
-        <label>Linjer (én pr. linje)</label>
+        <label>Linjer</label>
         <div class="inline">
-          <textarea id="s_lines" placeholder="Punkt 1&#10;Punkt 2&#10;Punkt 3"></textarea>
-          <button class="btn small sub" id="addLineBtn" type="button">+ Tilføj punkt</button>
+          <textarea id="s_lines" placeholder="Én pr. linje (Enter for ny)"></textarea>
+          <div class="inline" style="flex-direction:column;gap:6px">
+            <button class="btn small sub" id="addLineBtn" type="button">+ Tilføj punkt</button>
+            <button class="btn small sub" id="clearLinesBtn" type="button">Ryd</button>
+          </div>
         </div>
       </div>
 
-      <!-- Image (bruges også til birthday for at vælge billede) -->
+      <!-- Image / Birthday (har også billede) -->
       <div id="box_image" class="hide">
-        <label>Billede-URL eller filnavn</label>
+        <label>Billede URL eller filnavn</label>
         <div class="inline">
           <input id="s_image" placeholder="https://... eller fx billede.jpg" />
           <input type="file" id="s_imgfile" accept="image/*" />
           <button class="btn small sub" id="uploadBtn" type="button">Upload</button>
         </div>
-        <div class="hint">Upload kræver at <code>/api/upload-image</code> + ENV er sat.</div>
+        <div class="hint">Hvis du har sat <i>Media base-URL</i> i Indstillinger, kan du nøjes med at skrive filnavne.</div>
       </div>
 
       <div class="inline" style="gap:10px;margin-top:10px">
-        <button class="btn" id="addSlide" type="button">Tilføj slide</button>
-        <button class="btn sub" id="clearSlides" type="button">Tøm alle slides</button>
-        <span class="hint">Husk at trykke “Gem ændringer” øverst.</span>
+        <button class="btn" id="addSlide">Tilføj slide</button>
+        <button class="btn warn hide" id="updateSlide">Opdater slide</button>
+        <button class="btn sub" id="clearSlides">Tøm alle slides</button>
+        <span class="hint">Efter ændringer: Tryk “Gem ændringer” øverst.</span>
       </div>
 
       <table>
-        <thead><tr><th style="width:42px">#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th style="width:100px"></th></tr></thead>
+        <thead><tr><th style="width:42px">#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th style="width:160px"></th></tr></thead>
         <tbody id="slidesTable"></tbody>
       </table>
     </section>
 
     <!-- Tømmeplan -->
-    <section>
+    <section class="tab" id="tab_empties">
       <h2>Tømmeplan</h2>
       <div class="row g2">
         <div>
@@ -177,7 +141,7 @@
             <label><input type="checkbox" class="wd" value="thu"> Tor</label>
             <label><input type="checkbox" class="wd" value="fri"> Fre</label>
           </div>
-          <label>Spring over datoer (YYYY-MM-DD, kommasepareret eller linjeskift)</label>
+          <label>Spring over datoer (YYYY-MM-DD – kommasepareret eller linjeskift)</label>
           <textarea id="skipDates" placeholder="2025-12-24, 2025-12-31"></textarea>
         </div>
         <div>
@@ -189,7 +153,7 @@
     </section>
 
     <!-- Fødselsdage -->
-    <section>
+    <section class="tab" id="tab_bday">
       <h2>Fødselsdage</h2>
       <div class="row g3">
         <div>
@@ -206,56 +170,117 @@
         </div>
       </div>
       <div class="inline" style="gap:10px;margin-top:8px">
-        <button class="btn" id="bd_add" type="button">Tilføj</button>
+        <button class="btn" id="bd_add">Tilføj</button>
       </div>
 
       <table>
-        <thead><tr><th>Navn</th><th>Dato</th><th>Foto</th><th style="width:100px"></th></tr></thead>
+        <thead><tr><th>Navn</th><th>Dato</th><th>Foto</th><th style="width:120px"></th></tr></thead>
         <tbody id="bd_table"></tbody>
       </table>
-      <div class="hint">Viewer viser automatisk dem, der falder i den aktuelle uge (man–søn).</div>
+      <div class="hint">Vises automatisk i ugen hvor fødselsdagen falder (man–søn).</div>
+    </section>
+
+    <!-- Indstillinger -->
+    <section class="tab" id="tab_settings">
+      <h2>Indstillinger</h2>
+      <div class="row g2">
+        <div>
+          <label>Brand (vises i bunden)</label>
+          <input id="brand" placeholder="Bredsgaard • Infoskærm" />
+        </div>
+        <div>
+          <label>Kalender-link (Outlook/ics/embeds – bruges af kalenderskærm)</label>
+          <input id="calendarUrl" placeholder="https://..." />
+        </div>
+      </div>
+
+      <div class="row g2">
+        <div>
+          <label>Logo URL (valgfrit)</label>
+          <input id="logoUrl" placeholder="https://.../logo.png" />
+        </div>
+        <div>
+          <label>Logo placering</label>
+          <select id="logoPos">
+            <option value="top-right">Øverst højre</option>
+            <option value="top-left">Øverst venstre</option>
+            <option value="bottom-right">Nederst højre</option>
+            <option value="bottom-left">Nederst venstre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g2">
+        <div>
+          <label>Media base-URL (OneDrive/Dropbox/CDN/GitHub)</label>
+          <input id="mediaBase" placeholder="https://delt-mappe/.../media/" />
+          <div class="hint">Hvis udfyldt, kan du i slides bruge fx <code>foto.jpg</code> og få fuld URL automatisk.</div>
+        </div>
+        <div>
+          <label>Media-nøgle/kode (valgfrit)</label>
+          <input id="mediaKey" placeholder="adgangskode eller note" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Datakilde -->
+    <section class="tab" id="tab_source">
+      <h2>Datakilde</h2>
+      <label>Adresse til <code>data.json</code></label>
+      <input id="dataUrl" value="https://perbonde07-byte.github.io/Infoskaerm/data.json" />
+      <div class="inline" style="gap:10px;margin-top:10px">
+        <button class="btn sub" id="setUrlBtn">Brug denne adresse</button>
+        <button class="btn sub" id="loadBtn">Hent data</button>
+        <button class="btn sub" id="downloadBtn">Download ny data.json</button>
+      </div>
+      <div class="footer">Typisk GitHub Pages-URL: <code>https://USERNAME.github.io/REPO/data.json</code></div>
     </section>
   </div>
 
   <script>
     const $ = s => document.querySelector(s);
     const els = {
-      status: $('#status'), saveBtn: $('#saveBtn'),
+      // top
+      status: $('#status'), saveBtn: $('#saveBtn'), forceBtn: $('#forceBtn'),
       dataUrlView: $('#dataUrlView'), dataUrl: $('#dataUrl'), setUrlBtn: $('#setUrlBtn'),
       loadBtn: $('#loadBtn'), downloadBtn: $('#downloadBtn'),
-
+      // settings
       brand: $('#brand'), logoUrl: $('#logoUrl'), logoPos: $('#logoPos'),
       mediaBase: $('#mediaBase'), mediaKey: $('#mediaKey'), calendarUrl: $('#calendarUrl'),
-
+      // slides editor
       s_type: $('#s_type'), s_title: $('#s_title'), s_duration: $('#s_duration'),
-      s_lines: $('#s_lines'), addLineBtn: $('#addLineBtn'),
+      s_lines: $('#s_lines'), addLineBtn: $('#addLineBtn'), clearLinesBtn: $('#clearLinesBtn'),
       s_image: $('#s_image'), s_imgfile: $('#s_imgfile'), uploadBtn: $('#uploadBtn'),
       box_bullets: $('#box_bullets'), box_image: $('#box_image'),
-      addSlide: $('#addSlide'), clearSlides: $('#clearSlides'),
+      addSlide: $('#addSlide'), updateSlide: $('#updateSlide'), clearSlides: $('#clearSlides'),
       slidesTable: $('#slidesTable'),
-
+      // empties / birthdays
       wd: Array.from(document.querySelectorAll('.wd')),
       skipDates: $('#skipDates'), emptyNames: $('#emptyNames'),
-
       bd_name: $('#bd_name'), bd_date: $('#bd_date'), bd_photo: $('#bd_photo'),
       bd_add: $('#bd_add'), bd_table: $('#bd_table'),
+      // tabs
+      tabBtns: Array.from(document.querySelectorAll('.tabbtn')),
+      tabs: {
+        slides: $('#tab_slides'), empties: $('#tab_empties'), bday: $('#tab_bday'),
+        settings: $('#tab_settings'), source: $('#tab_source')
+      }
     };
 
+    // state
     const state = {
       dataUrl: $('#dataUrl').value,
+      editIndex: -1,
       data: {
-        brand: 'Bredsgaard • Infoskaerm',
-        logoUrl: '', logoPos: 'top-right',
-        media: { baseUrl:'', key:'' },
-        settings: {
-          calendarUrl: '',
-          empties: { weekdays:[], skip:[], names:[] },
-          birthdays: []
-        },
+        brand:'Bredsgaard • Infoskærm',
+        logoUrl:'', logoPos:'top-right',
+        media:{ baseUrl:'', key:'' },
+        settings:{ calendarUrl:'', empties:{weekdays:[],skip:[],names:[]}, birthdays:[] },
         slides: []
       }
     };
 
+    // helpers
     function fmtDa(iso){
       if(!iso) return ''; const d = new Date(iso);
       if(Number.isNaN(d.getTime())) return iso;
@@ -263,29 +288,27 @@
     }
     function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]); }
 
+    // tabs
+    els.tabBtns.forEach(b=>{
+      b.onclick = ()=>{
+        els.tabBtns.forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        Object.values(els.tabs).forEach(t=>t.classList.remove('active'));
+        els.tabs[b.dataset.tab].classList.add('active');
+      };
+    });
+
+    // slide type toggle
     function toggleTypeUI(){
       const t = els.s_type.value;
       els.box_bullets.classList.toggle('hide', t!=='bullets');
       els.box_image.classList.toggle('hide', !(t==='image' || t==='birthday'));
     }
+    els.s_type.onchange = toggleTypeUI;
 
-    function renderBirthdays(){
-      els.bd_table.innerHTML = '';
-      (state.data.settings?.birthdays||[]).forEach((b,i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${escapeHtml(b.name||'')}</td>
-                        <td>${fmtDa(b.date)}</td>
-                        <td>${b.photo?`<a href="${escapeHtml(b.photo)}" target="_blank">link</a>`:''}</td>
-                        <td><button class="btn small red" data-delbd="${i}" type="button">Slet</button></td>`;
-        els.bd_table.appendChild(tr);
-      });
-      els.bd_table.querySelectorAll('[data-delbd]').forEach(b=>{
-        b.onclick = ()=>{ state.data.settings.birthdays.splice(+b.dataset.delbd,1); renderBirthdays(); };
-      });
-    }
-
+    // render
     function render(){
-      // settings → inputs
+      // settings
       els.brand.value = state.data.brand || '';
       els.logoUrl.value = state.data.logoUrl || '';
       els.logoPos.value = state.data.logoPos || 'top-right';
@@ -310,37 +333,83 @@
           s.type==='image'    ? (s.image || '(intet)') :
           s.type==='empties'  ? 'Tømningstabel' :
           s.type==='birthday' ? 'Fødselsdage (uge)' :
-          (s.lines||[]).join(' • ');
+          (Array.isArray(s.lines)?s.lines:[]).join(' • ');
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${idx+1}</td><td>${s.type}</td><td>${escapeHtml(s.title||'')}</td>
                         <td>${escapeHtml(prev)}</td>
-                        <td><button class="btn small red" data-del="${idx}" type="button">Slet</button></td>`;
+                        <td>
+                          <button class="btn small sub" data-edit="${idx}">Rediger</button>
+                          <button class="btn small danger" data-del="${idx}">Slet</button>
+                        </td>`;
         els.slidesTable.appendChild(tr);
       });
       els.slidesTable.querySelectorAll('[data-del]').forEach(b=>{
-        b.onclick = () => { state.data.slides.splice(+b.dataset.del,1); render(); };
+        b.onclick = () => { state.data.slides.splice(+b.dataset.del,1); state.editIndex=-1; els.updateSlide.classList.add('hide'); els.addSlide.classList.remove('hide'); render(); };
+      });
+      els.slidesTable.querySelectorAll('[data-edit]').forEach(b=>{
+        b.onclick = () => {
+          const i = +b.dataset.edit;
+          const s = state.data.slides[i]; state.editIndex = i;
+          els.s_type.value = s.type; toggleTypeUI();
+          els.s_title.value = s.title || '';
+          els.s_duration.value = s.duration || 12;
+          els.s_lines.value = (s.lines||[]).join('\n');
+          els.s_image.value = s.image || '';
+          els.addSlide.classList.add('hide'); els.updateSlide.classList.remove('hide');
+          window.scrollTo({top:0,behavior:'smooth'});
+        };
       });
 
       els.dataUrl.value = state.dataUrl;
       els.dataUrlView.textContent = state.dataUrl;
     }
 
+    function renderBirthdays(){
+      els.bd_table.innerHTML = '';
+      (state.data.settings?.birthdays||[]).forEach((b,i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(b.name||'')}</td>
+                        <td>${fmtDa(b.date)}</td>
+                        <td>${b.photo?`<a href="${escapeHtml(b.photo)}" target="_blank">link</a>`:''}</td>
+                        <td>
+                          <button class="btn small sub" data-editbd="${i}">Rediger</button>
+                          <button class="btn small danger" data-delbd="${i}">Slet</button>
+                        </td>`;
+        els.bd_table.appendChild(tr);
+      });
+      // del
+      els.bd_table.querySelectorAll('[data-delbd]').forEach(b=>{
+        b.onclick = ()=>{ state.data.settings.birthdays.splice(+b.dataset.delbd,1); renderBirthdays(); };
+      });
+      // edit (simple – udfylder felter)
+      els.bd_table.querySelectorAll('[data-editbd]').forEach(b=>{
+        b.onclick = ()=>{
+          const r = state.data.settings.birthdays[+b.dataset.editbd];
+          els.bd_name.value = r.name||''; els.bd_date.value = r.date||''; els.bd_photo.value = r.photo||'';
+          // ved tryk "Tilføj" overwriter vi (for simpelt flow)
+          state.data.settings.birthdays.splice(+b.dataset.editbd,1);
+          renderBirthdays();
+        };
+      });
+    }
+
+    // load/save
     async function load(){
       try{
         els.status.textContent = 'Henter…';
         const res = await fetch(state.dataUrl + '?v=' + Date.now());
         if(!res.ok) throw new Error('HTTP '+res.status);
         const json = await res.json();
-
-        // migrate/ensure structure
+        // migrate defaults
         const base = {
-          brand:'Bredsgaard • Infoskaerm',
+          brand:'Bredsgaard • Infoskærm',
           logoUrl:'', logoPos:'top-right',
           media:{baseUrl:'', key:''},
           settings:{ calendarUrl:'', empties:{weekdays:[],skip:[],names:[]}, birthdays:[] },
           slides:[]
         };
         state.data = Object.assign(base, json);
+        // ensure bullets arrays
         (state.data.slides||[]).forEach(s=>{
           if(s.type==='bullets'){
             if (Array.isArray(s.lines)) { /* ok */ }
@@ -352,7 +421,7 @@
         els.status.textContent = 'Data hentet';
       }catch(e){
         state.data = {
-          brand:'Bredsgaard • Infoskaerm',
+          brand:'Bredsgaard • Infoskærm',
           logoUrl:'', logoPos:'top-right',
           media:{baseUrl:'',key:''},
           settings:{ calendarUrl:'', empties:{weekdays:[],skip:[],names:[]}, birthdays:[] },
@@ -364,15 +433,13 @@
     }
 
     async function save(){
-      // sync inputs -> state
+      // settings -> state
       state.data.brand   = els.brand.value.trim();
       state.data.logoUrl = els.logoUrl.value.trim();
       state.data.logoPos = els.logoPos.value;
       state.data.media   = { baseUrl: els.mediaBase.value.trim(), key: els.mediaKey.value.trim() };
-
       state.data.settings ||= {};
       state.data.settings.calendarUrl = els.calendarUrl.value.trim();
-
       // empties
       const weekdays = els.wd.filter(cb=>cb.checked).map(cb=>cb.value);
       const skip = (els.skipDates.value||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
@@ -382,7 +449,6 @@
       try{
         els.status.textContent = 'Gemmer…';
         els.saveBtn.disabled = true;
-
         const res = await fetch('/api/save',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
@@ -390,23 +456,23 @@
         });
         const txt = await res.text();
         if(!res.ok){
-          let msg = txt;
-          try{ const j=JSON.parse(txt); msg = j.error || j.detail || txt; }catch{}
+          let msg = txt; try{ const j=JSON.parse(txt); msg = j.error || j.detail || txt; }catch{}
           throw new Error(`HTTP ${res.status} – ${msg}`);
         }
-        els.status.innerHTML = '<span style="color:var(--ok)">✅ Data gemt</span>';
+        els.status.innerHTML = '<span class="status ok">✅ Data gemt på GitHub</span>';
       }catch(e){
-        els.status.innerHTML = '<span style="color:var(--err)">Fejl: '+(e.message||e)+'</span>';
+        els.status.innerHTML = '<span class="status err">Fejl: '+(e.message||e)+'</span>';
         alert('Gemning fejlede:\n\n' + (e.message||e));
       }finally{
         els.saveBtn.disabled = false;
       }
     }
 
+    // upload (valgfrit)
     async function uploadImage(){
       const f = els.s_imgfile.files?.[0];
       if(!f) return alert('Vælg et billede først.');
-      els.status.textContent = 'Uploader…';
+      els.status.textContent = 'Uploader billede…';
       const reader = new FileReader();
       reader.onload = async e=>{
         try{
@@ -417,62 +483,83 @@
           els.s_image.value = j.cdnUrl || j.rawUrl || '';
           els.status.textContent = '✅ Upload OK';
         }catch(err){
-          els.status.textContent = 'Upload fejl: ' + (err.message||err);
+          els.status.innerHTML = '<span class="status err">Upload fejl: '+(err.message||err)+'</span>';
         }
       };
       reader.readAsDataURL(f);
     }
 
-    // Events
+    // tvungen opdatering (viewer ser flag og opdaterer)
+    function forceRefresh(){
+      try{
+        localStorage.setItem('infoscreen_forceReloadAt', String(Date.now()));
+        els.status.textContent = 'Tvungen opdatering sendt';
+      }catch{}
+    }
+
+    // events
     els.setUrlBtn.onclick = ()=>{ state.dataUrl = els.dataUrl.value.trim(); els.dataUrlView.textContent = state.dataUrl; };
     els.loadBtn.onclick   = load;
-    els.downloadBtn.onclick = ()=>{
-      const blob = new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'data.json'; a.click();
-    };
+    els.downloadBtn.onclick = ()=>{ const blob = new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='data.json'; a.click(); };
     els.saveBtn.onclick = save;
+    els.forceBtn.onclick = forceRefresh;
+    els.uploadBtn.onclick = uploadImage;
 
-    els.s_type.onchange = toggleTypeUI;
-    toggleTypeUI();
+    // bullets helpers
+    els.addLineBtn.onclick = ()=>{ const v = els.s_lines.value; els.s_lines.value = (v?(v+'\n'):'') + '• '; els.s_lines.focus(); };
+    els.clearLinesBtn.onclick = ()=>{ els.s_lines.value=''; };
 
-    els.addLineBtn.onclick = ()=>{
-      els.s_lines.value = (els.s_lines.value ? els.s_lines.value.replace(/\s*$/,'\n') : '') + '';
-      els.s_lines.focus();
-    };
-
-    els.addSlide.onclick = ()=>{
+    // slide add/update
+    function buildSlideFromForm(){
       const t = els.s_type.value;
-      const s = { type:t, title: (els.s_title.value||'').trim(), duration: Math.max(3, +els.s_duration.value || 12) };
-
+      const s = { type:t, title:(els.s_title.value||'').trim(), duration: Math.max(3, +els.s_duration.value || 12) };
       if(t==='bullets'){
-        s.lines = (els.s_lines.value||'').split('\n').map(x=>x.trim()).filter(Boolean);
-        if(!s.lines.length) return alert('Tilføj mindst ét punkt.');
+        s.lines = (els.s_lines.value||'').split('\n').map(x=>x.replace(/^•\s?/,'').trim()).filter(Boolean);
+        if(!s.lines.length) throw new Error('Tilføj mindst ét punkt.');
       }
       if(t==='image' || t==='birthday'){
         let img = (els.s_image.value||'').trim();
-        if(!img) return alert('Angiv billede-URL eller filnavn.');
+        if(!img) throw new Error('Angiv billede-URL eller filnavn.');
         if(!/^https?:\/\//i.test(img) && state.data.media?.baseUrl){
           img = state.data.media.baseUrl.replace(/\/+$/,'') + '/' + img.replace(/^\/+/,'');
         }
         s.image = img;
       }
-      // fødselsdage slide indeholder ingen særfelter i selve slidet (hentes fra settings.birthdays)
+      return s;
+    }
 
-      state.data.slides.push(s);
-      els.s_title.value=''; els.s_lines.value=''; els.s_image.value='';
-      render();
+    els.addSlide.onclick = ()=>{
+      try{
+        const s = buildSlideFromForm();
+        state.data.slides.push(s);
+        els.s_title.value=''; els.s_lines.value=''; els.s_image.value='';
+        render();
+      }catch(err){ alert(err.message||err); }
+    };
+
+    els.updateSlide.onclick = ()=>{
+      if(state.editIndex<0) return;
+      try{
+        const s = buildSlideFromForm();
+        state.data.slides[state.editIndex] = s;
+        state.editIndex = -1;
+        els.addSlide.classList.remove('hide'); els.updateSlide.classList.add('hide');
+        els.s_title.value=''; els.s_lines.value=''; els.s_image.value='';
+        render();
+      }catch(err){ alert(err.message||err); }
     };
 
     els.clearSlides.onclick = ()=>{
       if(confirm('Slet alle slides?')){
         state.data.slides = [];
+        state.editIndex = -1; els.addSlide.classList.remove('hide'); els.updateSlide.classList.add('hide');
         render();
       }
     };
 
+    // birthdays
     els.bd_add.onclick = ()=>{
-      state.data.settings ||= {};
-      state.data.settings.birthdays ||= [];
+      state.data.settings ||= {}; state.data.settings.birthdays ||= [];
       const name = els.bd_name.value.trim();
       const date = els.bd_date.value.trim();
       let photo = els.bd_photo.value.trim();
@@ -485,13 +572,13 @@
       renderBirthdays();
     };
 
-    els.uploadBtn.onclick = uploadImage;
-
+    // init
     (function init(){
       const p = new URLSearchParams(location.search).get('data');
       if(p) state.dataUrl = p;
       els.dataUrl.value = state.dataUrl;
       els.dataUrlView.textContent = state.dataUrl;
+      toggleTypeUI();
       load();
     })();
   </script>
