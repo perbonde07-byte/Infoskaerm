@@ -1,214 +1,216 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Infoskærm</title>
-<style>
-  :root{
-    --bg:#0b1220;--panel:#111a2d;--muted:#9fb0cb;--text:#e8eefb;--line:#243147;--accent:#5aa2ff;
-  }
-  html,body{height:100%;background:radial-gradient(1200px 800px at 60% 40%,#16314d 0%,#0b1220 60%);color:var(--text);margin:0;font-family:system-ui,Segoe UI,Roboto,Arial}
-  .stage{position:relative;height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
-  .frame{width:100%;height:100%;border:1px solid #1b2740;border-radius:18px;background:rgba(17,26,45,.35);backdrop-filter: blur(2px);padding:28px;box-sizing:border-box}
-  .logo{position:absolute;max-height:64px;max-width:300px;opacity:.9;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
-  .tl{top:24px;left:24px}.tr{top:24px;right:24px}.bl{bottom:24px;left:24px}.br{bottom:24px;right:24px}
-  h1{font-size:44px;margin:0 0 18px}
-  ul{margin:0;padding:0 0 0 20px}
-  .muted{color:var(--muted)}
-  .footer{position:absolute;left:28px;right:28px;bottom:18px;font-size:12px;color:#b9c7e0;opacity:.85;display:flex;justify-content:space-between}
-  .panel{background:rgba(8,12,24,.55);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-  table{border-collapse:collapse;width:100%}
-  th,td{border-bottom:1px solid #1e2a42;padding:10px 12px;text-align:left}
-  th{color:#b9c7e0;font-weight:600;letter-spacing:.02em}
-  .green{background:#1f3a21;border:1px solid #2f5d32;border-radius:8px;padding:6px 10px;display:inline-block}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bredsgaard • Infoskaerm</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#111a2d; --muted:#243147; --text:#e8eefb; --accent:#5aa2ff;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    .stage{position:relative;inset:0;display:flex;align-items:center;justify-content:center;height:100%;padding:40px}
+    .card{
+      width:100%;height:100%;border-radius:18px;background:linear-gradient(180deg,#0f172a, #0b1220 70%);
+      border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35);
+      padding:48px;position:relative;overflow:hidden;
+    }
+    /* logo */
+    .logo{position:absolute;max-height:70px;max-width:min(28vw,380px);opacity:.95}
+    .pos-tr{top:22px;right:28px}.pos-tl{top:22px;left:28px}
+    .pos-br{bottom:22px;right:28px}.pos-bl{bottom:22px;left:28px}
+
+    /* footer brand */
+    .brand{position:absolute;left:22px;bottom:18px;font-size:12.5px;opacity:.75}
+
+    /* typografi */
+    h1{margin:0 0 16px;font-size:64px;line-height:1.05}
+    h2{margin:0 0 12px;font-size:38px}
+    p{margin:6px 0;font-size:22px;opacity:.95}
+    ul{margin:18px 0 0 0;padding:0;list-style:none}
+    li{font-size:28px;margin:10px 0;display:flex;align-items:flex-start;gap:14px}
+    li::before{content:"•";color:var(--accent);font-size:34px;line-height:1}
+
+    /* billede */
+    .image-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+    .image-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+
+    /* tømningstabel – simpel, pæn */
+    .table{width:100%;border-collapse:collapse;margin-top:10px}
+    .table th,.table td{border-bottom:1px solid var(--muted);padding:10px 12px;text-align:left;font-size:20px}
+    .hl{background:rgba(90,162,255,.18)}
+
+    /* fødselsdag */
+    .bd-wrap{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:center}
+    .bd-photo{display:flex;align-items:center;justify-content:center}
+    .bd-photo img{max-width:100%;max-height:320px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .bd-flag{font-size:48px}
+
+    /* fade */
+    .fade{animation:fade .45s ease}
+    @keyframes fade{from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none}}
+  </style>
 </head>
 <body>
-<div class="stage">
-  <div class="frame panel" id="content">
-    <!-- indhold kommer her -->
+  <div class="stage">
+    <div class="card" id="card">
+      <img id="logo" class="logo pos-tr" alt="" />
+      <div id="slide"></div>
+      <div id="brand" class="brand"></div>
+    </div>
   </div>
-  <img id="logo" class="logo tr" alt="">
-  <div class="footer"><span id="brand"></span><span class="muted" id="clock"></span></div>
-</div>
 
-<script>
-  // ========== Konfiguration ==========
-  const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
+  <script>
+    // --------- KONFIG ---------
+    const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
+    const POLL_MS = 60000; // tjek for opdateret data hvert minut
 
-  // ========== Utils ==========
-  const $ = s => document.querySelector(s);
-  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+    // --------- STATE ---------
+    let data = { brand:"", logoUrl:"", logoPos:"Øverst højre", slides:[] };
+    let i = 0, timer = null, etag = "", lastMod = "";
 
-  function fmtDa(iso){
-    if(!iso) return '';
-    const d = new Date(iso);
-    if(Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'});
-  }
-  const weekdayDa = ['søn','man','tir','ons','tor','fre','lør'];
+    const el = {
+      slide: document.getElementById("slide"),
+      brand: document.getElementById("brand"),
+      logo:  document.getElementById("logo"),
+      card:  document.getElementById("card"),
+    };
 
-  // uge-Mandag kl 00 → Søndag 23:59
-  function weekSpan(d=new Date()){
-    const x = new Date(d); // find mandag
-    const day = (x.getDay()+6)%7; // 0=man .. 6=søn
-    x.setDate(x.getDate()-day); x.setHours(0,0,0,0);
-    const start = new Date(x);
-    const end = new Date(x); end.setDate(end.getDate()+6); end.setHours(23,59,59,999);
-    return {start,end};
-  }
+    // --------- HENT DATA ---------
+    async function load(force=false){
+      try{
+        const headers = {};
+        if(!force && etag) headers["If-None-Match"] = etag;
+        if(!force && lastMod) headers["If-Modified-Since"] = lastMod;
 
-  // næste tømmedage → rotation
-  function buildEmptiesTable(settings){
-    const {weekdays=[], skip=[], names=[]} = settings?.empties || {};
-    if(!weekdays.length || !names.length) return {rows:[], highlight:-1};
+        const res = await fetch(DATA_URL, {headers});
+        if(res.status === 304) return; // intet nyt
 
-    // find næste ~9 uger, skab liste af datoer for valgte weekdays, spring over "skip"
-    const rows=[]; const now=new Date(); let highlight=-1;
-    const map = {mon:1,tue:2,wed:3,thu:4,fri:5};
-    const wanted = new Set(weekdays.map(w=>map[w]).filter(Boolean));
+        if(!res.ok) throw new Error("HTTP "+res.status);
+        etag = res.headers.get("ETag") || etag;
+        lastMod = res.headers.get("Last-Modified") || lastMod;
 
-    // start fra denne uge
-    let d = new Date(now); d.setHours(12,0,0,0);
-    // rul tilbage til mandag
-    const back = (d.getDay()+6)%7; d.setDate(d.getDate()-back);
-
-    const skipSet = new Set(skip||[]);
-    let personIdx = 0;
-
-    for(let week=0; rows.length<9 && week<20; week++){
-      for(let dow=1; dow<=5; dow++){
-        const day = new Date(d); day.setDate(d.getDate() + week*7 + (dow-1));
-        const iso = day.toISOString().slice(0,10);
-        if(!wanted.has(dow)) continue;
-        if(skipSet.has(iso)) continue;
-
-        rows.push({ date: iso, name: names[personIdx%names.length] });
-        // highlight første kommende
-        if(highlight<0 && day >= new Date(now.toDateString())) highlight = rows.length-1;
-        personIdx++;
-        if(rows.length>=10) break;
-      }
-    }
-    return {rows, highlight};
-  }
-
-  // ========== Rendering ==========
-  function renderLogo(d){
-    const el = $('#logo');
-    const url = d.logo?.url || '';
-    el.src = url || '';
-    el.style.display = url ? 'block' : 'none';
-    el.className = 'logo ' + (
-      d.logo?.pos==='top-left' ? 'tl' :
-      d.logo?.pos==='bottom-left' ? 'bl' :
-      d.logo?.pos==='bottom-right' ? 'br' : 'tr'
-    );
-  }
-
-  function viewBullets(slide){
-    return `
-      <h1>${slide.title||''}</h1>
-      <ul class="muted">${(slide.lines||[]).map(li=>`<li style="margin:8px 0;font-size:22px;color:#dce6f7">${li}</li>`).join('')}</ul>
-    `;
-  }
-
-  function viewImage(slide){
-    return `
-      <h1>${slide.title||''}</h1>
-      <div style="display:flex;align-items:center;justify-content:center;height:calc(100% - 80px)">
-        ${slide.image ? `<img src="${slide.image}" alt="" style="max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 10px 24px rgba(0,0,0,.35)">`
-                       : `<div class="muted">Ingen billede-URL</div>`}
-      </div>
-    `;
-  }
-
-  function viewEmpties(d){
-    const {rows,highlight} = buildEmptiesTable(d.settings);
-    if(!rows.length) return `<h1>Tømning</h1><div class="muted">Konfigurér ugedage og navne i admin.</div>`;
-    return `
-      <h1>TØMNINGS DAGE</h1>
-      <table>
-        <thead><tr><th>Navn</th><th>Dato</th></tr></thead>
-        <tbody>
-          ${rows.map((r,i)=>`
-            <tr style="${i===highlight?'background:#142f18':''}">
-              <td>${i===highlight?`<span class="green">${r.name}</span>`:r.name}</td>
-              <td>${fmtDa(r.date)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-  }
-
-  function viewBirthday(d){
-    const list = d.settings?.birthdays||[];
-    if(!list.length) return `<h1>Fødselsdage</h1><div class="muted">Tilføj personer i admin.</div>`;
-    const {start,end} = weekSpan();
-    const weekItems = list.filter(b=>{
-      const thisYear = new Date(`${new Date().getFullYear()}-${b.date.slice(5)}`);
-      // håndter 29/02: hvis ikke skudår → flyt til 28/02
-      if(isNaN(thisYear.getTime())) return false;
-      return thisYear>=start && thisYear<=end;
-    });
-    if(!weekItems.length) return `<h1>Fødselsdage</h1><div class="muted">Ingen fødselsdage i denne uge.</div>`;
-    const it = weekItems[0];
-    return `
-      <h1 style="margin-bottom:6px">Tillykke med fødselsdagen</h1>
-      <div class="muted" style="margin-bottom:18px">${fmtDa(new Date().getFullYear()+'-'+it.date.slice(5))}</div>
-      <div style="display:flex;align-items:center;gap:24px">
-        ${it.photo ? `<img src="${it.photo}" alt="" style="width:280px;height:280px;object-fit:cover;border-radius:50%;box-shadow:0 10px 24px rgba(0,0,0,.35)">`
-                    : `<div style="width:280px;height:280px;border-radius:50%;background:#16243c;display:flex;align-items:center;justify-content:center;font-size:62px;letter-spacing:.1em">${(it.name||'?').slice(0,1).toUpperCase()}</div>`}
-        <div>
-          <div style="font-size:56px;font-weight:800">${it.name||''}</div>
-          <div class="muted" style="margin-top:10px;font-size:22px">Vi håber du får en rigtig god uge 🎉</div>
-        </div>
-      </div>
-    `;
-  }
-
-  async function run(){
-    try{
-      const res = await fetch(DATA_URL + '?v='+Date.now());
-      const data = await res.json();
-
-      $('#brand').textContent = data.brand || 'Bredsgaard • Infoskaerm';
-      renderLogo(data);
-
-      const slides = data.slides || [];
-      if(!slides.length){
-        $('#content').innerHTML = `<h1>Ingen slides</h1><ul><li>Tilføj slides i admin.</li></ul>`;
-        return;
-      }
-
-      // loop
-      while(true){
-        for(const s of slides){
-          let html='';
-          if(s.type==='bullets') html = viewBullets(s);
-          else if(s.type==='image') html = viewImage(s);
-          else if(s.type==='empties') html = viewEmpties(data);
-          else if(s.type==='birthday') html = viewBirthday(data);
-          else html = `<h1>${s.title||''}</h1>`;
-
-          $('#content').innerHTML = html;
-          await sleep((s.duration||12)*1000);
+        data = await res.json();
+        i = 0;
+        renderBrandLogo();
+        play(); // start forfra på første slide
+      }catch(err){
+        // hvis vi ingen data har, vis bare tom baggrund
+        console.warn("load:", err.message);
+        renderBrandLogo();
+        if(!data.slides || !data.slides.length){
+          el.slide.innerHTML = ""; // ingen fallback-tekst
         }
       }
-    }catch(err){
-      $('#content').innerHTML = `<h1>Fejl</h1><div class="muted">${err.message}</div>`;
     }
-  }
 
-  // clock
-  setInterval(()=>{
-    const n = new Date();
-    $('#clock').textContent = n.toLocaleString('da-DK',{weekday:'long', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-  }, 1000);
+    function renderBrandLogo(){
+      el.brand.textContent = data.brand || "";
+      // Logo
+      el.logo.src = (data.logoUrl||"").trim();
+      el.logo.style.display = el.logo.src ? "block":"none";
+      el.logo.classList.remove("pos-tr","pos-tl","pos-br","pos-bl");
+      switch((data.logoPos||"Øverst højre").toLowerCase()){
+        case "øverst venstre": el.logo.classList.add("pos-tl"); break;
+        case "nederst højre":  el.logo.classList.add("pos-br"); break;
+        case "nederst venstre":el.logo.classList.add("pos-bl"); break;
+        default:               el.logo.classList.add("pos-tr");
+      }
+    }
 
-  run();
-</script>
+    // --------- VIS SLIDES ---------
+    function play(){
+      clearTimeout(timer);
+      if(!data.slides || !data.slides.length){
+        el.slide.innerHTML = ""; // ingen slides => blank
+        timer = setTimeout(next, 10000);
+        return;
+      }
+      const s = data.slides[i % data.slides.length];
+      show(s);
+      timer = setTimeout(next, Math.max(4, +s.duration || 12) * 1000);
+    }
+    function next(){ i = (i+1) % Math.max(1, data.slides.length || 1); play(); }
+
+    // Renderer pr. skabelon
+    function show(s){
+      const wrap = document.createElement("div");
+      wrap.className = "fade";
+
+      if(s.type === "image"){
+        wrap.innerHTML = `
+          <div class="image-wrap">
+            <img src="${escapeHtml(s.image||'')}" alt="" />
+          </div>`;
+      }
+      else if(s.type === "empties"){ // Tømningstabel – forventer title + lines med CSV "navn;dato"
+        wrap.innerHTML = `
+          <h1>${escapeHtml(s.title||'Tømning')}</h1>
+          <table class="table" id="tTbl"><thead><tr><th>Navn</th><th>Dato</th></tr></thead><tbody></tbody></table>`;
+        const tb = wrap.querySelector("#tTbl tbody");
+        const rows = (s.lines||[]).map(x=>x.split("|").join("")).filter(Boolean);
+        const today = new Date(); today.setHours(0,0,0,0);
+        rows.forEach(line=>{
+          // Accepter "Navn;YYYY-MM-DD" eller "Navn,DD-MM-YYYY"
+          let [navn, dato] = line.split(/[,;]+/).map(t=>t.trim());
+          let d = parseDateLoose(dato);
+          const tr = document.createElement("tr");
+          if(isSameWeek(d,today)) tr.className = "hl";
+          tr.innerHTML = `<td>${escapeHtml(navn)}</td><td>${formatDK(d)}</td>`;
+          tb.appendChild(tr);
+        });
+      }
+      else if(s.type === "birthday"){ // Fødselsdag – titel som “Tillykke”, lines = [navn, ...tekst], image valgfrit
+        const navn = (s.lines||[])[0] || s.title || "Tillykke!";
+        const extra = (s.lines||[]).slice(1).join(" ");
+        wrap.innerHTML = `
+          <div class="bd-wrap">
+            <div>
+              <div class="bd-flag">🎉 🇩🇰 🎉</div>
+              <h1>${escapeHtml(navn)}</h1>
+              ${extra?`<p>${escapeHtml(extra)}</p>`:""}
+            </div>
+            <div class="bd-photo">${s.image?`<img src="${escapeHtml(s.image)}" alt="">`:""}</div>
+          </div>`;
+      }
+      else { // bullets (default)
+        const items = (s.lines||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("") || "<li>(tom)</li>";
+        wrap.innerHTML = `
+          ${s.title?`<h1>${escapeHtml(s.title)}</h1>`:""}
+          <ul>${items}</ul>`;
+      }
+
+      el.slide.replaceChildren(wrap);
+    }
+
+    // --------- HJÆLPERE ---------
+    function escapeHtml(s){ return (s||"").replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+    function formatDK(d){ if(!(d instanceof Date) || isNaN(d)) return ""; const dd=String(d.getDate()).padStart(2,"0"); const mm=String(d.getMonth()+1).padStart(2,"0"); return `${dd}-${mm}-${d.getFullYear()}`; }
+    function isSameWeek(d1,d2){
+      if(!d1||!d2||isNaN(d1)||isNaN(d2)) return false;
+      const a=new Date(d1), b=new Date(d2);
+      a.setHours(0,0,0,0); b.setHours(0,0,0,0);
+      const day = (x)=> (x.getDay()+6)%7; // ISO-uge, mandag 0
+      const aMon = new Date(a); aMon.setDate(a.getDate()-day(a));
+      const bMon = new Date(b); bMon.setDate(b.getDate()-day(b));
+      return aMon.getTime()===bMon.getTime();
+    }
+    function parseDateLoose(s){
+      if(!s) return new Date(NaN);
+      // YYYY-MM-DD
+      let m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+      // DD-MM-YYYY
+      m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+      if(m) return new Date(+m[3], +m[2]-1, +m[1]);
+      const d = new Date(s); return d;
+    }
+
+    // --------- KØR ---------
+    load(true);
+    setInterval(load, POLL_MS);
+  </script>
 </body>
 </html>
+
