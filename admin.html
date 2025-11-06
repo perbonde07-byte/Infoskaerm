@@ -1,155 +1,134 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin • Infoskaerm</title>
-
-  <!-- === ADMIN GATE === -->
-  <script>
-    const ADMIN_KEY = "0705";
-
-    (function gate() {
-      try {
-        const Q = new URLSearchParams(location.search);
-        const pinFromUrl = (Q.get("admin") || "").trim();
-
-        if (pinFromUrl && pinFromUrl === ADMIN_KEY) {
-          localStorage.setItem("admin_ok", "1");
-          const url = new URL(location.href);
-          url.searchParams.delete("admin");
-          location.replace(url.toString());
-          return;
-        }
-
-        if (localStorage.getItem("admin_ok") === "1") return;
-
-        const html = `
-          <style>
-            html,body{height:100%;margin:0}
-            body{background:#0b1220;color:#e8eefb;font-family:system-ui,Segoe UI,Roboto,Arial;
-                 display:flex;align-items:center;justify-content:center}
-            .card{width:min(92vw,420px);background:#111a2d;border:1px solid rgba(255,255,255,.1);
-                  border-radius:16px;padding:24px;text-align:center}
-            h1{font-size:22px;margin:0 0 8px}
-            p{opacity:.8;margin:0 0 16px}
-            input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #243147;
-                  background:#0f172a;color:#e8eefb;font-size:16px;letter-spacing:0.2em;text-align:center}
-            button{margin-top:12px;width:100%;padding:12px 14px;border:0;border-radius:10px;
-                   background:#5aa2ff;color:#061022;font-weight:600;font-size:15px;cursor:pointer}
-            .hint{margin-top:10px;font-size:12px;opacity:.7}
-          </style>
-          <div class="card">
-            <h1>Ingen adgang</h1>
-            <p>Indtast kode for at åbne admin.</p>
-            <input id="pin" placeholder="Kode" inputmode="numeric" autocomplete="one-time-code" />
-            <button id="ok">Log ind</button>
-            <div class="hint">Tip: du kan også åbne med <code>?admin=${ADMIN_KEY}</code></div>
-          </div>
-        `;
-        document.documentElement.innerHTML = html;
-
-        addEventListener("click", (e) => {
-          if (e.target && e.target.id === "ok") tryLogin();
-        });
-        addEventListener("keydown", (e) => {
-          if (e.key === "Enter") tryLogin();
-        });
-
-        function tryLogin() {
-          const val = (document.getElementById("pin").value || "").trim();
-          if (val === ADMIN_KEY) {
-            localStorage.setItem("admin_ok", "1");
-            location.reload();
-          } else {
-            alert("Forkert kode");
-          }
-        }
-      } catch (err) {
-        console.error("Admin-gate fejl:", err);
-      }
-    })();
-  </script>
-  <!-- === /ADMIN GATE === -->
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin • Infoskærm</title>
   <style>
-    body {
-      background: #0b1220;
-      color: #e8eefb;
-      font-family: system-ui, Segoe UI, Roboto, Arial;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 { text-align: center; margin-bottom: 20px; }
-    section { background: #111a2d; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
-    label { display: block; margin-top: 10px; }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #243147;
-      background: #0f172a;
-      color: #e8eefb;
-      font-size: 15px;
-    }
-    button {
-      margin-top: 10px;
-      background: #5aa2ff;
-      color: #061022;
-      border: 0;
-      border-radius: 8px;
-      padding: 10px 14px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
-    td, th { border-bottom: 1px solid #243147; padding: 6px 8px; }
-    th { text-align: left; opacity: 0.8; }
-    #status { margin-top: 10px; font-size: 14px; opacity: 0.8; }
+    :root{--bg:#0b1220;--panel:#111a2d;--muted:#96a2be;--fg:#e8eefb;--acc:#5aa2ff}
+    html,body{margin:0;height:100%}
+    body{background:var(--bg);color:var(--fg);font-family:system-ui,Segoe UI,Roboto,Arial;padding:20px}
+    h1{margin:8px 0 18px}
+    section{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:18px}
+    label{display:block;margin:10px 0 6px;color:var(--muted)}
+    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #243147;background:#0f172a;color:var(--fg)}
+    textarea{min-height:110px}
+    .row{display:grid;gap:16px}
+    .grid-2{grid-template-columns:1fr 1fr}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    button{background:var(--acc);color:#071224;border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;margin-right:8px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+    th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em;text-align:left}
+    .hidden{display:none}
+    #status{margin-top:8px;color:var(--muted)}
   </style>
 </head>
-
 <body>
-  <h1>Admin • Infoskaerm</h1>
+  <h1>Admin • Infoskærm</h1>
 
   <section>
-    <h3>Datakilde</h3>
-    <p>Adresse til data.json</p>
+    <label>Adresse til <code>data.json</code></label>
     <input id="dataUrl" value="https://perbonde07-byte.github.io/Infoskaerm/data.json" />
-    <button id="loadBtn">Hent data</button>
-    <button id="downloadBtn">Download ny data.json</button>
-    <button id="saveServerBtn">Gem til server</button>
+    <div style="margin-top:10px">
+      <button id="loadBtn">Hent data</button>
+      <button id="downloadBtn">Download ny data.json</button>
+      <button id="saveServerBtn">Gem til server</button>
+    </div>
     <div id="status"></div>
   </section>
 
   <section>
-    <h3>Slides</h3>
-    <label>Type</label>
-    <select id="s_type">
-      <option value="bullets">bullets (punktliste)</option>
-      <option value="image">image (fuldskærmsbillede)</option>
-    </select>
+    <h3>Tilføj slide</h3>
+    <div class="row grid-3">
+      <div>
+        <label>Skabelon</label>
+        <select id="tpl">
+          <option value="bullets">Bullets (tekst)</option>
+          <option value="image">Image (billede)</option>
+          <option value="rota">Tømningsdage (rota)</option>
+        </select>
+      </div>
+      <div>
+        <label>Titel</label>
+        <input id="title" placeholder="Titel..." />
+      </div>
+      <div>
+        <label>Varighed (sek.)</label>
+        <input id="duration" type="number" value="12" />
+      </div>
+    </div>
 
-    <label>Titel</label>
-    <input id="s_title" placeholder="Titel..." />
+    <!-- BULLETS -->
+    <div id="grp-bullets">
+      <label>Linjer (brug | til flere)</label>
+      <textarea id="lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
+    </div>
 
-    <label>Linjer (brug | til flere)</label>
-    <textarea id="s_lines" rows="3" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
+    <!-- IMAGE -->
+    <div id="grp-image" class="hidden">
+      <div class="row grid-2">
+        <div>
+          <label>Billede (URL)</label>
+          <input id="image" placeholder="https://..." />
+        </div>
+        <div>
+          <label>Upload</label>
+          <div style="display:flex;gap:8px">
+            <input type="file" id="imgUpload" accept="image/*" />
+            <button id="uploadBtn">Upload</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <label>Billede (URL eller upload)</label>
-    <input id="s_image" placeholder="https://..." />
-    <input type="file" id="imgUpload" accept="image/*" />
-    <button id="uploadBtn">Upload billede</button>
+    <!-- ROTA -->
+    <div id="grp-rota" class="hidden">
+      <div class="row grid-3">
+        <div>
+          <label>Startdato</label>
+          <input id="rotaStart" type="date" />
+        </div>
+        <div>
+          <label>Vis (uger)</label>
+          <input id="rotaWeeks" type="number" value="10" />
+        </div>
+        <div>
+          <label>“Ingen” tekst</label>
+          <input id="rotaPlaceholder" value="Ingen" />
+        </div>
+      </div>
 
-    <label>Varighed (sek.)</label>
-    <input id="s_duration" type="number" value="12" />
+      <label>Ugedage</label>
+      <div class="row" style="grid-template-columns:repeat(7,1fr)">
+        <label><input type="checkbox" id="wd_sun"> Søn</label>
+        <label><input type="checkbox" id="wd_mon"> Man</label>
+        <label><input type="checkbox" id="wd_tue"> Tir</label>
+        <label><input type="checkbox" id="wd_wed"> Ons</label>
+        <label><input type="checkbox" id="wd_thu"> Tor</label>
+        <label><input type="checkbox" id="wd_fri"> Fre</label>
+        <label><input type="checkbox" id="wd_sat"> Lør</label>
+      </div>
 
-    <button id="addSlide">Tilføj slide</button>
-    <button id="clearSlides">Tøm alle slides</button>
+      <div class="row grid-2">
+        <div>
+          <label>Navne i rotation (én pr. linje)</label>
+          <textarea id="rotaNames" placeholder="Claus&#10;Peter&#10;Mads"></textarea>
+        </div>
+        <div>
+          <label>Blackouts (datoer, én pr. linje, YYYY-MM-DD)</label>
+          <textarea id="rotaBlackouts" placeholder="2025-12-29&#10;2025-12-30"></textarea>
+        </div>
+      </div>
+
+      <label>Overrides (én pr. linje: YYYY-MM-DD = Navn)</label>
+      <textarea id="rotaOverrides" placeholder="2025-12-24 = Per"></textarea>
+    </div>
+
+    <div style="margin-top:10px">
+      <button id="addSlide">Tilføj slide</button>
+      <button id="clearSlides">Tøm alle slides</button>
+    </div>
 
     <table id="slidesTable">
       <thead><tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr></thead>
@@ -158,108 +137,156 @@
   </section>
 
   <script>
-    const state = {
-      dataUrl: document.getElementById('dataUrl').value,
-      data: { brand: "Bredsgaard Info", slides: [] }
-    };
-    const $ = (s) => document.querySelector(s);
+    // ===== basic state =====
+    const $ = s => document.querySelector(s);
+    const state = { dataUrl: $('#dataUrl').value, data:{ brand:'Bredsgaard Info', slides:[] } };
     const status = $('#status');
 
-    function render() {
-      const tbody = $('#slidesTable tbody');
-      tbody.innerHTML = '';
-      state.data.slides.forEach((s, i) => {
+    // UI show/hide groups
+    function onTplChange(){
+      const t = $('#tpl').value;
+      $('#grp-bullets').classList.toggle('hidden', t!=='bullets');
+      $('#grp-image').classList.toggle('hidden', t!=='image');
+      $('#grp-rota').classList.toggle('hidden', t!=='rota');
+    }
+    $('#tpl').addEventListener('change', onTplChange);
+    onTplChange();
+
+    // render table
+    function render(){
+      const tb = $('#slidesTable tbody'); tb.innerHTML='';
+      state.data.slides.forEach((s,i)=>{
+        const preview = s.type==='image' ? (s.image||'(intet)') :
+                        s.type==='bullets' ? (s.lines||[]).join(' | ') :
+                        s.type==='rota' ? `Start ${s.startDate}, ${ (s.weekdays||[]).join(', ') }` : '';
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${i + 1}</td>
+          <td>${i+1}</td>
           <td>${s.type}</td>
-          <td>${s.title}</td>
-          <td>${s.type === 'image' ? (s.image || '(intet)') : (s.lines || []).join(' | ')}</td>
-          <td><button data-i="${i}" class="del-slide">Slet</button></td>
-        `;
-        tbody.appendChild(tr);
+          <td>${s.title||''}</td>
+          <td>${preview}</td>
+          <td><button data-i="${i}" class="del">Slet</button></td>`;
+        tb.appendChild(tr);
       });
-      tbody.querySelectorAll('.del-slide').forEach(b => b.onclick = e => {
-        const i = +e.target.dataset.i;
-        state.data.slides.splice(i, 1);
-        render();
+      tb.querySelectorAll('.del').forEach(btn=>{
+        btn.onclick = e => { const i = +e.target.dataset.i; state.data.slides.splice(i,1); render(); };
       });
     }
 
-    async function load() {
-      try {
-        status.textContent = 'Henter data...';
-        const res = await fetch(state.dataUrl + '?v=' + Date.now());
-        if (res.ok) {
-          state.data = await res.json();
-          render();
-          status.textContent = 'Data hentet';
-        } else throw new Error('HTTP ' + res.status);
-      } catch (e) {
-        state.data = { brand: 'Bredsgaard Info', slides: [] };
+    // load data.json
+    async function load(){
+      try{
+        status.textContent='Henter data...';
+        const r = await fetch($('#dataUrl').value+'?v='+Date.now());
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        state.data = await r.json();
         render();
-        status.textContent = 'Ingen eksisterende data.json – starter tomt';
+        status.textContent='Data hentet';
+      }catch(e){
+        state.data = { brand:'Bredsgaard Info', slides:[] };
+        render();
+        status.textContent='Ingen eksisterende data.json – starter tomt';
+      }
+    }
+    $('#loadBtn').onclick = load;
+
+    // download
+    $('#downloadBtn').onclick = ()=>{
+      const blob = new Blob([JSON.stringify(state.data,null,2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
+    };
+
+    // collect slide
+    function collectSlide(){
+      const t = $('#tpl').value;
+      if(t==='bullets'){
+        return {
+          type:'bullets',
+          title: $('#title').value.trim(),
+          lines: ($('#lines').value||'').split('|').map(x=>x.trim()).filter(Boolean),
+          duration: +$('#duration').value||12
+        };
+      }
+      if(t==='image'){
+        return {
+          type:'image',
+          title: $('#title').value.trim(),
+          image: $('#image').value.trim(),
+          duration: +$('#duration').value||12
+        };
+      }
+      if(t==='rota'){
+        const weekdays=[];
+        if($('#wd_sun').checked) weekdays.push('sun');
+        if($('#wd_mon').checked) weekdays.push('mon');
+        if($('#wd_tue').checked) weekdays.push('tue');
+        if($('#wd_wed').checked) weekdays.push('wed');
+        if($('#wd_thu').checked) weekdays.push('thu');
+        if($('#wd_fri').checked) weekdays.push('fri');
+        if($('#wd_sat').checked) weekdays.push('sat');
+
+        const names = ($('#rotaNames').value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+        const blackouts = ($('#rotaBlackouts').value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+        const overrides = {};
+        ($('#rotaOverrides').value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(line=>{
+          const m=line.split('=').map(x=>x.trim());
+          if(m[0]) overrides[m[0]]=m[1]||'';
+        });
+
+        return {
+          type:'rota',
+          title: $('#title').value.trim()||'TØMNINGS DAGE',
+          startDate: $('#rotaStart').value || new Date().toISOString().slice(0,10),
+          weekdays, names, blackouts, overrides,
+          placeholder: $('#rotaPlaceholder').value||'Ingen',
+          weeksToShow: +$('#rotaWeeks').value || 10,
+          duration: +$('#duration').value||12
+        };
       }
     }
 
-    $('#loadBtn').onclick = load;
-    $('#addSlide').onclick = () => {
-      const s = {
-        type: $('#s_type').value,
-        title: $('#s_title').value.trim(),
-        lines: ($('#s_lines').value || '').split('|').map(x => x.trim()).filter(Boolean),
-        image: $('#s_image').value.trim(),
-        duration: +$('#s_duration').value || 12
-      };
+    $('#addSlide').onclick = ()=>{
+      const s = collectSlide();
+      if(!s) return;
       state.data.slides.push(s);
       render();
     };
-    $('#clearSlides').onclick = () => { if (confirm('Slet alt?')) { state.data.slides = []; render(); } };
-    $('#downloadBtn').onclick = () => {
-      const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'data.json';
-      a.click();
-    };
+    $('#clearSlides').onclick = ()=>{ if(confirm('Sikker på at slette alle slides?')){ state.data.slides=[]; render(); } };
 
-    $('#saveServerBtn').onclick = async () => {
-      try {
-        status.textContent = 'Gemmer til server...';
-        const res = await fetch('/api/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(state.data)
-        });
-        const text = await res.text();
-        if (!res.ok) throw new Error(text);
-        status.textContent = '✅ Data gemt på GitHub!';
-      } catch (err) {
-        status.textContent = 'Fejl under gemning: ' + err.message;
+    // save to server (via /api/save)
+    $('#saveServerBtn').onclick = async ()=>{
+      try{
+        status.textContent='Gemmer til server...';
+        const r = await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(state.data) });
+        const txt = await r.text();
+        if(!r.ok) throw new Error(txt);
+        status.textContent='✅ Data gemt på GitHub';
+      }catch(e){
+        status.textContent='Fejl under gemning: '+e.message;
       }
     };
 
-    $('#uploadBtn').onclick = async () => {
-      const file = $('#imgUpload').files[0];
-      if (!file) return alert('Vælg et billede først.');
+    // upload image (optional)
+    $('#uploadBtn').onclick = async ()=>{
+      const f = $('#imgUpload').files[0];
+      if(!f) return alert('Vælg et billede først.');
       const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = e.target.result.split(',')[1];
-        const res = await fetch('/api/upload-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: file.name, data: base64 })
-        });
-        const r = await res.json();
-        if (r.ok) {
-          $('#s_image').value = r.cdnUrl;
-          alert('✅ Upload gennemført!');
-        } else alert('Fejl: ' + (r.error || 'ukendt'));
+      reader.onload = async e=>{
+        try{
+          const base64 = e.target.result.split(',')[1];
+          const r = await fetch('/api/upload-image', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:f.name, data:base64}) });
+          const j = await r.json();
+          if(!r.ok||!j.ok) throw new Error(j.error||'upload fejl');
+          $('#image').value = j.cdnUrl || j.rawUrl;
+          alert('Upload OK');
+        }catch(err){ alert('Upload-fejl: '+err.message); }
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(f);
     };
 
+    // start
     load();
   </script>
 </body>
 </html>
+
