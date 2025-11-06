@@ -5,227 +5,119 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin • Infoskærm</title>
   <style>
-    :root{--bg:#0b1220;--fg:#e8eefb;--muted:#9fb2d1;--acc:#5aa2ff;--card:#111a2d;}
+    :root{ --bg:#0b1220; --fg:#e8eefb; --muted:#9fb2d1; --acc:#5aa2ff; --card:#10172b }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial}
-    .wrap{max-width:1000px;margin:24px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:16px 0}
-    h1,h2{margin:0 0 .6rem 0}
-    label{display:block;margin:.4rem 0;font-weight:600}
-    input,textarea,select{width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,.12);background:#0f1830;color:var(--fg);border-radius:10px;outline:none}
-    textarea{min-height:110px;resize:vertical}
-    button{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#0f1830;color:var(--fg);cursor:pointer}
-    button.primary{background:var(--acc);color:#021226;border:none}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .table{width:100%;border-collapse:collapse}
-    .table th,.table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .hint{margin-left:8px;font-size:12px;color:var(--muted)}
-    .ok{color:#56d364}
-    .gate{display:flex;align-items:center;justify-content:center;height:100vh}
-    .hidden{display:none}
-    code{background:#0f1830;padding:2px 6px;border-radius:6px}
+    body{ margin:0; background:#0b1220; color:var(--fg); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto; }
+    .wrap{ max-width:1100px; margin:30px auto; padding:0 16px }
+    h1{ margin:10px 0 24px; font-size:22px }
+    .grid{ display:grid; gap:14px }
+    .card{ background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px }
+    label{ display:block; font-weight:600; margin-bottom:6px }
+    input[type="text"], textarea, select{
+      width:100%; background:#0f1630; color:var(--fg); border:1px solid rgba(255,255,255,.12);
+      border-radius:10px; padding:10px 12px; outline:none;
+    }
+    textarea{ min-height:90px }
+    .row{ display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end }
+    button{
+      background:var(--acc); border:0; color:#00172e; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer;
+    }
+    .hint{ color:var(--muted); font-size:13px; margin-top:6px }
+    table{ width:100%; border-collapse:collapse; margin-top:12px; }
+    th,td{ padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.08) }
+    .right{ text-align:right }
+    .danger{ background:#e35d6a; color:#120207 }
+    .ghost{ background:transparent; border:1px solid rgba(255,255,255,.25); color:var(--fg) }
+    .flex{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+    .ok{ color:#74e39d }
+    .err{ color:#ff8a8a }
+    #gate{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:#0b1220; }
   </style>
 </head>
 <body>
+<div id="gate"></div>
 
-<!-- Adgangs-gate -->
-<div id="gate" class="gate">
-  <div class="card" style="max-width:440px;width:90%;text-align:center">
-    <h2>Ingen adgang</h2>
-    <p class="hint">Åbn med <code>?admin=0705</code></p>
-  </div>
-</div>
-
-<!-- App -->
-<div id="app" class="wrap hidden">
+<div class="wrap">
   <h1>Admin • Infoskærm</h1>
 
-  <div class="card">
-    <label>Adresse til <code>data.json</code></label>
-    <input id="dataUrl" value="https://perbonde07-byte.github.io/Infoskaerm/data.json" />
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button id="btnLoad">Hent data</button>
-      <button id="btnDownload">Download ny data.json</button>
-      <button id="btnSave" class="primary">Gem til server</button>
-      <span id="status" class="hint"></span>
+  <div class="card grid">
+    <div>
+      <label for="dataUrl">Adresse til <code>data.json</code></label>
+      <div class="row">
+        <input id="dataUrl" type="text" value="https://perbonde07-byte.github.io/Infoskaerm/data.json" />
+        <div class="flex">
+          <button id="loadBtn" class="ghost">Hent data</button>
+          <button id="downloadBtn" class="ghost">Download ny data.json</button>
+          <button id="saveBtn">Gem til server</button>
+        </div>
+      </div>
+      <div id="status" class="hint">Klar</div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Slides</h2>
+  <div class="card grid">
+    <h3 style="margin:0">Slides</h3>
 
-    <div class="row">
+    <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
       <div>
-        <label>Type</label>
+        <label for="s_type">Type</label>
         <select id="s_type">
           <option value="bullets">bullets (punktliste)</option>
-          <option value="image">image (fuldskærm)</option>
+          <option value="image">image (fuldskærmsbillede)</option>
         </select>
       </div>
       <div>
-        <label>Titel</label>
-        <input id="s_title" placeholder="Titel..." />
+        <label for="s_title">Titel</label>
+        <input id="s_title" type="text" placeholder="Titel…" />
       </div>
     </div>
 
-    <label>Linjer (brug | til flere)</label>
-    <textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
+    <div>
+      <label for="s_lines">Linjer (brug | til flere)</label>
+      <textarea id="s_lines" placeholder="Punkt 1 | Punkt 2 | Punkt 3"></textarea>
+    </div>
 
-    <div class="row">
+    <div class="grid" style="grid-template-columns:1fr auto; gap:12px">
       <div>
-        <label>Billede (URL eller upload)</label>
-        <input id="s_image" placeholder="https://… (eller vælg fra liste)" />
+        <label for="s_image">Billede (URL eller upload)</label>
+        <input id="s_image" type="text" placeholder="https://… (eller vælg fra liste)" />
       </div>
-      <div>
-        <label>&nbsp;</label>
-        <div style="display:flex;gap:8px">
-          <input type="file" id="fileInput" />
-          <button id="btnUpload">Upload billede</button>
-          <button id="btnMedia">Hent medieliste</button>
-        </div>
-        <select id="mediaSelect" style="margin-top:8px"></select>
+      <div class="flex">
+        <input type="file" id="filePicker" accept="image/*" />
+        <button id="uploadBtn" class="ghost">Upload billede</button>
       </div>
     </div>
 
-    <div class="row" style="margin-top:12px">
+    <div class="grid" style="grid-template-columns:1fr 200px; gap:12px">
       <div>
-        <label>Varighed (sek.)</label>
-        <input id="s_duration" value="12" />
+        <select id="mediaList"><option value="">— vælg uploadet fil —</option></select>
       </div>
-      <div style="display:flex;align-items:flex-end;gap:8px">
-        <button id="btnAdd" class="primary">Tilføj slide</button>
-        <button id="btnClear">Tøm alle slides</button>
+      <button id="fetchMedia" class="ghost">Hent medieliste</button>
+    </div>
+
+    <div class="grid" style="grid-template-columns:240px 1fr; gap:12px; align-items:end">
+      <div>
+        <label for="s_duration">Varighed (sek.)</label>
+        <input id="s_duration" type="text" value="12" />
+      </div>
+      <div class="flex">
+        <button id="addSlide">Tilføj slide</button>
+        <button id="clearSlides" class="ghost">Tøm alle slides</button>
       </div>
     </div>
 
-    <table class="table" style="margin-top:14px">
-      <thead><tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th></th></tr></thead>
-      <tbody id="slidesTbody"></tbody>
+    <table id="slidesTable">
+      <thead><tr><th>#</th><th>Type</th><th>Titel</th><th>Forhåndsvisning</th><th class="right">Handling</th></tr></thead>
+      <tbody></tbody>
     </table>
   </div>
 </div>
 
 <script>
-/*** Adgang ***/
-const PIN="0705";
-(function(){
-  const p=new URLSearchParams(location.search).get('admin');
-  if(p===PIN) localStorage.setItem('admin_ok','1');
-  if(localStorage.getItem('admin_ok')==='1'){
-    document.getElementById('gate').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-  }
-})();
-
-/*** API-baser (GitHub Pages -> Vercel API) ***/
-const API_BASE = (location.hostname.endsWith('vercel.app')||location.hostname==='localhost')
-  ? '' : 'https://infoskaerm.vercel.app';
-
-const SAVE_API   = `${API_BASE}/api/save`;
-const UPLOAD_API = `${API_BASE}/api/upload-image`;
-const MEDIA_API  = `${API_BASE}/api/media-list`;
-
-/*** State ***/
-const $=s=>document.querySelector(s);
-const tbody=$('#slidesTbody'), statusEl=$('#status');
-const state={ dataUrl: $('#dataUrl').value, data:{brand:'Bredsgaard Info',slides:[]} };
-
-/*** Render ***/
-function render(){
-  tbody.innerHTML='';
-  state.data.slides.forEach((s,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${s.type}</td><td>${s.title||''}</td><td>${s.type==='image'?(s.image||''):(s.lines||[]).join(' | ')}</td><td><button data-i="${i}" class="del">Slet</button></td>`;
-    tbody.appendChild(tr);
-  });
-  tbody.querySelectorAll('.del').forEach(b=>b.onclick=e=>{
-    state.data.slides.splice(+e.target.dataset.i,1); render();
-  });
-}
-
-/*** Hent data ***/
-async function load(){
-  try{
-    statusEl.textContent='Henter…';
-    const r=await fetch(state.dataUrl+'?v='+Date.now());
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    state.data=await r.json(); render();
-    statusEl.textContent='Data hentet'; statusEl.className='hint ok';
-  }catch(e){
-    statusEl.textContent='Starter tom'; state.data={brand:'Bredsgaard Info',slides:[]}; render();
-  }
-}
-
-/*** Download ***/
-function downloadData(){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'}));
-  a.download='data.json'; a.click();
-}
-
-/*** Gem ***/
-async function saveToServer(){
-  try{
-    statusEl.textContent='Gemmer…';
-    const r=await fetch(SAVE_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state.data)});
-    const t=await r.text();
-    if(!r.ok){ alert('Fejl under gemning: '+t); statusEl.textContent='Fejl'; return; }
-    statusEl.textContent='Gemt ✔'; statusEl.className='hint ok';
-  }catch(e){ alert('Fejl: '+e.message); statusEl.textContent='Fejl'; }
-}
-
-/*** Slides ***/
-function addSlide(){
-  state.data.slides.push({
-    type:$('#s_type').value,
-    title:$('#s_title').value.trim(),
-    lines:($('#s_lines').value||'').split('|').map(x=>x.trim()).filter(Boolean),
-    image:$('#s_image').value.trim(),
-    duration:+($('#s_duration').value||12)
-  });
-  render();
-}
-function clearSlides(){ if(confirm('Slet alle slides?')){ state.data.slides=[]; render(); } }
-
-/*** Upload billede ***/
-async function uploadImage(){
-  const fi=$('#fileInput'); if(!fi.files?.length){ alert('Vælg en fil'); return; }
-  const file=fi.files[0]; const b64=await fileToBase64(file);
-  const body={ name:file.name, data:b64.replace(/^data:.+;base64,/,'') };
-  try{
-    statusEl.textContent='Uploader…';
-    const r=await fetch(UPLOAD_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const out=await r.json();
-    if(!r.ok){ alert('Upload-fejl: '+(out.error||r.status)); statusEl.textContent='Fejl'; return; }
-    $('#s_image').value=out.cdnUrl||out.rawUrl||'';
-    statusEl.textContent='Upload ✔'; statusEl.className='hint ok';
-  }catch(e){ alert('Fejl: '+e.message); statusEl.textContent='Fejl'; }
-}
-function fileToBase64(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
-
-/*** Medieliste ***/
-async function getMediaList(){
-  const sel=$('#mediaSelect'); sel.innerHTML='';
-  try{
-    const r=await fetch(MEDIA_API); const out=await r.json();
-    if(!r.ok){ alert('Medieliste-fejl: '+(out.error||r.status)); return; }
-    out.items.forEach(it=>{ const o=document.createElement('option'); o.value=it.url; o.textContent=`${it.name} (${it.size}B)`; sel.appendChild(o); });
-    sel.onchange=()=>{ $('#s_image').value=sel.value; };
-  }catch(e){ alert('Fejl: '+e.message); }
-}
-
-/*** Hooks ***/
-$('#btnLoad').onclick=load;
-$('#btnSave').onclick=saveToServer;
-$('#btnDownload').onclick=downloadData;
-$('#btnAdd').onclick=addSlide;
-$('#btnClear').onclick=clearSlides;
-$('#btnUpload').onclick=uploadImage;
-$('#btnMedia').onclick=getMediaList;
-
-render();
-</script>
-</body>
-</html>
-
+/* ---------- Gate (admin-pin) ---------- */
+const ADMIN_KEY = "0705";
+(function gate(){
+  const p = new URLSearchParams(location.search).get('admin');
+  if(p===ADMIN_KEY){ localStorage.setItem('admin_ok','1'); }
+ 
