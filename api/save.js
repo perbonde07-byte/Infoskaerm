@@ -1,7 +1,8 @@
-// api/save.js
+// /api/save.js
+export const config = { runtime: 'nodejs' };
+
 // Gemmer hele JSON-body som FILEPATH på BRANCH i OWNER/REPO
 // ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, FILEPATH
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
 
@@ -9,11 +10,11 @@ export default async function handler(req, res) {
   if (miss.length) return res.status(400).json({ error: `Missing required ENV vars: ${miss.join(', ')}` });
 
   try {
-    const token = process.env.GITHUB_TOKEN;
-    const OWNER = process.env.OWNER;
-    const REPO = process.env.REPO;
-    const BRANCH = process.env.BRANCH;
-    const FILEPATH = process.env.FILEPATH;
+    const token   = process.env.GITHUB_TOKEN;
+    const OWNER   = process.env.OWNER;
+    const REPO    = process.env.REPO;
+    const BRANCH  = process.env.BRANCH;
+    const FILEPATH= process.env.FILEPATH;
 
     const content = Buffer.from(JSON.stringify(req.body, null, 2)).toString('base64');
 
