@@ -9,6 +9,15 @@
       ],
       "image": "",
       "duration": 12
+    },
+    {
+      "type": "bullets",
+      "title": "Fredag",
+      "lines": [
+        "det er også en god dag"
+      ],
+      "image": "",
+      "duration": 12
     }
   ],
   "settings": {
