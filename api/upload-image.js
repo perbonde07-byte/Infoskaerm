@@ -1,4 +1,3 @@
-// api/upload-image.js
 export const config = { runtime: 'nodejs' };
 
 // ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
@@ -48,8 +47,10 @@ export default async function handler(req, res) {
 
     const rawUrl = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${path}`;
     const cdnUrl = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${path}`;
+
     return res.status(200).json({ ok:true, path, rawUrl, cdnUrl });
   } catch (e) {
     return res.status(500).json({ error: e.message || String(e) });
   }
 }
+
