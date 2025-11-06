@@ -1,25 +1,6 @@
 {
   "brand": "Bredsgaard Info",
-  "slides": [
-    {
-      "type": "bullets",
-      "title": "test",
-      "lines": [
-        "testtest"
-      ],
-      "image": "",
-      "duration": 12
-    },
-    {
-      "type": "bullets",
-      "title": "testtest",
-      "lines": [
-        "testtesttest234234"
-      ],
-      "image": "",
-      "duration": 12
-    }
-  ],
+  "slides": [],
   "settings": {
     "mediaFolder": "",
     "mediaKey": "",
