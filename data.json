@@ -1,5 +1,12 @@
 {
   "brand": "Bredsgaard • Infoskaerm",
+  "logoUrl": "",
+  "logoPos": "",
+  "media": {
+    "baseUrl": "",
+    "key": ""
+  },
+  "slides": [],
   "logo": {
     "url": "",
     "pos": "top-right"
@@ -17,32 +24,6 @@
       ]
     },
     "birthdays": []
-  },
-  "slides": [
-    {
-      "type": "bullets",
-      "title": "sdf",
-      "lines": [
-        "ssssssdfsdfsdf"
-      ],
-      "image": "",
-      "duration": 12
-    },
-    {
-      "type": "empties",
-      "title": "sdf",
-      "lines": [
-        "ssssssdfsdfsdf"
-      ],
-      "image": "",
-      "duration": 12
-    }
-  ],
-  "logoUrl": "",
-  "logoPos": "Øverst højre",
-  "media": {
-    "baseUrl": "",
-    "key": ""
   },
   "empties": {
     "weekdays": [
