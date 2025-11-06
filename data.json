@@ -18,30 +18,7 @@
     },
     "birthdays": []
   },
-  "slides": [
-    {
-      "type": "bullets",
-      "title": "test",
-      "lines": [
-        "test",
-        "test"
-      ],
-      "image": "",
-      "duration": 12
-    },
-    {
-      "type": "empties",
-      "title": "test",
-      "lines": [],
-      "image": "",
-      "duration": 12
-    },
-    {
-      "type": "birthday",
-      "title": "test",
-      "lines": [],
-      "image": "",
-      "duration": 12
-    }
-  ]
+  "slides": [],
+  "logoUrl": "",
+  "logoPos": "Øverst højre"
 }
