@@ -1,37 +1,20 @@
 {
   "brand": "Bredsgaard Info",
-  "slides": [
-    {
-      "type": "bullets",
-      "title": "Torsdag",
-      "lines": [
-        "det er en god dag"
-      ],
-      "image": "",
-      "duration": 12
-    },
-    {
-      "type": "bullets",
-      "title": "Fredag",
-      "lines": [
-        "det er også en god dag"
-      ],
-      "image": "",
-      "duration": 12
-    },
-    {
-      "type": "bullets",
-      "title": "det er test dag",
-      "lines": [
-        "Info skærm fornyelse på vej ??"
-      ],
-      "image": "",
-      "duration": 12
-    }
-  ],
+  "logo": { "url": "https://.../logo.png", "pos": "top-right" },
   "settings": {
-    "mediaFolder": "",
-    "mediaKey": "",
-    "mediaList": []
-  }
+    "empties": {
+      "weekdays": ["mon","wed"],
+      "skip": ["2025-10-01"],
+      "names": ["Per","Martin","Kasper"]
+    },
+    "birthdays": [
+      {"name":"Per","date":"1986-05-07","photo":""}
+    ]
+  },
+  "slides": [
+    {"type":"bullets","title":"Velkommen","lines":["Punkt 1","Punkt 2"],"duration":12},
+    {"type":"image","title":"Kampagne","image":"https://.../img.jpg","duration":12},
+    {"type":"empties","title":"Tømning","duration":12},
+    {"type":"birthday","title":"Tillykke!","duration":12}
+  ]
 }
