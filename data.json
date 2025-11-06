@@ -30,6 +30,18 @@
       ],
       "image": "",
       "duration": 12
+    },
+    {
+      "type": "empties",
+      "title": "sdf",
+      "lines": [
+        "sdf",
+        "sdf",
+        "sdf",
+        "sdf"
+      ],
+      "image": "",
+      "duration": 12
     }
   ],
   "logoUrl": "",
@@ -47,6 +59,10 @@
       false
     ],
     "skipDates": [],
-    "names": []
+    "names": [
+      "per",
+      "fer",
+      "mne"
+    ]
   }
 }
