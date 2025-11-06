@@ -1,216 +1,151 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bredsgaard • Infoskaerm</title>
-  <style>
-    :root{
-      --bg:#0b1220; --panel:#111a2d; --muted:#243147; --text:#e8eefb; --accent:#5aa2ff;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    .stage{position:relative;inset:0;display:flex;align-items:center;justify-content:center;height:100%;padding:40px}
-    .card{
-      width:100%;height:100%;border-radius:18px;background:linear-gradient(180deg,#0f172a, #0b1220 70%);
-      border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 40px rgba(0,0,0,.35);
-      padding:48px;position:relative;overflow:hidden;
-    }
-    /* logo */
-    .logo{position:absolute;max-height:70px;max-width:min(28vw,380px);opacity:.95}
-    .pos-tr{top:22px;right:28px}.pos-tl{top:22px;left:28px}
-    .pos-br{bottom:22px;right:28px}.pos-bl{bottom:22px;left:28px}
-
-    /* footer brand */
-    .brand{position:absolute;left:22px;bottom:18px;font-size:12.5px;opacity:.75}
-
-    /* typografi */
-    h1{margin:0 0 16px;font-size:64px;line-height:1.05}
-    h2{margin:0 0 12px;font-size:38px}
-    p{margin:6px 0;font-size:22px;opacity:.95}
-    ul{margin:18px 0 0 0;padding:0;list-style:none}
-    li{font-size:28px;margin:10px 0;display:flex;align-items:flex-start;gap:14px}
-    li::before{content:"•";color:var(--accent);font-size:34px;line-height:1}
-
-    /* billede */
-    .image-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-    .image-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
-
-    /* tømningstabel – simpel, pæn */
-    .table{width:100%;border-collapse:collapse;margin-top:10px}
-    .table th,.table td{border-bottom:1px solid var(--muted);padding:10px 12px;text-align:left;font-size:20px}
-    .hl{background:rgba(90,162,255,.18)}
-
-    /* fødselsdag */
-    .bd-wrap{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:center}
-    .bd-photo{display:flex;align-items:center;justify-content:center}
-    .bd-photo img{max-width:100%;max-height:320px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    .bd-flag{font-size:48px}
-
-    /* fade */
-    .fade{animation:fade .45s ease}
-    @keyframes fade{from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none}}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Infoskærm</title>
+<style>
+  :root{--bg:#0b1220;--card:#0e1526;--text:#e8eefb;--muted:#203258;--accent:#5aa2ff}
+  html,body{margin:0;height:100%;background:linear-gradient(180deg,#0b1220,#0a1120);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+  .stage{position:relative;display:flex;align-items:center;justify-content:center;height:100%;padding:40px}
+  .card{width:100%;height:100%;border-radius:22px;background:radial-gradient(1200px 800px at 70% 30%,#12203a 0%,#0e1526 60%);box-shadow:0 6px 30px rgba(0,0,0,.6);padding:34px;overflow:hidden}
+  h1,h2,h3{margin:0 0 10px}
+  .bullets ul{font-size:40px;list-style:disc;padding-left:28px;line-height:1.4}
+  .imgwrap{display:flex;align-items:center;justify-content:center;height:100%}
+  .imgwrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
+  table{width:100%;border-collapse:collapse;font-size:22px;margin-top:10px}
+  th,td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+  th{opacity:.85;text-align:left}
+  .footer{position:absolute;left:24px;right:24px;bottom:14px;display:flex;justify-content:space-between;opacity:.8;font-size:14px}
+  .logo{position:absolute;max-width:180px;max-height:120px;opacity:.9}
+  .top-right{top:16px;right:16px}.top-left{top:16px;left:16px}.bottom-right{bottom:60px;right:16px}.bottom-left{bottom:60px;left:16px}
+  .center{display:flex;align-items:center;justify-content:center;height:100%}
+  .big{font-size:72px;font-weight:800;text-align:center}
+  .muted{opacity:.7}
+</style>
 </head>
 <body>
-  <div class="stage">
-    <div class="card" id="card">
-      <img id="logo" class="logo pos-tr" alt="" />
-      <div id="slide"></div>
-      <div id="brand" class="brand"></div>
-    </div>
+<div class="stage">
+  <div class="card" id="root">
+    <div class="center"><div class="big muted">Indlæser…</div></div>
   </div>
+</div>
+<script>
+  const qs = new URLSearchParams(location.search);
+  const DATA = qs.get('data') || 'https://perbonde07-byte.github.io/Infoskaerm/data.json';
 
-  <script>
-    // --------- KONFIG ---------
-    const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
-    const POLL_MS = 60000; // tjek for opdateret data hvert minut
+  const root = document.getElementById('root');
+  let cfg = null, idx = -1, timer = null;
 
-    // --------- STATE ---------
-    let data = { brand:"", logoUrl:"", logoPos:"Øverst højre", slides:[] };
-    let i = 0, timer = null, etag = "", lastMod = "";
+  const fmtDa = d => d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const escapeHtml = s => (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 
-    const el = {
-      slide: document.getElementById("slide"),
-      brand: document.getElementById("brand"),
-      logo:  document.getElementById("logo"),
-      card:  document.getElementById("card"),
-    };
-
-    // --------- HENT DATA ---------
-    async function load(force=false){
-      try{
-        const headers = {};
-        if(!force && etag) headers["If-None-Match"] = etag;
-        if(!force && lastMod) headers["If-Modified-Since"] = lastMod;
-
-        const res = await fetch(DATA_URL, {headers});
-        if(res.status === 304) return; // intet nyt
-
-        if(!res.ok) throw new Error("HTTP "+res.status);
-        etag = res.headers.get("ETag") || etag;
-        lastMod = res.headers.get("Last-Modified") || lastMod;
-
-        data = await res.json();
-        i = 0;
-        renderBrandLogo();
-        play(); // start forfra på første slide
-      }catch(err){
-        // hvis vi ingen data har, vis bare tom baggrund
-        console.warn("load:", err.message);
-        renderBrandLogo();
-        if(!data.slides || !data.slides.length){
-          el.slide.innerHTML = ""; // ingen fallback-tekst
-        }
-      }
+  function logoHtml(){
+    if(!cfg.logoUrl) return '';
+    const pos = cfg.logoPos || 'top-right';
+    return `<img class="logo ${pos}" src="${escapeHtml(cfg.logoUrl)}" alt="logo"/>`;
     }
 
-    function renderBrandLogo(){
-      el.brand.textContent = data.brand || "";
-      // Logo
-      el.logo.src = (data.logoUrl||"").trim();
-      el.logo.style.display = el.logo.src ? "block":"none";
-      el.logo.classList.remove("pos-tr","pos-tl","pos-br","pos-bl");
-      switch((data.logoPos||"Øverst højre").toLowerCase()){
-        case "øverst venstre": el.logo.classList.add("pos-tl"); break;
-        case "nederst højre":  el.logo.classList.add("pos-br"); break;
-        case "nederst venstre":el.logo.classList.add("pos-bl"); break;
-        default:               el.logo.classList.add("pos-tr");
+  function slideBullets(s){
+    const lines = (s.lines||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
+    root.innerHTML = `
+      ${logoHtml()}
+      <h1>${escapeHtml(s.title||'')}</h1>
+      <div class="bullets"><ul>${lines}</ul></div>
+      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
+  }
+
+  function slideImage(s){
+    let src = s.image||'';
+    if(src && !/^https?:\/\//i.test(src) && cfg.media?.baseUrl){
+      src = cfg.media.baseUrl.replace(/\/+$/,'')+'/'+src.replace(/^\/+/,'');
+    }
+    root.innerHTML = `
+      ${logoHtml()}
+      <div class="imgwrap"><img src="${escapeHtml(src)}" alt=""/></div>
+      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
+  }
+
+  function slideEmpties(s){
+    const e = cfg.settings?.empties || {weekdays:[],skip:[],names:[]};
+    const out = [];
+    if(!e.weekdays?.length || !e.names?.length){
+      root.innerHTML = `${logoHtml()}<div class="center"><div class="big muted">Tømningstabel mangler opsætning</div></div>`; return;
+    }
+    const today = new Date(); today.setHours(0,0,0,0);
+    let i=0, nameIdx = 0;
+    const skipSet = new Set((e.skip||[]));
+    // find startnavn baseret på uge (simpel rotation)
+    const baseWeek = Math.floor((today - new Date('2025-01-01'))/(7*864e5));
+    nameIdx = ((baseWeek% e.names.length)+e.names.length)%e.names.length;
+
+    for(let d=0; out.length<10; d++){
+      const dt = new Date(today); dt.setDate(dt.getDate()+d);
+      const wd = ['sun','mon','tue','wed','thu','fri','sat'][dt.getDay()];
+      const iso = dt.toISOString().slice(0,10);
+      if(e.weekdays.includes(wd) && !skipSet.has(iso)){
+        out.push({date: dt, name: e.names[nameIdx]});
+        nameIdx = (nameIdx+1)%e.names.length;
       }
     }
+    const rows = out.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td>${fmtDa(r.date)}</td></tr>`).join('');
+    root.innerHTML = `
+      ${logoHtml()}
+      <h1>${escapeHtml(s.title||'Tømning')}</h1>
+      <table><thead><tr><th>Navn</th><th>Dato</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
+  }
 
-    // --------- VIS SLIDES ---------
-    function play(){
-      clearTimeout(timer);
-      if(!data.slides || !data.slides.length){
-        el.slide.innerHTML = ""; // ingen slides => blank
-        timer = setTimeout(next, 10000);
-        return;
-      }
-      const s = data.slides[i % data.slides.length];
-      show(s);
-      timer = setTimeout(next, Math.max(4, +s.duration || 12) * 1000);
+  function slideBirthday(s){
+    const list = (cfg.settings?.birthdays||[]).filter(b=>{
+      const d = new Date(new Date().getFullYear()+'-'+b.date.slice(5));
+      const now = new Date(); const start = new Date(now); start.setDate(now.getDate()-now.getDay()+1); start.setHours(0,0,0,0);
+      const end = new Date(start); end.setDate(start.getDate()+6);
+      return d>=start && d<=end;
+    });
+    if(!list.length){
+      root.innerHTML = `${logoHtml()}<div class="center"><div class="big">Ingen fødselsdage i denne uge 🎉</div></div>
+        <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
+      return;
     }
-    function next(){ i = (i+1) % Math.max(1, data.slides.length || 1); play(); }
-
-    // Renderer pr. skabelon
-    function show(s){
-      const wrap = document.createElement("div");
-      wrap.className = "fade";
-
-      if(s.type === "image"){
-        wrap.innerHTML = `
-          <div class="image-wrap">
-            <img src="${escapeHtml(s.image||'')}" alt="" />
-          </div>`;
+    const rows = list.map(b=>{
+      const when = new Date(new Date().getFullYear()+'-'+b.date.slice(5));
+      let img = b.photo||'';
+      if(img && !/^https?:\/\//i.test(img) && cfg.media?.baseUrl){
+        img = cfg.media.baseUrl.replace(/\/+$/,'')+'/'+img.replace(/^\/+/,'');
       }
-      else if(s.type === "empties"){ // Tømningstabel – forventer title + lines med CSV "navn;dato"
-        wrap.innerHTML = `
-          <h1>${escapeHtml(s.title||'Tømning')}</h1>
-          <table class="table" id="tTbl"><thead><tr><th>Navn</th><th>Dato</th></tr></thead><tbody></tbody></table>`;
-        const tb = wrap.querySelector("#tTbl tbody");
-        const rows = (s.lines||[]).map(x=>x.split("|").join("")).filter(Boolean);
-        const today = new Date(); today.setHours(0,0,0,0);
-        rows.forEach(line=>{
-          // Accepter "Navn;YYYY-MM-DD" eller "Navn,DD-MM-YYYY"
-          let [navn, dato] = line.split(/[,;]+/).map(t=>t.trim());
-          let d = parseDateLoose(dato);
-          const tr = document.createElement("tr");
-          if(isSameWeek(d,today)) tr.className = "hl";
-          tr.innerHTML = `<td>${escapeHtml(navn)}</td><td>${formatDK(d)}</td>`;
-          tb.appendChild(tr);
-        });
-      }
-      else if(s.type === "birthday"){ // Fødselsdag – titel som “Tillykke”, lines = [navn, ...tekst], image valgfrit
-        const navn = (s.lines||[])[0] || s.title || "Tillykke!";
-        const extra = (s.lines||[]).slice(1).join(" ");
-        wrap.innerHTML = `
-          <div class="bd-wrap">
-            <div>
-              <div class="bd-flag">🎉 🇩🇰 🎉</div>
-              <h1>${escapeHtml(navn)}</h1>
-              ${extra?`<p>${escapeHtml(extra)}</p>`:""}
-            </div>
-            <div class="bd-photo">${s.image?`<img src="${escapeHtml(s.image)}" alt="">`:""}</div>
-          </div>`;
-      }
-      else { // bullets (default)
-        const items = (s.lines||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("") || "<li>(tom)</li>";
-        wrap.innerHTML = `
-          ${s.title?`<h1>${escapeHtml(s.title)}</h1>`:""}
-          <ul>${items}</ul>`;
-      }
+      return `<tr><td>${escapeHtml(b.name)}</td><td>${fmtDa(when)}</td><td>${img?`<img src="${escapeHtml(img)}" style="height:64px;border-radius:8px">`:''}</td></tr>`;
+    }).join('');
+    root.innerHTML = `
+      ${logoHtml()}
+      <h1>${escapeHtml(s.title||'Tillykke!')}</h1>
+      <table><thead><tr><th>Navn</th><th>Dato</th><th>Foto</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="footer"><span>${escapeHtml(cfg.brand||'')}</span><span>${fmtDa(new Date())}</span></div>`;
+  }
 
-      el.slide.replaceChildren(wrap);
-    }
+  function show(i){
+    const slides = cfg.slides||[]; if(!slides.length){ root.innerHTML = `<div class="center"><div class="big muted">Ingen slides<br><br><span style="font-size:20px">Tilføj i admin</span></div></div>`; return; }
+    const s = slides[i]; const dur = Math.max(3, +s.duration || 12);
+    if(s.type==='image') slideImage(s);
+    else if(s.type==='empties') slideEmpties(s);
+    else if(s.type==='birthday') slideBirthday(s);
+    else slideBullets(s);
+    clearTimeout(timer); timer = setTimeout(next, dur*1000);
+  }
+  function next(){ idx = (idx+1) % (cfg.slides?.length||1); show(idx); }
 
-    // --------- HJÆLPERE ---------
-    function escapeHtml(s){ return (s||"").replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-    function formatDK(d){ if(!(d instanceof Date) || isNaN(d)) return ""; const dd=String(d.getDate()).padStart(2,"0"); const mm=String(d.getMonth()+1).padStart(2,"0"); return `${dd}-${mm}-${d.getFullYear()}`; }
-    function isSameWeek(d1,d2){
-      if(!d1||!d2||isNaN(d1)||isNaN(d2)) return false;
-      const a=new Date(d1), b=new Date(d2);
-      a.setHours(0,0,0,0); b.setHours(0,0,0,0);
-      const day = (x)=> (x.getDay()+6)%7; // ISO-uge, mandag 0
-      const aMon = new Date(a); aMon.setDate(a.getDate()-day(a));
-      const bMon = new Date(b); bMon.setDate(b.getDate()-day(b));
-      return aMon.getTime()===bMon.getTime();
-    }
-    function parseDateLoose(s){
-      if(!s) return new Date(NaN);
-      // YYYY-MM-DD
-      let m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if(m) return new Date(+m[1], +m[2]-1, +m[3]);
-      // DD-MM-YYYY
-      m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-      if(m) return new Date(+m[3], +m[2]-1, +m[1]);
-      const d = new Date(s); return d;
-    }
-
-    // --------- KØR ---------
-    load(true);
-    setInterval(load, POLL_MS);
-  </script>
+  async function boot(){
+    try{
+      const r = await fetch(DATA+'?v='+Date.now()); cfg = await r.json();
+    }catch{ cfg = { brand:'Bredsgaard • Infoskærm', slides:[] }; }
+    document.title = (cfg.brand||'Infoskærm');
+    idx = -1; next();
+    // auto-refresh hver 5. minut
+    setInterval(async()=>{
+      try{ const r = await fetch(DATA+'?v='+Date.now()); const fresh = await r.json(); cfg = fresh; }catch{}
+    }, 5*60*1000);
+  }
+  boot();
+</script>
 </body>
 </html>
-
