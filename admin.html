@@ -25,8 +25,9 @@
   .muted{color:var(--muted);font-size:12px}
   .hr{height:1px;background:#222;margin:16px -16px}
   .list{display:flex;gap:8px;flex-wrap:wrap}
-  .preview{display:flex;gap:10px;align-items:center;margin-top:8px}
-  .preview img{height:48px;border-radius:8px;border:1px solid #222}
+  .bd-list{display:grid;gap:10px}
+  .bd-item{display:grid;grid-template-columns:1.2fr 1fr 1.4fr auto;gap:8px;align-items:center}
+  .bd-item .remove{height:40px}
 </style>
 </head>
 <body>
@@ -78,8 +79,11 @@
 
       <div class="hr"></div>
       <h3>Fødselsdage</h3>
-      <label>Liste (en pr. linje: Navn – dd.mm[.åååå] | /sti/til/billede.jpg | besked)</label>
-      <textarea id="birthdays" placeholder="Peter – 03.11 | /media/peter.jpg | Tillykke!&#10;Lise – 12.01.1991 | /media/lise.jpg"></textarea>
+      <label>Standard-besked (bruges i alarm-slides)</label>
+      <input id="birthdays-msg" placeholder="Tillykke!"/>
+      <div class="muted" style="margin:8px 0 12px">Tilføj personer herunder (Navn, Dato, Billede). Dato kan være <code>dd.mm</code> eller <code>dd.mm.yyyy</code>.</div>
+      <div id="bd-list" class="bd-list"></div>
+      <button class="btn" id="bd-add">+ Tilføj person</button>
     </div>
 
     <div class="card">
@@ -110,7 +114,6 @@
     <label>Titel</label>
     <input class="title" placeholder="Titel"/>
     <div class="content-fields"></div>
-    <div class="preview"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
       <span class="muted"></span>
       <button class="btn danger remove">Fjern</button>
@@ -118,27 +121,18 @@
   </div>
 </template>
 
+<template id="tpl-bd-item">
+  <div class="bd-item">
+    <input class="bd-name"  placeholder="Navn"/>
+    <input class="bd-date"  placeholder="dd.mm eller dd.mm.yyyy"/>
+    <input class="bd-image" placeholder="/media/navn.jpg eller fuld URL"/>
+    <button class="btn danger remove">Fjern</button>
+  </div>
+</template>
+
 <script>
 const $=(s,e=document)=>e.querySelector(s);
 const state={sha:null,data:null};
-
-function parseBirthdays(text){
-  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
-    const parts=l.split('|').map(x=>x.trim());
-    const left=parts[0]||'', image=parts[1]||'', message=parts[2]||'';
-    let name=left, date='';
-    const m=left.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
-    else{ const p=left.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
-    return { name, date, image, message };
-  });
-}
-function parseEmptiesPlan(text){
-  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
-    let name=l, date=''; const m=l.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
-    else{ const p=l.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
-    return { name, date };
-  });
-}
 
 async function load(){
   $('#status').textContent='Indlæser…';
@@ -154,12 +148,19 @@ async function load(){
   $('#theme-bg2').value = data.settings?.theme?.bg2 || '';
   $('#theme-accent').value = data.settings?.theme?.accent || '';
   $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
+
   $('#empties-plan').value = (data.settings?.empties?.plan||[]).map(p=>`${p.name} – ${p.date}`).join('\n');
-  $('#birthdays').value = (data.settings?.birthdays||[]).map(b=>`${b.name} – ${b.date}${b.image?' | '+b.image:''}${b.message?' | '+b.message:''}`).join('\n');
+
+  // Fødselsdage
+  $('#birthdays-msg').value = data.settings?.birthdaysMessage || 'Tillykke!';
+  renderBirthdaysList(data.settings?.birthdays || []);
 
   // slides
   data.slides = Array.isArray(data.slides) ? data.slides : [];
   renderSlides($('#slides'), data.slides);
+
+  // PIN
+  $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
 
   $('#status').textContent='Klar';
 }
@@ -170,35 +171,75 @@ function renderSlides(container, slides){
 }
 function makeSlide(s, idx){
   const t=$('#tpl-slide'), node=t.content.firstElementChild.cloneNode(true);
-  $('h3',node).textContent=`Slide #${idx+1}`;
-  $('.type',node).value=s.type||'text';
-  $('.duration',node).value=s.duration??8;
-  $('.title',node).value=s.title||'';
-  $('.muted',node).textContent=`type: ${s.type||'text'}`;
-  const cf=$('.content-fields',node), pv=$('.preview',node);
-  fillContentFields(cf,pv,s);
+  node.querySelector('h3').textContent=`Slide #${idx+1}`;
+  node.querySelector('.type').value=s.type||'text';
+  node.querySelector('.duration').value=s.duration??8;
+  node.querySelector('.title').value=s.title||'';
+  node.querySelector('.muted').textContent=`type: ${s.type||'text'}`;
+  const cf=node.querySelector('.content-fields'); fillContentFields(cf,s);
 
-  $('.type',node).addEventListener('change',e=>{ s.type=e.target.value; $('.muted',node).textContent=`type: ${s.type}`; fillContentFields(cf,pv,s); });
-  $('.duration',node).addEventListener('input',e=>s.duration=Number(e.target.value));
-  $('.title',node).addEventListener('input',e=>s.title=e.target.value);
-  $('.remove',node).addEventListener('click',()=>{ const i=state.data.slides.indexOf(s); if(i>=0){ state.data.slides.splice(i,1); renderSlides($('#slides'),state.data.slides);} });
-
+  node.querySelector('.type').addEventListener('change',e=>{ s.type=e.target.value; node.querySelector('.muted').textContent=`type: ${s.type}`; fillContentFields(cf,s); });
+  node.querySelector('.duration').addEventListener('input',e=>s.duration=Number(e.target.value));
+  node.querySelector('.title').addEventListener('input',e=>s.title=e.target.value);
+  node.querySelector('.remove').addEventListener('click',()=>{ const i=state.data.slides.indexOf(s); if(i>=0){ state.data.slides.splice(i,1); renderSlides($('#slides'),state.data.slides);} });
   return node;
 }
-function fillContentFields(cf,pv,s){
-  cf.innerHTML=''; pv.innerHTML='';
+function fillContentFields(cf,s){
+  cf.innerHTML='';
   if(s.type==='image'){
-    const i=document.createElement('input'); i.placeholder='/media/Slide1.jpg eller fuld URL'; i.value=s.image||''; i.addEventListener('input',e=>{s.image=e.target.value; renderPrev();}); cf.appendChild(labelWrap('Billede-URL',i)); renderPrev();
-    function renderPrev(){ pv.innerHTML=''; if(s.image){ const img=document.createElement('img'); img.src=s.image; pv.appendChild(img);} }
+    const i=document.createElement('input'); i.placeholder='/media/Slide1.jpg eller fuld URL'; i.value=s.image||''; i.addEventListener('input',e=>s.image=e.target.value);
+    cf.appendChild(label('Billede-URL')); cf.appendChild(i);
   }else if(s.type==='text'){
-    const a=document.createElement('textarea'); a.placeholder='Din tekst…'; a.value=s.text||''; a.addEventListener('input',e=>s.text=e.target.value); cf.appendChild(labelWrap('Tekst',a));
+    const a=document.createElement('textarea'); a.placeholder='Din tekst…'; a.value=s.text||''; a.addEventListener('input',e=>s.text=e.target.value);
+    cf.appendChild(label('Tekst')); cf.appendChild(a);
   }else{
-    pv.innerHTML=''; cf.appendChild(div('<div class="muted">Denne slide bruger felter fra venstre panel.</div>'));
+    cf.appendChild(spanMuted('Denne slide bruger indstillinger fra venstre panel.'));
   }
 }
-function labelWrap(text, inputEl){ const w=document.createElement('div'); const l=document.createElement('label'); l.textContent=text; w.appendChild(l); w.appendChild(inputEl); return w;}
-function div(html){ const d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; }
+function label(t){ const l=document.createElement('label'); l.textContent=t; return l; }
+function spanMuted(t){ const s=document.createElement('div'); s.className='muted'; s.textContent=t; return s; }
 
+/* --- Fødselsdage UI --- */
+function renderBirthdaysList(items){
+  const listEl = $('#bd-list');
+  listEl.innerHTML='';
+  (items||[]).forEach((b,idx)=> listEl.appendChild(makeBdItem(b,idx)));
+}
+function makeBdItem(b, idx){
+  const t=$('#tpl-bd-item'), node=t.content.firstElementChild.cloneNode(true);
+  const nameEl = node.querySelector('.bd-name');
+  const dateEl = node.querySelector('.bd-date');
+  const imgEl  = node.querySelector('.bd-image');
+  nameEl.value = b.name || '';
+  dateEl.value = b.date || '';
+  imgEl.value  = b.image || '';
+  nameEl.addEventListener('input',e=>b.name=e.target.value);
+  dateEl.addEventListener('input',e=>b.date=e.target.value);
+  imgEl.addEventListener('input',e=>b.image=e.target.value);
+  node.querySelector('.remove').addEventListener('click',()=>{
+    const arr = state.data.settings.birthdays || [];
+    const i = arr.indexOf(b);
+    if(i>=0){ arr.splice(i,1); renderBirthdaysList(arr); }
+  });
+  return node;
+}
+$('#bd-add').addEventListener('click', ()=>{
+  state.data.settings = state.data.settings || {};
+  state.data.settings.birthdays = state.data.settings.birthdays || [];
+  const obj = { name:'', date:'', image:'' };
+  state.data.settings.birthdays.push(obj);
+  renderBirthdaysList(state.data.settings.birthdays);
+});
+
+/* --- Saml & gem --- */
+function parseEmptiesPlan(text){
+  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
+    let name=l, date='';
+    const m=l.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
+    else{ const p=l.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
+    return { name, date };
+  });
+}
 function collect(){
   const data=structuredClone(state.data||{});
   data.brand   = $('#brand').value.trim();
@@ -206,14 +247,23 @@ function collect(){
   const theme = { bg1: $('#theme-bg1').value.trim(), bg2: $('#theme-bg2').value.trim(), accent: $('#theme-accent').value.trim() };
   const refreshMs = Math.max(300000, Number($('#refreshMs').value||0) || 300000);
   const plan = parseEmptiesPlan($('#empties-plan').value);
-  const bdays = parseBirthdays($('#birthdays').value);
 
   data.settings = data.settings || {};
   data.settings.theme = theme;
   data.settings.refreshMs = refreshMs;
   data.settings.empties = data.settings.empties || {};
   data.settings.empties.plan = plan;
-  data.settings.birthdays = bdays;
+
+  // fødselsdage
+  const list = [];
+  document.querySelectorAll('#bd-list .bd-item').forEach(row=>{
+    const name=row.querySelector('.bd-name').value.trim();
+    const date=row.querySelector('.bd-date').value.trim();
+    const image=row.querySelector('.bd-image').value.trim();
+    if(name && date) list.push({ name, date, image });
+  });
+  data.settings.birthdays = list;
+  data.settings.birthdaysMessage = $('#birthdays-msg').value.trim() || 'Tillykke!';
 
   return data;
 }
@@ -227,13 +277,13 @@ async function save(){
   $('#status').textContent='Gemt!'; await load();
 }
 
-// events
+/* --- Slide-knapper --- */
 $('#add-image').addEventListener('click',()=>{ state.data.slides.push({type:'image',title:'Kampagne',image:'/media/Slide1.jpg',duration:8}); renderSlides($('#slides'),state.data.slides); });
 $('#add-text').addEventListener('click',()=>{ state.data.slides.push({type:'text',title:'Info',text:'',duration:8}); renderSlides($('#slides'),state.data.slides); });
 $('#add-empties').addEventListener('click',()=>{ state.data.slides.push({type:'empties',title:'TØMNINGS DAGE',duration:12}); renderSlides($('#slides'),state.data.slides); });
 $('#add-birthday').addEventListener('click',()=>{ state.data.slides.push({type:'birthday',title:'Fødselsdage',duration:12}); renderSlides($('#slides'),state.data.slides); });
-$('#save').addEventListener('click',save);
 
+$('#save').addEventListener('click',save);
 load().catch(e=>$('#status').textContent='Fejl: '+e.message);
 </script>
 </body>
