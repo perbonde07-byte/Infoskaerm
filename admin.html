@@ -9,78 +9,49 @@
       --bg:#0b1220;--panel:#111a2d;--muted:#243147;--text:#e8eefb;--accent:#5aa2ff;
       --ok:#33d17a;--err:#ff6b6b;--sub:#1a2440;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    a{color:#9ec1ff}
-    .hide{display:none}
+    *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    a{color:#9ec1ff} .hide{display:none}
 
-    /* Topbar */
-    .topbar{
-      position:sticky;top:0;z-index:30;height:64px;background:rgba(15,23,42,.92);backdrop-filter:blur(6px);
-      display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.08)
-    }
+    .topbar{position:sticky;top:0;z-index:30;height:64px;background:rgba(15,23,42,.92);backdrop-filter:blur(6px);
+      display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.08)}
     .pill{padding:6px 10px;border-radius:999px;background:#0f1b34;border:1px solid #203258;font-size:12px}
     .spacer{flex:1}
-    .btn{
-      display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#061022;border:0;border-radius:10px;
-      padding:10px 14px;font-weight:700;cursor:pointer;transition:.2s ease filter
-    }
-    .btn:hover{filter:brightness(1.07)}
-    .btn.sub{background:var(--sub);color:#d6e4ff}
-    .btn.small{padding:7px 10px}
-    .btn.danger{background:#aa3c3c;color:#150909}
-    .ok{color:var(--ok)}
-    .err{color:var(--err)}
-
+    .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#061022;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .btn.sub{background:var(--sub);color:#d6e4ff}.btn.small{padding:7px 10px}.btn.danger{background:#aa3c3c;color:#150909}
+    .ok{color:var(--ok)} .err{color:var(--err)}
     .wrap{max-width:1100px;margin:18px auto;padding:0 16px 40px}
     section{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;margin:14px 0}
-    h1{margin:0 0 6px 2px}
-    h2{margin:0 0 12px}
-    label{display:block;margin:10px 0 6px}
-    input,select,textarea{
-      width:100%;padding:10px;border-radius:10px;border:1px solid var(--muted);background:#0f172a;color:var(--text);font-size:15px
-    }
+    h1{margin:0 0 6px 2px} h2{margin:0 0 12px} label{display:block;margin:10px 0 6px}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--muted);background:#0f172a;color:var(--text);font-size:15px}
     textarea{min-height:92px}
-    .row{display:grid;gap:12px}
-    .g2{grid-template-columns:1fr 1fr}
-    .g3{grid-template-columns:repeat(3,1fr)}
-    .inline{display:flex;gap:8px;align-items:flex-start}
-
+    .row{display:grid;gap:12px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)} .inline{display:flex;gap:8px;align-items:flex-start}
     .tabs{display:flex;gap:10px;margin:6px 0 14px}
     .tabbtn{background:#0f1b34;border:1px solid #203258;color:#cfe1ff;padding:8px 12px;border-radius:999px;cursor:pointer}
-    .tabbtn.active{background:#27406e;color:#fff}
-
+    .tabbtn.active{background:#27406e;color:white}
     table{width:100%;border-collapse:collapse;margin-top:12px}
     th,td{padding:8px 10px;border-bottom:1px solid var(--muted);text-align:left}
     th{opacity:.85}
     .hint{font-size:12px;opacity:.75;margin-top:4px}
 
-    /* PIN overlay (gate) */
-    .gate{
-      position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
-      display:flex;align-items:center;justify-content:center;z-index:1000
-    }
-    .gate .card{
-      width:min(420px,92vw);background:#0f172a;border:1px solid #203258;border-radius:16px;padding:20px;
-      box-shadow:0 10px 35px rgba(0,0,0,.35)
-    }
-    .gate h3{margin:0 0 8px}
-    .gate p{margin:0 0 14px;opacity:.85}
+    /* PIN overlay */
+    .gate{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:1000}
+    .gate .card{width:min(420px,92vw);background:#0f172a;border:1px solid #203258;border-radius:16px;padding:20px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+    .gate h3{margin:0 0 8px} .gate p{margin:0 0 14px;opacity:.85}
   </style>
 </head>
 <body>
-  <!-- PIN overlay -->
+  <!-- PIN -->
   <div class="gate" id="pinGate">
     <div class="card">
       <h3>Adgangskode påkrævet</h3>
       <p>Indtast koden for at åbne administrationen.</p>
-      <label for="pinInput">Kode</label>
+      <label>Kode</label>
       <input id="pinInput" type="password" placeholder="••••" />
       <div class="inline" style="margin-top:12px">
         <button class="btn" id="pinOk">Åbn admin</button>
         <span id="pinMsg" class="pill" style="margin-left:auto">Klar</span>
       </div>
-      <div class="hint" style="margin-top:10px">Koden gemmes midlertidigt i denne browsers session for at kunne gemme ændringer.</div>
+      <div class="hint" style="margin-top:10px">Koden gemmes midlertidigt i denne browsers session.</div>
     </div>
   </div>
 
@@ -96,11 +67,11 @@
 
   <div class="wrap">
     <div class="tabs">
-      <button class="tabbtn active" data-tab="slidesTab">Slides</button>
-      <button class="tabbtn" data-tab="emptiesTab">Tømmeplan</button>
-      <button class="tabbtn" data-tab="birthdaysTab">Fødselsdage</button>
-      <button class="tabbtn" data-tab="settingsTab">Indstillinger</button>
-      <button class="tabbtn" data-tab="sourceTab">Datakilde</button>
+      <button class="tabbtn active" data-tab="slides">Slides</button>
+      <button class="tabbtn" data-tab="empties">Tømmeplan</button>
+      <button class="tabbtn" data-tab="birthdays">Fødselsdage</button>
+      <button class="tabbtn" data-tab="settings">Indstillinger</button>
+      <button class="tabbtn" data-tab="source">Datakilde</button>
     </div>
 
     <!-- Slides -->
@@ -144,13 +115,13 @@
           <input type="file" id="s_imgfile" accept="image/*" />
           <button class="btn small sub" id="uploadBtn" type="button">Upload</button>
         </div>
-        <div class="hint">Upload kræver, at <code>/api/upload-image</code> er sat op + ENV (<code>MEDIA_DIR</code> osv.).</div>
+        <div class="hint">Upload kræver at <code>/api/upload-image</code> er sat op.</div>
       </div>
 
       <div class="inline" style="gap:10px;margin-top:10px">
         <button class="btn" id="addSlide">Tilføj slide</button>
         <button class="btn sub" id="clearSlides">Tøm alle slides</button>
-        <span class="hint">Husk: Tryk “Gem ændringer” øverst for at gemme til server.</span>
+        <span class="hint">Husk at trykke “Gem ændringer”.</span>
       </div>
 
       <table>
@@ -178,7 +149,7 @@
         <div>
           <label>Navne (rotation – ét pr. linje eller komma)</label>
           <textarea id="emptyNames" placeholder="Per&#10;Martin&#10;Kasper"></textarea>
-          <div class="hint">Viewer viser næste ~10 forekomster og markerer den næste.</div>
+          <div class="hint">Viewer viser næste ~10 forekomster.</div>
         </div>
       </div>
     </section>
@@ -187,28 +158,17 @@
     <section id="birthdaysTab" class="hide">
       <h2>Fødselsdage</h2>
       <div class="row g3">
-        <div>
-          <label>Navn</label>
-          <input id="bd_name" placeholder="Navn" />
-        </div>
-        <div>
-          <label>Fødselsdag (YYYY-MM-DD)</label>
-          <input id="bd_date" placeholder="1986-05-07" />
-        </div>
-        <div>
-          <label>Foto URL (valgfrit)</label>
-          <input id="bd_photo" placeholder="https://… eller fx per.jpg" />
-        </div>
+        <div><label>Navn</label><input id="bd_name" placeholder="Navn" /></div>
+        <div><label>Fødselsdag (YYYY-MM-DD)</label><input id="bd_date" placeholder="1986-05-07" /></div>
+        <div><label>Foto URL (valgfrit)</label><input id="bd_photo" placeholder="https://… eller fx per.jpg" /></div>
       </div>
       <div class="inline" style="gap:10px;margin-top:8px">
         <button class="btn" id="bd_add">Tilføj</button>
       </div>
-
       <table>
         <thead><tr><th>Navn</th><th>Dato</th><th>Foto</th><th style="width:100px"></th></tr></thead>
         <tbody id="bd_table"></tbody>
       </table>
-      <div class="hint">Viewer viser automatisk dem, der falder i den aktuelle uge (man–søn).</div>
     </section>
 
     <!-- Indstillinger -->
@@ -220,11 +180,10 @@
           <input id="brand" placeholder="Bredsgaard • Infoskærm" />
         </div>
         <div>
-          <label>Kalender-link (Outlook/ics/embeds – bruges af kalenderskærm)</label>
+          <label>Kalender-link (valgfrit)</label>
           <input id="calendarUrl" placeholder="https://…" />
         </div>
       </div>
-
       <div class="row g2">
         <div>
           <label>Logo URL (valgfrit)</label>
@@ -240,15 +199,14 @@
           </select>
         </div>
       </div>
-
       <div class="row g2">
         <div>
-          <label>Media base-URL (OneDrive/Dropbox/GitHub/CDN)</label>
-          <input id="mediaBase" placeholder="https://delt-mappe/…/media/" />
-          <div class="hint">Hvis udfyldt, kan du i slides kun skrive fx <code>billede.jpg</code> — så bygges fuld URL automatisk.</div>
+          <label>Media base-URL (fx GitHub/CDN/Dropbox/OneDrive)</label>
+          <input id="mediaBase" placeholder="https://cdn.../media/" />
+          <div class="hint">Hvis udfyldt, kan du i slides kun skrive fx <code>billede.jpg</code>.</div>
         </div>
         <div>
-          <label>Media-nøgle/kode (valgfrit)</label>
+          <label>Media-nøgle/kode (valgfrit – kun note)</label>
           <input id="mediaKey" placeholder="adgangskode eller note" />
         </div>
       </div>
@@ -264,98 +222,81 @@
         <button class="btn sub" id="downloadBtn">Download ny data.json</button>
         <button class="btn" id="saveBtn2">Gem til server</button>
       </div>
-      <div class="hint">Tip: adressen gemmes lokalt i denne browser.</div>
+      <div class="hint">Adressen gemmes lokalt i denne browser.</div>
     </section>
   </div>
 
   <script>
-    /* ===== PIN gate ===== */
+    /* ==== PIN gate (0705) ==== */
+    const ADMIN_PIN = "0705";
     const pinGate = document.getElementById('pinGate');
     const pinInput = document.getElementById('pinInput');
-    const pinOk    = document.getElementById('pinOk');
-    const pinMsg   = document.getElementById('pinMsg');
+    const pinOk = document.getElementById('pinOk');
+    const pinMsg = document.getElementById('pinMsg');
+    function setPin(p){ sessionStorage.setItem('admin_pin', p); }
+    function getPin(){ return sessionStorage.getItem('admin_pin')||''; }
+    pinOk.onclick = ()=>{
+      const p=(pinInput.value||'').trim();
+      if(p!==ADMIN_PIN){ pinMsg.textContent='Forkert kode'; return; }
+      setPin(p); pinGate.classList.add('hide');
+    };
 
-    function setPin(pin){ sessionStorage.setItem('admin_pin', pin); }
-    function getPin(){ return sessionStorage.getItem('admin_pin') || ''; }
-
-    function tryUnlock(){
-      const p = (pinInput.value||'').trim();
-      if(p === '0705'){
-        setPin(p);
-        pinMsg.textContent = 'OK';
-        pinGate.classList.add('hide');
-      }else{
-        pinMsg.textContent = 'Forkert kode';
-      }
-    }
-    pinOk.onclick = tryUnlock;
-    pinInput.addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
-
-    /* ===== Admin UI ===== */
-    const $ = s => document.querySelector(s);
+    /* ==== Admin app ==== */
+    const $ = s=>document.querySelector(s);
     const els = {
       status: $('#status'), saveBtn: $('#saveBtn'),
       dataUrlView: $('#dataUrlView'),
-
       tabButtons: Array.from(document.querySelectorAll('.tabbtn')),
-      tabSections: {
-        slidesTab:    $('#slidesTab'),
-        emptiesTab:   $('#emptiesTab'),
-        birthdaysTab: $('#birthdaysTab'),
-        settingsTab:  $('#settingsTab'),
-        sourceTab:    $('#sourceTab'),
+      tabs: {
+        slides: $('#slidesTab'),
+        empties: $('#emptiesTab'),
+        birthdays: $('#birthdaysTab'),
+        settings: $('#settingsTab'),
+        source: $('#sourceTab')
       },
-
-      dataUrl: $('#dataUrl'), setUrlBtn: $('#setUrlBtn'),
-      loadBtn: $('#loadBtn'), downloadBtn: $('#downloadBtn'), saveBtn2: $('#saveBtn2'),
-
+      // Datakilde
+      dataUrl: $('#dataUrl'), setUrlBtn: $('#setUrlBtn'), loadBtn: $('#loadBtn'), downloadBtn: $('#downloadBtn'), saveBtn2: $('#saveBtn2'),
+      // Indstillinger
       brand: $('#brand'), logoUrl: $('#logoUrl'), logoPos: $('#logoPos'),
       mediaBase: $('#mediaBase'), mediaKey: $('#mediaKey'), calendarUrl: $('#calendarUrl'),
-
+      // Slides felter
       s_type: $('#s_type'), s_title: $('#s_title'), s_duration: $('#s_duration'),
       s_lines: $('#s_lines'), addLineBtn: $('#addLineBtn'), clearLinesBtn: $('#clearLinesBtn'),
       s_image: $('#s_image'), s_imgfile: $('#s_imgfile'), uploadBtn: $('#uploadBtn'),
       addSlide: $('#addSlide'), clearSlides: $('#clearSlides'), slidesTable: $('#slidesTable'),
       box_bullets: $('#box_bullets'), box_image: $('#box_image'),
-
-      wd: Array.from(document.querySelectorAll('.wd')),
-      skipDates: $('#skipDates'), emptyNames: $('#emptyNames'),
-
-      bd_name: $('#bd_name'), bd_date: $('#bd_date'), bd_photo: $('#bd_photo'),
-      bd_add: $('#bd_add'), bd_table: $('#bd_table'),
+      // Tømning
+      wd: Array.from(document.querySelectorAll('.wd')), skipDates: $('#skipDates'), emptyNames: $('#emptyNames'),
+      // Fødselsdage
+      bd_name: $('#bd_name'), bd_date: $('#bd_date'), bd_photo: $('#bd_photo'), bd_add: $('#bd_add'), bd_table: $('#bd_table'),
     };
 
-    const defaultData = () => ({
+    const defaultData = ()=>({
       brand:'Bredsgaard • Infoskærm',
       logoUrl:'', logoPos:'top-right',
       media:{ baseUrl:'', key:'' },
       settings:{ calendarUrl:'', empties:{weekdays:[],skip:[],names:[]}, birthdays:[] },
       slides:[]
     });
-
     const state = { dataUrl:'', data: defaultData() };
 
-    function fmtDa(iso){ if(!iso) return ''; const d=new Date(iso); if(Number.isNaN(d.getTime())) return iso;
-      return d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'}); }
-    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]); }
-
-    /* Tabs */
-    function showTab(tabId){
-      els.tabButtons.forEach(b=> b.classList.toggle('active', b.dataset.tab===tabId));
-      Object.entries(els.tabSections).forEach(([id,el])=>{
-        el.classList.toggle('hide', id !== tabId);
-      });
+    // Tabs
+    function showTab(name){
+      els.tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+      Object.entries(els.tabs).forEach(([k,el])=> el.classList.toggle('hide', k!==name));
     }
-    els.tabButtons.forEach(b=> b.addEventListener('click', () => showTab(b.dataset.tab)));
-    showTab('slidesTab');
+    els.tabButtons.forEach(b=> b.addEventListener('click', ()=> showTab(b.dataset.tab)));
+    showTab('slides');
 
-    /* Renders */
+    // Render
+    const fmtDa = iso => { if(!iso) return ''; const d=new Date(iso); return isNaN(d)?iso:d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+    const escapeHtml = s => (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+
     function renderBirthdays(){
       els.bd_table.innerHTML='';
       (state.data.settings.birthdays||[]).forEach((b,i)=>{
         const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${escapeHtml(b.name||'')}</td>
-                      <td>${fmtDa(b.date)}</td>
+        tr.innerHTML=`<td>${escapeHtml(b.name||'')}</td><td>${fmtDa(b.date)}</td>
                       <td>${b.photo?`<a href="${escapeHtml(b.photo)}" target="_blank">link</a>`:''}</td>
                       <td><button class="btn small danger" data-delbd="${i}">Slet</button></td>`;
         els.bd_table.appendChild(tr);
@@ -368,10 +309,10 @@
     function renderSlides(){
       els.slidesTable.innerHTML='';
       (state.data.slides||[]).forEach((s,idx)=>{
-        const prev = s.type==='image'    ? (s.image||'(intet)')
-                    : s.type==='empties' ? 'Tømningstabel'
-                    : s.type==='birthday'? 'Fødselsdage (uge)'
-                    : (s.lines||[]).join(' • ');
+        const prev = s.type==='image' ? (s.image||'(intet)') :
+                     s.type==='empties' ? 'Tømningstabel' :
+                     s.type==='birthday' ? 'Fødselsdage (uge)' :
+                     (s.lines||[]).join(' • ');
         const tr=document.createElement('tr');
         tr.innerHTML = `<td>${idx+1}</td><td>${escapeHtml(s.type)}</td><td>${escapeHtml(s.title||'')}</td>
                         <td>${escapeHtml(prev)}</td>
@@ -384,190 +325,144 @@
     }
 
     function renderAll(){
-      els.brand.value = state.data.brand || '';
-      els.logoUrl.value = state.data.logoUrl || '';
-      els.logoPos.value = state.data.logoPos || 'top-right';
-      els.mediaBase.value = state.data.media?.baseUrl || '';
-      els.mediaKey.value  = state.data.media?.key || '';
-      els.calendarUrl.value = state.data.settings?.calendarUrl || '';
+      // Indstillinger
+      els.brand.value=state.data.brand||''; els.logoUrl.value=state.data.logoUrl||''; els.logoPos.value=state.data.logoPos||'top-right';
+      els.mediaBase.value=state.data.media?.baseUrl||''; els.mediaKey.value=state.data.media?.key||'';
+      els.calendarUrl.value=state.data.settings?.calendarUrl||'';
 
-      const e = state.data.settings?.empties || {weekdays:[],skip:[],names:[]};
-      const set = new Set(e.weekdays||[]);
-      els.wd.forEach(cb=> cb.checked = set.has(cb.value));
-      els.skipDates.value = (e.skip||[]).join(', ');
-      els.emptyNames.value = (e.names||[]).join(', ');
+      // Tømning
+      const e=state.data.settings?.empties||{weekdays:[],skip:[],names:[]};
+      const set=new Set(e.weekdays||[]); els.wd.forEach(cb=> cb.checked=set.has(cb.value));
+      els.skipDates.value=(e.skip||[]).join(', '); els.emptyNames.value=(e.names||[]).join(', ');
 
-      renderBirthdays();
-      renderSlides();
+      // Lister
+      renderBirthdays(); renderSlides();
 
-      els.dataUrl.value = state.dataUrl;
-      els.dataUrlView.textContent = state.dataUrl;
+      // Datakilde
+      els.dataUrl.value=state.dataUrl; els.dataUrlView.textContent=state.dataUrl;
     }
 
-    /* Load/Save */
+    // Load/Save
     async function load(){
       try{
-        els.status.textContent = 'Henter…';
-        const res = await fetch(state.dataUrl + '?v=' + Date.now());
+        els.status.textContent='Henter…';
+        const res=await fetch(state.dataUrl+'?v='+Date.now());
         if(!res.ok) throw new Error('HTTP '+res.status);
-        const j = await res.json();
-
-        const base = defaultData();
-        state.data = Object.assign(base,j);
-
-        // migrér bullets fra pipe-streng til array
+        const j=await res.json();
+        const base=defaultData(); state.data=Object.assign(base,j);
         (state.data.slides||[]).forEach(s=>{
           if(s.type==='bullets'){
             if(Array.isArray(s.lines)) return;
-            if(typeof s.lines==='string') s.lines=s.lines.split('|').map(x=>x.trim()).filter(Boolean);
+            if(typeof s.lines==='string') s.lines = s.lines.split('|').map(x=>x.trim()).filter(Boolean);
             else s.lines=[];
           }
         });
-
-        renderAll();
-        els.status.innerHTML = '<span class="ok">Data hentet</span>';
+        renderAll(); els.status.innerHTML='<span class="ok">Data hentet</span>';
       }catch(e){
-        state.data = defaultData();
-        renderAll();
-        els.status.innerHTML = '<span class="err">Ingen data fundet – starter tomt</span>';
+        state.data=defaultData(); renderAll();
+        els.status.innerHTML='<span class="err">Ingen data fundet – starter tomt</span>';
       }
     }
 
     async function save(){
       // inputs -> state
-      state.data.brand   = els.brand.value.trim();
-      state.data.logoUrl = els.logoUrl.value.trim();
-      state.data.logoPos = els.logoPos.value;
-      state.data.media   = { baseUrl: els.mediaBase.value.trim(), key: els.mediaKey.value.trim() };
-      state.data.settings ||= {};
-      state.data.settings.calendarUrl = els.calendarUrl.value.trim();
-
-      const weekdays = els.wd.filter(cb=>cb.checked).map(cb=>cb.value);
-      const skip  = (els.skipDates.value||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
-      const names = (els.emptyNames.value||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
-      state.data.settings.empties = {weekdays,skip,names};
+      state.data.brand=els.brand.value.trim(); state.data.logoUrl=els.logoUrl.value.trim(); state.data.logoPos=els.logoPos.value;
+      state.data.media={ baseUrl:els.mediaBase.value.trim(), key:els.mediaKey.value.trim() };
+      state.data.settings ||= {}; state.data.settings.calendarUrl=els.calendarUrl.value.trim();
+      const weekdays=els.wd.filter(cb=>cb.checked).map(cb=>cb.value);
+      const skip=(els.skipDates.value||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
+      const names=(els.emptyNames.value||'').split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
+      state.data.settings.empties={weekdays,skip,names};
 
       try{
-        els.status.textContent = 'Gemmer…';
-        els.saveBtn.disabled = true;
-
-        const res = await fetch('/api/save',{
-          method:'POST',
-          headers:{
-            'Content-Type':'application/json',
-            'x-admin-pin': getPin() || ''
-          },
-          body: JSON.stringify(state.data)
-        });
-        const txt = await res.text();
-        if(!res.ok){
-          let msg = txt;
-          try{ const j=JSON.parse(txt); msg = j.error || j.detail || txt; }catch{}
-          throw new Error(`HTTP ${res.status} – ${msg}`);
-        }
-        els.status.innerHTML = '<span class="ok">✅ Data gemt</span>';
+        els.status.textContent='Gemmer…'; els.saveBtn.disabled=true;
+        const res=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state.data)});
+        const txt=await res.text();
+        if(!res.ok){ let msg=txt; try{const j=JSON.parse(txt); msg=j.error||j.detail||txt;}catch{}; throw new Error(`HTTP ${res.status} – ${msg}`);}
+        els.status.innerHTML='<span class="ok">✅ Data gemt</span>';
       }catch(e){
-        els.status.innerHTML = '<span class="err">Fejl: '+(e.message||e)+'</span>';
-        alert('Gemning fejlede:\n\n'+(e.message||e));
-      }finally{
-        els.saveBtn.disabled = false;
-      }
+        els.status.innerHTML='<span class="err">Fejl: '+(e.message||e)+'</span>'; alert('Gemning fejlede:\n\n'+(e.message||e));
+      }finally{ els.saveBtn.disabled=false; }
     }
 
-    /* UI handlers */
+    // UI wiring
     function toggleTypeUI(){
       const t=els.s_type.value;
       els.box_bullets.classList.toggle('hide', t!=='bullets');
       els.box_image.classList.toggle('hide', t!=='image' && t!=='birthday');
     }
-    els.s_type.addEventListener('change', toggleTypeUI);
-    toggleTypeUI();
+    els.s_type.addEventListener('change', toggleTypeUI); toggleTypeUI();
 
-    els.addLineBtn.onclick = ()=>{ els.s_lines.value = (els.s_lines.value ? els.s_lines.value+'\n' : ''); els.s_lines.focus(); };
-    els.clearLinesBtn.onclick = ()=>{ els.s_lines.value=''; };
+    els.addLineBtn.onclick=()=>{ els.s_lines.value=(els.s_lines.value?els.s_lines.value+'\n':''); els.s_lines.focus(); };
+    els.clearLinesBtn.onclick=()=>{ els.s_lines.value=''; };
 
-    els.addSlide.onclick = ()=>{
-      const t = els.s_type.value;
-      const s = { type:t, title:(els.s_title.value||'').trim(), duration:Math.max(3,+els.s_duration.value||12) };
-
+    els.addSlide.onclick=()=>{
+      const t=els.s_type.value;
+      const s={ type:t, title:(els.s_title.value||'').trim(), duration:Math.max(3,+els.s_duration.value||12) };
       if(t==='bullets'){
         s.lines=(els.s_lines.value||'').split('\n').map(x=>x.trim()).filter(Boolean);
         if(!s.lines.length) return alert('Tilføj mindst ét punkt.');
       }
-      if(t==='image' || t==='birthday'){
+      if(t==='image'||t==='birthday'){
         let img=(els.s_image.value||'').trim();
         if(!img) return alert('Angiv billede-URL eller filnavn.');
         if(!/^https?:\/\//i.test(img) && state.data.media?.baseUrl){
-          img = state.data.media.baseUrl.replace(/\/+$/,'')+'/'+img.replace(/^\/+/,'');
+          img = state.data.media.baseUrl.replace(/\/+$/,'') + '/' + img.replace(/^\/+/,'');
         }
         s.image=img;
       }
-
       state.data.slides.push(s);
       els.s_title.value=''; els.s_lines.value=''; els.s_image.value='';
       renderSlides();
     };
 
-    els.clearSlides.onclick = ()=>{ if(confirm('Slet alle slides?')){ state.data.slides=[]; renderSlides(); } };
+    els.clearSlides.onclick=()=>{ if(confirm('Slet alle slides?')){ state.data.slides=[]; renderSlides(); } };
 
-    els.bd_add.onclick = ()=>{
-      state.data.settings ||= {};
-      state.data.settings.birthdays ||= [];
-      const name = els.bd_name.value.trim();
-      const date = els.bd_date.value.trim();
-      let photo  = els.bd_photo.value.trim();
+    els.bd_add.onclick=()=>{
+      state.data.settings ||= {}; state.data.settings.birthdays ||= [];
+      const name=els.bd_name.value.trim(); const date=els.bd_date.value.trim(); let photo=els.bd_photo.value.trim();
       if(!name || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return alert('Udfyld navn og dato (YYYY-MM-DD).');
       if(photo && !/^https?:\/\//i.test(photo) && state.data.media?.baseUrl){
-        photo = state.data.media.baseUrl.replace(/\/+$/,'')+'/'+photo.replace(/^\/+/,'');
+        photo = state.data.media.baseUrl.replace(/\/+$/,'') + '/' + photo.replace(/^\/+/,'');
       }
       state.data.settings.birthdays.push({name,date,photo});
-      els.bd_name.value = els.bd_date.value = els.bd_photo.value = '';
-      renderBirthdays();
+      els.bd_name.value=els.bd_date.value=els.bd_photo.value=''; renderBirthdays();
     };
 
-    els.uploadBtn.onclick = async ()=>{
-      const f = els.s_imgfile.files?.[0]; if(!f) return alert('Vælg et billede først.');
+    // Upload (valgfrit – virker kun hvis api/upload-image.js + ENV er sat)
+    els.uploadBtn.onclick=async ()=>{
+      const f=els.s_imgfile.files?.[0]; if(!f) return alert('Vælg et billede først.');
       els.status.textContent='Uploader billede…';
       const r=new FileReader();
       r.onload=async e=>{
         try{
           const data=e.target.result.split(',')[1];
-          const resp=await fetch('/api/upload-image',{
-            method:'POST',
-            headers:{'Content-Type':'application/json','x-admin-pin': getPin()||''},
-            body:JSON.stringify({name:f.name,data})
-          });
-          const j=await resp.json();
-          if(!resp.ok||!j.ok) throw new Error(j.error||'Upload fejlede');
+          const resp=await fetch('/api/upload-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name,data})});
+          const j=await resp.json(); if(!resp.ok||!j.ok) throw new Error(j.error||'Upload fejlede');
           els.s_image.value=j.cdnUrl||j.rawUrl||'';
           els.status.textContent='✅ Upload OK';
-        }catch(err){
-          els.status.innerHTML='<span class="err">Upload fejl: '+(err.message||err)+'</span>';
-        }
+        }catch(err){ els.status.innerHTML='<span class="err">Upload fejl: '+(err.message||err)+'</span>'; }
       };
       r.readAsDataURL(f);
     };
 
-    els.setUrlBtn.onclick = ()=>{
-      state.dataUrl = els.dataUrl.value.trim();
-      els.dataUrlView.textContent = state.dataUrl;
-      localStorage.setItem('admin_data_url', state.dataUrl);
+    // Datakilde-knapper
+    els.setUrlBtn.onclick=()=>{ state.dataUrl=els.dataUrl.value.trim(); els.dataUrlView.textContent=state.dataUrl; localStorage.setItem('admin_data_url',state.dataUrl); };
+    els.loadBtn.onclick=load;
+    els.downloadBtn.onclick=()=>{
+      const blob=new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='data.json'; a.click();
     };
-    els.loadBtn.onclick = load;
-    els.downloadBtn.onclick = ()=>{
-      const blob = new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'data.json'; a.click();
-    };
-    els.saveBtn.onclick = save;
-    els.saveBtn2.onclick = save;
+    els.saveBtn.onclick=save; els.saveBtn2.onclick=save;
 
-    /* Init */
+    // Init
     (function init(){
-      const stored = localStorage.getItem('admin_data_url') || '';
+      const stored=localStorage.getItem('admin_data_url')||'';
       state.dataUrl = stored || 'https://perbonde07-byte.github.io/Infoskaerm/data.json';
-      els.dataUrl.value = state.dataUrl;
-      els.dataUrlView.textContent = state.dataUrl;
-      load();
+      els.dataUrl.value=state.dataUrl; els.dataUrlView.textContent=state.dataUrl;
+      // kræv PIN før man kan loade
+      // hvis du vil autoloade uden PIN, fjern linjen herunder og kald load();
+      // (vi lader den vente på PIN af hensyn til oplevelsen)
     })();
   </script>
 </body>
