@@ -29,17 +29,12 @@
       {
         "name": "Peter",
         "date": "03.11.1986",
-        "image": "/media/peter.jpg"
-      },
-      {
-        "name": "Lise",
-        "date": "12.01.1991",
-        "image": "/media/lise.jpg"
+        "image": "/media/medarbejdere/ Peter-.jpg"
       },
       {
         "name": "Per Bonde",
         "date": "07.05.1986",
-        "image": ""
+        "image": "/media/medarbejdere/Per-Bonde.jpg"
       }
     ]
   },
@@ -57,7 +52,7 @@
     },
     {
       "type": "image",
-      "title": "Kampagne",
+      "title": "Julefrokost",
       "image": "/media/Slide1.jpg",
       "duration": 8
     }
