@@ -12,7 +12,16 @@
         "hans"
       ]
     },
-    "birthdays": []
+    "birthdays": [
+      {
+        "name": "Per 07.05.1986",
+        "date": ""
+      },
+      {
+        "name": "Mads 05.11.2000",
+        "date": ""
+      }
+    ]
   },
   "slides": [
     {
@@ -26,11 +35,6 @@
       "title": "Fredag",
       "text": "Så det weekend tid",
       "duration": 8
-    },
-    {
-      "type": "empties",
-      "title": "Tømning",
-      "duration": 12
     }
   ]
 }
