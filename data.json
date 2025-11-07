@@ -1,40 +1,25 @@
 {
   "brand": "Bredsgaard • Infoskærm",
-  "logoUrl": "/media/Bredsgaard-logo transprant.png",
+  "logoUrl": "/media/logo.png",
   "settings": {
+    "theme": { "bg1": "#0f2b8a", "bg2": "#0a1e66", "accent": "#2bb673" },
+    "refreshMs": 300000,
     "empties": {
-      "weekdays": [
-        "mandag"
-      ],
-      "names": [
-        "Per",
-        "Peter",
-        "hans"
+      "plan": [
+        { "name": "Per",    "date": "03.11.2025" },
+        { "name": "Martin", "date": "05.11.2025" },
+        { "name": "Kasper", "date": "10.11.2025" },
+        { "name": "Per",    "date": "12.11.2025" }
       ]
     },
     "birthdays": [
-      {
-        "name": "Per 07.05.1986",
-        "date": ""
-      },
-      {
-        "name": "Mads 05.11.2000",
-        "date": ""
-      }
+      { "name": "Peter", "date": "03.11", "image": "/media/peter.jpg", "message": "Tillykke!" },
+      { "name": "Lise",  "date": "12.01.1991", "image": "/media/lise.jpg" }
     ]
   },
   "slides": [
-    {
-      "type": "text",
-      "title": "Info skærm på vej",
-      "text": "Så er der ved at være noget som ser ud til at virke. ",
-      "duration": 8
-    },
-    {
-      "type": "text",
-      "title": "Fredag",
-      "text": "Så det weekend tid",
-      "duration": 8
-    }
+    { "type": "image",   "title": "Kampagne", "image": "/media/Slide1.jpg", "duration": 8 },
+    { "type": "empties", "title": "TØMNINGS DAGE", "duration": 12 },
+    { "type": "birthday","title": "Fødselsdage", "duration": 10 }
   ]
 }
