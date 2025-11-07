@@ -4,14 +4,12 @@
   "settings": {
     "empties": {
       "weekdays": [
-        "mon",
-        "wed",
-        "fri"
+        "mandag"
       ],
       "names": [
-        "Pap",
-        "Plast",
-        "Rest"
+        "Per",
+        "Peter",
+        "hans"
       ]
     },
     "birthdays": []
@@ -19,9 +17,20 @@
   "slides": [
     {
       "type": "text",
-      "title": "Info",
-      "text": "Hej fra infoskærmen!\n",
+      "title": "Info skærm på vej",
+      "text": "Så er der ved at være noget som ser ud til at virke. ",
       "duration": 8
+    },
+    {
+      "type": "text",
+      "title": "Fredag",
+      "text": "Så det weekend tid",
+      "duration": 8
+    },
+    {
+      "type": "empties",
+      "title": "Tømning",
+      "duration": 12
     }
   ]
 }
