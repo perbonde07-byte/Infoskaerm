@@ -1,98 +1,110 @@
-// File: api/save.js
-import crypto from 'crypto';
+// api/save.js
+// Gemmer data.json i GitHub repo'et via GitHub REST API v3
+// ENV: ADMIN_PIN, GITHUB_TOKEN, OWNER, REPO, (valgfri) BRANCH, (valgfri) FILEPATH
 
-function verifyToken(token, secret) {
-  if (!token || !secret) return false;
-  const [payload, sig] = String(token).split('.');
-  if (!payload || !sig) return false;
-  const expectedSig = crypto.createHmac('sha256', secret).update(payload).digest('base64url');
-  if (sig !== expectedSig) return false;
+export const config = { runtime: "nodejs" };
+
+import crypto from "crypto";
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).send("Method Not Allowed");
+  }
+
+  // ====== 1) Tjek admin-session-cookie ======
+  const ok = isSessionValid(req);
+  if (!ok) return res.status(401).send("Unauthorized (session)");
+
+  // ====== 2) Læs payload ======
+  const body = await readRaw(req);
+  let json;
   try {
-    const data = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
-    const now = Math.floor(Date.now() / 1000);
-    if (typeof data.exp !== 'number' || data.exp < now) return false;
-    return true;
+    json = JSON.parse(body);
+  } catch {
+    return res.status(400).send("Bad JSON");
+  }
+
+  // ====== 3) Opsæt repo-parametre ======
+  const token  = process.env.GITHUB_TOKEN || "";
+  const owner  = process.env.OWNER || "";
+  const repo   = process.env.REPO || "";
+  const branch = process.env.BRANCH || "main";
+  const path   = process.env.FILEPATH || "data.json";
+
+  if (!token || !owner || !repo) {
+    return res.status(500).send("ENV mangler (GITHUB_TOKEN/OWNER/REPO)");
+  }
+
+  // ====== 4) Hent nuværende SHA for filen (kræves af GitHub API) ======
+  const baseUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+  const headers = {
+    "Authorization": `token ${token}`,
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "infoskaerm-admin"
+  };
+
+  let sha = undefined;
+  try {
+    const cur = await fetch(`${baseUrl}?ref=${encodeURIComponent(branch)}`, { headers });
+    if (cur.status === 200) {
+      const j = await cur.json();
+      sha = j.sha;
+    }
+  } catch (_) { /* ignorer */ }
+
+  // ====== 5) PUT ny version ======
+  const content = Buffer.from(JSON.stringify(json, null, 2), "utf8").toString("base64");
+  const message = `update data.json (${new Date().toISOString()})`;
+
+  const putRes = await fetch(baseUrl, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ message, content, branch, sha })
+  });
+
+  if (!putRes.ok) {
+    const txt = await safeText(putRes);
+    return res.status(putRes.status).send(txt || "GitHub PUT fejl");
+  }
+
+  return res.status(200).send("OK");
+}
+
+// ---------- helpers ----------
+function isSessionValid(req) {
+  try {
+    const expected = process.env.ADMIN_PIN || "";
+    if (!expected) return false;
+    const want = crypto.createHmac("sha256", expected).update("allow").digest("hex");
+    const got = parseCookie(req.headers?.cookie || "")["admin_session"] || "";
+    return got && got === want;
   } catch {
     return false;
   }
 }
 
-function readCookie(req, name) {
-  const raw = req.headers.cookie || '';
-  const parts = raw.split(';').map(s => s.trim());
-  for (const p of parts) {
-    if (p.startsWith(name + '=')) return p.slice(name.length + 1);
-  }
-  return '';
+function parseCookie(s) {
+  const out = {};
+  s.split(";").forEach((p) => {
+    const i = p.indexOf("=");
+    if (i > -1) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim());
+  });
+  return out;
 }
 
-export default async function handler(req, res) {
-  try {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
-
-    // 1) Cookie-auth (ingen PIN i request body/header)
-    const secret = process.env.ADMIN_PIN || '';
-    const token = readCookie(req, 'admin_session');
-    if (!verifyToken(token, secret)) {
-      return res.status(401).json({ error: 'Unauthorized (session)' });
-    }
-
-    // 2) Payload
-    const body = req.body || {};
-    const content = JSON.stringify(body, null, 2);
-
-    // 3) GitHub ENV
-    const tokenGH = process.env.GITHUB_TOKEN;
-    const owner   = process.env.OWNER;
-    const repo    = process.env.REPO;
-    const branch  = process.env.BRANCH || 'main';
-    const path    = process.env.FILEPATH || 'data.json';
-
-    if (!tokenGH || !owner || !repo) {
-      return res.status(500).json({ error: 'Missing env (GITHUB_TOKEN, OWNER, REPO)' });
-    }
-
-    const baseUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
-    const headers = {
-      'Authorization': `Bearer ${tokenGH}`,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-      'User-Agent': 'infoskaerm'
-    };
-
-    // Hent SHA hvis fil findes
-    let sha;
-    const getResp = await fetch(`${baseUrl}?ref=${encodeURIComponent(branch)}`, { headers });
-    if (getResp.status === 200) {
-      const j = await getResp.json();
-      sha = j.sha;
-    } else if (getResp.status !== 404) {
-      const t = await getResp.text();
-      return res.status(502).json({ error: `GitHub GET failed (${getResp.status})`, detail: t });
-    }
-
-    // Commit
-    const putResp = await fetch(baseUrl, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({
-        message: 'Update data.json via admin',
-        content: Buffer.from(content, 'utf8').toString('base64'),
-        branch,
-        sha
-      })
-    });
-    const putText = await putResp.text();
-    if (!putResp.ok) {
-      let msg = putText;
-      try { const j = JSON.parse(putText); msg = j.message || putText; } catch {}
-      return res.status(502).json({ error: `GitHub PUT failed (${putResp.status})`, detail: msg });
-    }
-
-    return res.status(200).json({ ok: true });
-  } catch (e) {
-    return res.status(500).json({ error: 'Server error', detail: String(e?.message || e) });
-  }
+function readRaw(req) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    req.on("data", (c) => (data += c));
+    req.on("end", () => resolve(data));
+    req.on("error", reject);
+  });
 }
+
+async function safeText(r) {
+  try { return await r.text(); } catch { return ""; }
+}
+
 
 
