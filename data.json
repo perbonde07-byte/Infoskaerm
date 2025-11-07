@@ -2,12 +2,32 @@
   "brand": "Bredsgaard • Infoskærm",
   "logoUrl": "/media/logo.png",
   "settings": {
-    "empties": { "weekdays": ["mon","wed","fri"], "names": ["Pap","Plast","Rest"] },
+    "empties": {
+      "weekdays": [
+        "mon",
+        "wed",
+        "fri"
+      ],
+      "names": [
+        "Pap",
+        "Plast",
+        "Rest"
+      ]
+    },
     "birthdays": []
   },
   "slides": [
-    { "type": "image", "title": "Velkommen", "image": "/media/Slide1.jpg", "duration": 8 },
-    { "type": "text", "title": "Info", "text": "Hej fra infoskærmen!", "duration": 8 }
+    {
+      "type": "image",
+      "title": "Velkommen",
+      "image": "/media/Slide1.jpg",
+      "duration": 8
+    },
+    {
+      "type": "text",
+      "title": "Info",
+      "text": "Hej fra infoskærmen!",
+      "duration": 8
+    }
   ]
 }
-
