@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     };
 
     // Hent nuværende SHA (optimistisk låsning)
-    let sha = undefined;
+    let sha;
     const getUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`;
     const getRes = await fetch(getUrl, { headers });
     if (getRes.status === 200) {
@@ -38,16 +38,10 @@ export default async function handler(req, res) {
 
     const content = Buffer.from(JSON.stringify(incoming, null, 2)).toString('base64');
 
-    // Skriv til GitHub
     const putRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify({
-        message: 'chore: update data.json via admin',
-        content,
-        sha,
-        branch
-      })
+      body: JSON.stringify({ message: 'chore: update data.json via admin', content, sha, branch })
     });
 
     const jr = await putRes.json();
@@ -58,8 +52,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message });
   }
 }
-
-
-
-
-
