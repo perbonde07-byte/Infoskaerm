@@ -35,6 +35,11 @@
         "name": "Lise",
         "date": "12.01.1991",
         "image": "/media/lise.jpg"
+      },
+      {
+        "name": "Per Bonde",
+        "date": "07.05.1986",
+        "image": ""
       }
     ]
   },
