@@ -38,5 +38,21 @@
       }
     ]
   },
-  "slides": []
+  "slides": [
+    {
+      "type": "birthday",
+      "title": "Fødselsdage",
+      "duration": 12
+    },
+    {
+      "type": "birthday",
+      "title": "Fødselsdage",
+      "duration": 12
+    },
+    {
+      "type": "birthday",
+      "title": "Fødselsdage",
+      "duration": 12
+    }
+  ]
 }
