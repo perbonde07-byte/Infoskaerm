@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Bredsgaard • Infoskærm</title>
   <style>
-    :root{
-      --bg:#0b1220;--panel:#111a2d;--muted:#243147;--text:#e8eefb;--accent:#5aa2ff;
-    }
+    :root{ --bg:#0b1220;--panel:#111a2d;--muted:#243147;--text:#e8eefb;--accent:#5aa2ff; }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
     #root{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:36px}
-    .card{width:min(96vw,1200px);min-height:70vh;background:linear-gradient(180deg,#0f172a 0%, #0b1220 100%);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px 36px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+    .card{width:min(96vw,1200px);min-height:70vh;background:linear-gradient(180deg,#0f172a 0%, #0b1220 100%);
+          border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px 36px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
     h1{font-size:56px;line-height:1.05;margin:0 0 16px}
     ul{font-size:28px;line-height:1.6;margin:8px 0 0 24px}
     table{width:100%;border-collapse:collapse;margin-top:8px}
@@ -20,10 +19,7 @@
     .imgwrap{display:flex;align-items:center;justify-content:center;min-height:60vh}
     .imgwrap img{max-width:100%;max-height:70vh;border-radius:12px;display:block}
     .logo{position:fixed;z-index:20;max-width:220px;max-height:80px;opacity:.9}
-    .top-right{top:14px;right:18px}
-    .top-left{top:14px;left:18px}
-    .bottom-right{bottom:14px;right:18px}
-    .bottom-left{bottom:14px;left:18px}
+    .top-right{top:14px;right:18px}.top-left{top:14px;left:18px}.bottom-right{bottom:14px;right:18px}.bottom-left{bottom:14px;left:18px}
     .brandbar{position:fixed;left:0;right:0;bottom:0;height:28px;padding:0 14px;display:flex;align-items:center;gap:8px;opacity:.7;font-size:13px;color:#b9c6e4}
     .empty{display:flex;align-items:center;justify-content:center}
     .empty .card{min-height:40vh}
@@ -35,101 +31,65 @@
   <div id="brandbar" class="brandbar"></div>
 
   <script>
-    // Hent data.json igen hver 3. minut (auto-update)
+    // Auto reload data hver 3. min
     const AUTO_RELOAD_MS = 3 * 60 * 1000;
 
-    // Datakilde: ?data=… eller fast default
+    // Data-url kan sættes via ?data=...
     const DATA_URL = (() => {
       const p = new URLSearchParams(location.search).get('data');
       return p || "https://perbonde07-byte.github.io/Infoskaerm/data.json";
     })();
 
-    let current = -1;
-    let timer = null;
-    let playlist = [];
-    let DATA = null;
+    let current = -1, timer = null, playlist = [], DATA = null;
+    const $ = (s)=>document.querySelector(s);
+    const root = $('#root'), logo = $('#logo'), brandbar = $('#brandbar');
 
-    const $ = (s) => document.querySelector(s);
-    const root = $('#root');
-    const logo = $('#logo');
-    const brandbar = $('#brandbar');
-
-    // Hjælpere til ugeberegning og formatering
-    function monday(d){ const x=new Date(d); const day=x.getDay(); const diff=(day===0?-6:1)-day; x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x; }
-    function sunday(d){ const x=new Date(monday(d)); x.setDate(x.getDate()+6); x.setHours(23,59,59,999); return x; }
-    function fmtDa(iso){ if(!iso) return ''; const d=new Date(iso); if(Number.isNaN(d.getTime())) return iso; return d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+    // Hjælpere
+    const monday = d => { const x=new Date(d), day=x.getDay(), diff=(day===0?-6:1)-day; x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x; };
+    const sunday = d => { const x=new Date(monday(d)); x.setDate(x.getDate()+6); x.setHours(23,59,59,999); return x; };
+    const fmtDa = iso => { if(!iso) return ''; const d=new Date(iso); return isNaN(d)?iso:d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+    const escapeHtml = s => (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 
     function hasBirthdayThisWeek(bdays){
-      if(!Array.isArray(bdays) || !bdays.length) return false;
-      const start = monday(new Date());
-      const end   = sunday(new Date());
+      if(!Array.isArray(bdays)||!bdays.length) return false;
+      const start=monday(new Date()), end=sunday(new Date());
       return bdays.some(b=>{
         if(!b?.date) return false;
-        const parts = b.date.split('-').map(Number);
-        if(parts.length<3) return false;
-        const M = parts[1], D = parts[2];
-        if(!M || !D) return false;
-        const thisYear = new Date(start.getFullYear(), M-1, D);
-        return thisYear >= start && thisYear <= end;
+        const [,M,D]=b.date.split('-').map(Number);
+        const d=new Date(start.getFullYear(),(M||1)-1,(D||1));
+        return d>=start && d<=end;
       });
     }
 
-    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]); }
-
-    // Render-typer
-    function renderBullets(s) {
-      const lines = (s.lines||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('');
-      return `<div class="card"><h1>${escapeHtml(s.title||'')}</h1><ul>${lines}</ul></div>`;
-    }
-    function renderImage(s) {
-      const src = s.image || '';
-      return `<div class="card imgwrap">${src ? `<img src="${escapeHtml(src)}" alt="">` : '<p>(mangler billede)</p>'}</div>`;
-    }
-    function renderEmpties(data) {
-      const e = data?.settings?.empties || { weekdays:[], skip:[], names:[] };
-      const out = [];
-      const weekdaySet = new Set(e.weekdays||[]);
-      const skipSet = new Set((e.skip||[]).map(x=>String(x).trim()));
-      const names = (e.names||[]).slice();
-      if(names.length===0 || weekdaySet.size===0){
-        return `<div class="card"><h1>Tømning</h1><p>Konfiguration mangler (ugedage/navne).</p></div>`;
-      }
-      let d=new Date(); d.setHours(0,0,0,0); let iName=0;
-      const limit=10;
-      while(out.length<limit){
-        const token=['sun','mon','tue','wed','thu','fri','sat'][d.getDay()];
+    // Renderere
+    const renderBullets = s => `<div class="card"><h1>${escapeHtml(s.title||'')}</h1><ul>${(s.lines||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`;
+    const renderImage   = s => `<div class="card imgwrap">${s.image?`<img src="${escapeHtml(s.image)}" alt="">`:'<p>(mangler billede)</p>'}</div>`;
+    function renderEmpties(data){
+      const e=data?.settings?.empties||{weekdays:[],skip:[],names:[]};
+      const weekdays=new Set(e.weekdays||[]), skip=new Set((e.skip||[]).map(String));
+      const names=(e.names||[]).slice(); if(!names.length||!weekdays.size) return `<div class="card"><h1>Tømning</h1><p>Konfiguration mangler.</p></div>`;
+      const out=[]; let d=new Date(); d.setHours(0,0,0,0); let i=0; while(out.length<10){
+        const tok=['sun','mon','tue','wed','thu','fri','sat'][d.getDay()];
         const iso=d.toISOString().slice(0,10);
-        if(weekdaySet.has(token) && !skipSet.has(iso)){
-          out.push({ name:names[iName%names.length], date:new Date(d) });
-          iName++;
-        }
+        if(weekdays.has(tok) && !skip.has(iso)){ out.push({name:names[i%names.length], date:new Date(d)}); i++; }
         d.setDate(d.getDate()+1);
       }
       const rows=out.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td>${r.date.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'})}</td></tr>`).join('');
       return `<div class="card"><h1>Tømning</h1><table><thead><tr><th>Navn</th><th>Dato</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
-    function renderBirthdays(data, s) {
-      const list = data?.settings?.birthdays || [];
-      const start = monday(new Date());
-      const end   = sunday(new Date());
-      const week = list.filter(b=>{
-        if(!b?.date) return false;
-        const [Y,M,D] = b.date.split('-').map(Number);
-        if(!M||!D) return false;
-        const d = new Date(start.getFullYear(), M-1, D);
-        return d>=start && d<=end;
-      });
-      if(week.length===0) return `<div class="card"><h1>${escapeHtml(s.title||'Tillykke')}</h1><p>Ingen fødselsdage i denne uge.</p></div>`;
-      const rows = week.map(p=>`<tr><td>${escapeHtml(p.name||'')}</td><td>${fmtDa(p.date)}</td><td>${p.photo?`<img src="${escapeHtml(p.photo)}" alt="" style="height:64px;border-radius:12px">`:''}</td></tr>`).join('');
+    function renderBirthdays(data, s){
+      const list=data?.settings?.birthdays||[]; const start=monday(new Date()), end=sunday(new Date());
+      const week=list.filter(b=>{const[,M,D]=String(b.date||'').split('-').map(Number); const d=new Date(start.getFullYear(),(M||1)-1,(D||1)); return d>=start&&d<=end;});
+      if(!week.length) return ''; // vis IKKE noget, hvis ingen har fødselsdag denne uge
+      const rows=week.map(p=>`<tr><td>${escapeHtml(p.name||'')}</td><td>${fmtDa(p.date)}</td><td>${p.photo?`<img src="${escapeHtml(p.photo)}" style="height:64px;border-radius:12px">`:''}</td></tr>`).join('');
       return `<div class="card"><h1>${escapeHtml(s.title||'Tillykke')}</h1><table><thead><tr><th>Navn</th><th>Dato</th><th>Foto</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
 
-    // Brand/Logo
     function applyBrandAndLogo(data){
       brandbar.textContent = data?.brand ? String(data.brand) : 'Bredsgaard • Infoskærm';
-      const u = (data?.logoUrl||'').trim();
+      const u=(data?.logoUrl||'').trim();
       if(u){ logo.src=u; logo.className='logo '+(data?.logoPos||'top-right'); logo.style.display=''; }
-      else { logo.style.display='none'; }
+      else logo.style.display='none';
     }
 
     function renderSlide(s){
@@ -138,28 +98,28 @@
       else if(s.type==='image') html=renderImage(s);
       else if(s.type==='empties') html=renderEmpties(DATA);
       else if(s.type==='birthday') html=renderBirthdays(DATA,s);
-      else html=`<div class="card"><h1>Ukendt slide</h1></div>`;
+      if(!html) { next(); return; } // spring over tom fødselsdag
       root.innerHTML=html;
     }
 
     function next(){
       if(!playlist.length){
-        root.innerHTML=`<div class="empty"><div class="card"><h1>Ingen slides</h1><ul><li>Tilføj slides i admin.</li></ul></div></div>`;
+        root.innerHTML = `<div class="empty"><div class="card"><h1>Ingen slides</h1><ul><li>Tilføj slides i admin.</li></ul></div></div>`;
         return;
       }
       current=(current+1)%playlist.length;
       const s=playlist[current];
       renderSlide(s);
       clearTimeout(timer);
-      timer=setTimeout(next, Math.max(3, +s.duration||12)*1000);
+      timer=setTimeout(next, Math.max(3,+s.duration||12)*1000);
     }
 
     function buildPlaylist(data){
-      const bdays = data?.settings?.birthdays || [];
-      let list = Array.isArray(data.slides)?[...data.slides]:[];
-      list = list.filter(s=>{
-        if(!s || !s.type) return false;
-        if(s.type==='bullets') return Array.isArray(s.lines) && s.lines.length>0;
+      const bdays=data?.settings?.birthdays||[];
+      let list=Array.isArray(data.slides)?[...data.slides]:[];
+      list=list.filter(s=>{
+        if(!s||!s.type) return false;
+        if(s.type==='bullets') return Array.isArray(s.lines)&&s.lines.length>0;
         if(s.type==='image') return !!s.image;
         if(s.type==='empties') return true;
         if(s.type==='birthday') return hasBirthdayThisWeek(bdays);
@@ -170,20 +130,16 @@
 
     async function loadDataAndRun(){
       try{
-        const res = await fetch(DATA_URL+'?v='+(Date.now()));
+        const res = await fetch(DATA_URL+'?v='+Date.now());
         const data = await res.json();
-        DATA = data;
-        applyBrandAndLogo(DATA);
-        playlist = buildPlaylist(DATA);
-        current=-1;
-        next();
+        DATA=data; applyBrandAndLogo(data);
+        playlist=buildPlaylist(data); current=-1; next();
       }catch(e){
         console.error('data.json fejl',e);
         root.innerHTML = `<div class="empty"><div class="card"><h1>Ingen data</h1><p>Kunne ikke hente <code>data.json</code>.</p></div></div>`;
       }
     }
 
-    // Auto-update
     setInterval(loadDataAndRun, AUTO_RELOAD_MS);
     loadDataAndRun();
   </script>
