@@ -45,14 +45,10 @@
       "duration": 12
     },
     {
-      "type": "birthday",
-      "title": "Fødselsdage",
-      "duration": 12
-    },
-    {
-      "type": "birthday",
-      "title": "Fødselsdage",
-      "duration": 12
+      "type": "image",
+      "title": "",
+      "image": "/media/Slide1.jpg",
+      "duration": 8
     }
   ]
 }
