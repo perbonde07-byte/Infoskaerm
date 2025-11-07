@@ -1,25 +1,59 @@
 {
   "brand": "Bredsgaard • Infoskærm",
-  "logoUrl": "/media/logo.png",
+  "logoUrl": "/media/Bredsgaard-logo transprant.png",
   "settings": {
-    "theme": { "bg1": "#0f2b8a", "bg2": "#0a1e66", "accent": "#2bb673" },
+    "theme": {
+      "bg1": "#0f2b8a",
+      "bg2": "#0a1e66",
+      "accent": "#2bb673"
+    },
     "refreshMs": 300000,
     "empties": {
       "plan": [
-        { "name": "Per",    "date": "03.11.2025" },
-        { "name": "Martin", "date": "05.11.2025" },
-        { "name": "Kasper", "date": "10.11.2025" }
+        {
+          "name": "Per",
+          "date": "03.11.2025"
+        },
+        {
+          "name": "Martin",
+          "date": "05.11.2025"
+        },
+        {
+          "name": "Kasper",
+          "date": "10.11.2025"
+        }
       ]
     },
     "birthdaysMessage": "Tillykke!",
     "birthdays": [
-      { "name": "Peter", "date": "03.11", "image": "/media/peter.jpg" },
-      { "name": "Lise",  "date": "12.01.1991", "image": "/media/lise.jpg" }
+      {
+        "name": "Peter",
+        "date": "03.11",
+        "image": "/media/peter.jpg"
+      },
+      {
+        "name": "Lise",
+        "date": "12.01.1991",
+        "image": "/media/lise.jpg"
+      }
     ]
   },
   "slides": [
-    { "type": "image",   "title": "Kampagne", "image": "/media/Slide1.jpg", "duration": 8 },
-    { "type": "empties", "title": "TØMNINGS DAGE", "duration": 12 },
-    { "type": "birthday","title": "Fødselsdage", "duration": 10 }
+    {
+      "type": "image",
+      "title": "Kampagne",
+      "image": "/media/Slide1.jpg",
+      "duration": 8
+    },
+    {
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 12
+    },
+    {
+      "type": "birthday",
+      "title": "Fødselsdage",
+      "duration": 10
+    }
   ]
 }
