@@ -1,23 +1,18 @@
 {
-  "brand": "Bredsgaard • Infoskaerm",
+  "brand": "Bredsgaard • Infoskærm",
   "logoUrl": "",
   "logoPos": "top-right",
-  "media": { "baseUrl": "", "key": "optional" },
+  "media": { "baseUrl": "https://perbonde07-byte.github.io/Infoskaerm/media/", "key": "" },
   "settings": {
     "calendarUrl": "",
-    "empties": {
-      "weekdays": ["mon","wed","fri"],
-      "skip": ["2025-12-24","2025-12-31"],
-      "names": ["Per","Martin","Kasper"]
-    },
-    "birthdays": [
-      { "name": "Per", "date": "1986-05-07", "photo": "" }
-    ]
+    "empties": { "weekdays": ["mon","wed","fri"], "skip": [], "names": ["Per","Martin","Kasper"] },
+    "birthdays": []
   },
   "slides": [
     { "type": "bullets", "title": "Nyheder", "lines": ["Punkt 1","Punkt 2"], "duration": 12 },
-    { "type": "image", "title": "Kampagne", "image": "https://via.placeholder.com/1200x700.png?text=Billede", "duration": 12 },
+    { "type": "image", "title": "Kampagne", "image": "https://perbonde07-byte.github.io/Infoskaerm/media/eksempel.jpg", "duration": 12 },
     { "type": "empties", "title": "Tømning", "duration": 12 },
-    { "type": "birthday", "title": "Tillykke", "duration": 12 }
+    { "type": "birthday", "title": "Tillykke", "image": "https://perbonde07-byte.github.io/Infoskaerm/media/ramme.png", "duration": 12 }
   ]
 }
+
