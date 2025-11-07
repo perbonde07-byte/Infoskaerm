@@ -1,256 +1,240 @@
 <!doctype html>
 <html lang="da">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin · Infoskærm</title>
-  <style>
-    :root { --bg:#0b0b0b; --panel:#111; --muted:#aaa; --fg:#fff; --accent:#4caf50; --danger:#ff5555; }
-    html, body { height:100%; margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--fg); }
-    .wrap { max-width:1100px; margin:0 auto; padding:20px; }
-    h1 { font-size:24px; margin:0 0 12px; }
-    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-    .card { background:var(--panel); border:1px solid #222; border-radius:14px; padding:16px; }
-    label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:10px 0 6px; }
-    input, textarea, select { width:100%; box-sizing:border-box; padding:10px; background:#0e0e0e; border:1px solid #222; border-radius:10px; color:var(--fg); }
-    textarea { min-height:84px; }
-    .row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    .slides { display:grid; gap:10px; }
-    .slide { background:#0e0e0e; border:1px solid #222; border-radius:12px; padding:12px; position:relative; }
-    .slide h3 { margin:0 0 10px; font-size:14px; letter-spacing:.02em; }
-    .btn { display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:12px; border:1px solid #222; background:#161616; color:#fff; cursor:pointer; }
-    .btn.primary { background:var(--accent); border-color:transparent; color:#000; font-weight:700; }
-    .btn.danger { background:transparent; border-color:#333; color:#ff9a9a; }
-    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin:14px 0; }
-    .muted { color:var(--muted); font-size:12px; }
-    .hr { height:1px; background:#222; margin:16px -16px; }
-    .list { display:flex; gap:8px; flex-wrap:wrap; }
-    .preview { display:flex; gap:10px; align-items:center; margin-top:8px; }
-    .preview img { height:48px; border-radius:8px; border:1px solid #222; }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin · Infoskærm</title>
+<style>
+  :root{ --bg:#0b0b0b; --panel:#111; --muted:#aaa; --fg:#fff; --accent:#4caf50; --danger:#ff5555; }
+  html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg)}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  h1{font-size:24px;margin:0 0 12px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--panel);border:1px solid #222;border-radius:14px;padding:16px}
+  label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:10px 0 6px}
+  input,textarea,select{width:100%;box-sizing:border-box;padding:10px;background:#0e0e0e;border:1px solid #222;border-radius:10px;color:var(--fg)}
+  textarea{min-height:84px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .slides{display:grid;gap:10px}
+  .slide{background:#0e0e0e;border:1px solid #222;border-radius:12px;padding:12px;position:relative}
+  .slide h3{margin:0 0 10px;font-size:14px;letter-spacing:.02em}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;border:1px solid #222;background:#161616;color:#fff;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:transparent;color:#000;font-weight:700}
+  .btn.danger{background:transparent;border-color:#333;color:#ff9a9a}
+  .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:14px 0}
+  .muted{color:var(--muted);font-size:12px}
+  .hr{height:1px;background:#222;margin:16px -16px}
+  .list{display:flex;gap:8px;flex-wrap:wrap}
+  .preview{display:flex;gap:10px;align-items:center;margin-top:8px}
+  .preview img{height:48px;border-radius:8px;border:1px solid #222}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Admin · Infoskærm</h1>
-    <div class="toolbar">
-      <div class="muted" id="status">Indlæser…</div>
-      <div class="list">
-        <input id="pin" placeholder="PIN (ADMIN_PIN)" style="width:130px" />
-        <button class="btn" id="add-image">+ Billede</button>
-        <button class="btn" id="add-text">+ Tekst</button>
-        <button class="btn" id="add-empties">+ Tømning</button>
-        <button class="btn" id="add-birthday">+ Fødselsdage</button>
-        <button class="btn primary" id="save">Gem ændringer</button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>Branding & faste indstillinger</h2>
-        <label>Brand</label>
-        <input id="brand" placeholder="Bredsgaard • Infoskærm" />
-
-        <label>Logo URL (fx /media/logo.png eller fuld URL)</label>
-        <input id="logoUrl" placeholder="/media/logo.png" />
-
-        <div class="hr"></div>
-        <h3>Affaldstømning</h3>
-        <label>Ugedage (kommasepareret, fx mon,wed,fri)</label>
-        <input id="empties-weekdays" placeholder="mon,wed,fri" />
-
-        <label>Navne (en pr. linje)</label>
-        <textarea id="empties-names" placeholder="Pap&#10;Plast&#10;Rest"></textarea>
-
-        <div class="hr"></div>
-        <h3>Fødselsdage</h3>
-        <label>Liste (en pr. linje: Navn – dd.mm.yyyy)</label>
-        <textarea id="birthdays" placeholder="Per – 07.11.1988&#10;Lise – 12.01.1991"></textarea>
-      </div>
-
-      <div class="card">
-        <h2>Slides (rækkefølge = visningsrækkefølge)</h2>
-        <div id="slides" class="slides"></div>
-      </div>
+<div class="wrap">
+  <h1>Admin · Infoskærm</h1>
+  <div class="toolbar">
+    <div class="muted" id="status">Indlæser…</div>
+    <div class="list">
+      <input id="pin" placeholder="PIN (ADMIN_PIN)" style="width:130px"/>
+      <button class="btn" id="add-image">+ Billede</button>
+      <button class="btn" id="add-text">+ Tekst</button>
+      <button class="btn" id="add-empties">+ Tømning</button>
+      <button class="btn" id="add-birthday">+ Fødselsdage</button>
+      <button class="btn primary" id="save">Gem ændringer</button>
     </div>
   </div>
 
-  <template id="tpl-slide">
-    <div class="slide">
-      <h3></h3>
+  <div class="grid">
+    <div class="card">
+      <h2>Branding & faste indstillinger</h2>
+      <label>Brand</label>
+      <input id="brand" placeholder="Bredsgaard • Infoskærm"/>
+
+      <label>Logo URL</label>
+      <input id="logoUrl" placeholder="/media/logo.png"/>
+
+      <div class="hr"></div>
+      <h3>Tema</h3>
       <div class="row">
         <div>
-          <label>Type</label>
-          <select class="type">
-            <option value="image">image</option>
-            <option value="text">text</option>
-            <option value="empties">empties</option>
-            <option value="birthday">birthday</option>
-          </select>
+          <label>Baggrund 1 (bg1)</label>
+          <input id="theme-bg1" placeholder="#0f2b8a"/>
         </div>
         <div>
-          <label>Varighed (sek.)</label>
-          <input class="duration" type="number" min="3" value="8" />
+          <label>Baggrund 2 (bg2) – valgfri</label>
+          <input id="theme-bg2" placeholder="#0a1e66"/>
         </div>
       </div>
-      <label>Titel</label>
-      <input class="title" placeholder="Titel" />
-      <div class="content-fields"></div>
-      <div class="preview"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-        <span class="muted"></span>
-        <button class="btn danger remove">Fjern</button>
+      <label>Accentfarve</label>
+      <input id="theme-accent" placeholder="#2bb673"/>
+
+      <label>Opdaterings-interval (ms) – min. 300000</label>
+      <input id="refreshMs" type="number" placeholder="300000" value="300000"/>
+
+      <div class="hr"></div>
+      <h3>Affaldstømning – plan</h3>
+      <label>Liste (en pr. linje: Navn – dd.mm.åååå)</label>
+      <textarea id="empties-plan" placeholder="Per – 03.11.2025&#10;Martin – 05.11.2025"></textarea>
+
+      <div class="hr"></div>
+      <h3>Fødselsdage</h3>
+      <label>Liste (en pr. linje: Navn – dd.mm[.åååå] | /sti/til/billede.jpg | besked)</label>
+      <textarea id="birthdays" placeholder="Peter – 03.11 | /media/peter.jpg | Tillykke!&#10;Lise – 12.01.1991 | /media/lise.jpg"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Slides (rækkefølge = visningsrækkefølge)</h2>
+      <div id="slides" class="slides"></div>
+    </div>
+  </div>
+</div>
+
+<template id="tpl-slide">
+  <div class="slide">
+    <h3></h3>
+    <div class="row">
+      <div>
+        <label>Type</label>
+        <select class="type">
+          <option value="image">image</option>
+          <option value="text">text</option>
+          <option value="empties">empties</option>
+          <option value="birthday">birthday</option>
+        </select>
+      </div>
+      <div>
+        <label>Varighed (sek.)</label>
+        <input class="duration" type="number" min="3" value="8"/>
       </div>
     </div>
-  </template>
+    <label>Titel</label>
+    <input class="title" placeholder="Titel"/>
+    <div class="content-fields"></div>
+    <div class="preview"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+      <span class="muted"></span>
+      <button class="btn danger remove">Fjern</button>
+    </div>
+  </div>
+</template>
 
-  <script>
-    const $  = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
-    const state = { sha:null, data:null };
+<script>
+const $=(s,e=document)=>e.querySelector(s);
+const state={sha:null,data:null};
 
-    // Hent data via Vercel-API
-    async function load() {
-      $('#status').textContent = 'Indlæser…';
-      const r = await fetch('/api/data', { cache: 'no-store' });
-      if (!r.ok) throw new Error('Fejl ved hentning');
-      const { sha, data } = await r.json();
-      state.sha = sha; state.data = data;
+function parseBirthdays(text){
+  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
+    const parts=l.split('|').map(x=>x.trim());
+    const left=parts[0]||'', image=parts[1]||'', message=parts[2]||'';
+    let name=left, date='';
+    const m=left.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
+    else{ const p=left.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
+    return { name, date, image, message };
+  });
+}
+function parseEmptiesPlan(text){
+  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
+    let name=l, date=''; const m=l.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
+    else{ const p=l.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
+    return { name, date };
+  });
+}
 
-      // Settings
-      $('#brand').value   = data.brand   || '';
-      $('#logoUrl').value = data.logoUrl || '';
-      $('#empties-weekdays').value = (data.settings?.empties?.weekdays || []).join(',');
-      $('#empties-names').value    = (data.settings?.empties?.names || []).join('\n');
-      $('#birthdays').value        = (data.settings?.birthdays || []).map(b => `${b.name} – ${b.date}`).join('\n');
+async function load(){
+  $('#status').textContent='Indlæser…';
+  const r=await fetch('/api/data',{cache:'no-store'});
+  if(!r.ok) throw new Error('Fejl ved hentning');
+  const { sha, data } = await r.json();
+  state.sha=sha; state.data=data;
 
-      // Slides
-      data.slides = Array.isArray(data.slides) ? data.slides : [];
-      renderSlides($('#slides'), data.slides);
+  // settings
+  $('#brand').value   = data.brand||'';
+  $('#logoUrl').value = data.logoUrl||'';
+  $('#theme-bg1').value = data.settings?.theme?.bg1 || '';
+  $('#theme-bg2').value = data.settings?.theme?.bg2 || '';
+  $('#theme-accent').value = data.settings?.theme?.accent || '';
+  $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
+  $('#empties-plan').value = (data.settings?.empties?.plan||[]).map(p=>`${p.name} – ${p.date}`).join('\n');
+  $('#birthdays').value = (data.settings?.birthdays||[]).map(b=>`${b.name} – ${b.date}${b.image?' | '+b.image:''}${b.message?' | '+b.message:''}`).join('\n');
 
-      // PIN
-      $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
+  // slides
+  data.slides = Array.isArray(data.slides) ? data.slides : [];
+  renderSlides($('#slides'), data.slides);
 
-      $('#status').textContent = 'Klar';
-    }
+  $('#status').textContent='Klar';
+}
 
-    function parseBirthdays(text) {
-      return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
-        const m=l.split('–'); if(m.length>=2) return {name:m[0].trim(), date:m.slice(1).join('–').trim()};
-        const p=l.split('-'); if(p.length>=2) return {name:p[0].trim(), date:p.slice(1).join('-').trim()};
-        return { name:l, date:'' };
-      });
-    }
+function renderSlides(container, slides){
+  container.innerHTML='';
+  slides.forEach((s,idx)=>container.appendChild(makeSlide(s,idx)));
+}
+function makeSlide(s, idx){
+  const t=$('#tpl-slide'), node=t.content.firstElementChild.cloneNode(true);
+  $('h3',node).textContent=`Slide #${idx+1}`;
+  $('.type',node).value=s.type||'text';
+  $('.duration',node).value=s.duration??8;
+  $('.title',node).value=s.title||'';
+  $('.muted',node).textContent=`type: ${s.type||'text'}`;
+  const cf=$('.content-fields',node), pv=$('.preview',node);
+  fillContentFields(cf,pv,s);
 
-    function collect() {
-      const data = structuredClone(state.data || {});
-      data.brand   = $('#brand').value.trim();
-      data.logoUrl = $('#logoUrl').value.trim();
-      const wd = $('#empties-weekdays').value.split(',').map(s=>s.trim()).filter(Boolean);
-      const nm = $('#empties-names').value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-      const bd = parseBirthdays($('#birthdays').value);
-      data.settings = data.settings || {};
-      data.settings.empties = { weekdays: wd, names: nm };
-      data.settings.birthdays = bd;
-      return data;
-    }
+  $('.type',node).addEventListener('change',e=>{ s.type=e.target.value; $('.muted',node).textContent=`type: ${s.type}`; fillContentFields(cf,pv,s); });
+  $('.duration',node).addEventListener('input',e=>s.duration=Number(e.target.value));
+  $('.title',node).addEventListener('input',e=>s.title=e.target.value);
+  $('.remove',node).addEventListener('click',()=>{ const i=state.data.slides.indexOf(s); if(i>=0){ state.data.slides.splice(i,1); renderSlides($('#slides'),state.data.slides);} });
 
-    function renderSlides(container, slides) {
-      container.innerHTML = '';
-      slides.forEach((s, idx) => container.appendChild(makeSlide(s, idx)));
-    }
+  return node;
+}
+function fillContentFields(cf,pv,s){
+  cf.innerHTML=''; pv.innerHTML='';
+  if(s.type==='image'){
+    const i=document.createElement('input'); i.placeholder='/media/Slide1.jpg eller fuld URL'; i.value=s.image||''; i.addEventListener('input',e=>{s.image=e.target.value; renderPrev();}); cf.appendChild(labelWrap('Billede-URL',i)); renderPrev();
+    function renderPrev(){ pv.innerHTML=''; if(s.image){ const img=document.createElement('img'); img.src=s.image; pv.appendChild(img);} }
+  }else if(s.type==='text'){
+    const a=document.createElement('textarea'); a.placeholder='Din tekst…'; a.value=s.text||''; a.addEventListener('input',e=>s.text=e.target.value); cf.appendChild(labelWrap('Tekst',a));
+  }else{
+    pv.innerHTML=''; cf.appendChild(div('<div class="muted">Denne slide bruger felter fra venstre panel.</div>'));
+  }
+}
+function labelWrap(text, inputEl){ const w=document.createElement('div'); const l=document.createElement('label'); l.textContent=text; w.appendChild(l); w.appendChild(inputEl); return w;}
+function div(html){ const d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; }
 
-    function makeSlide(s, idx) {
-      const t   = $('#tpl-slide');
-      const node = t.content.firstElementChild.cloneNode(true);
-      $('h3', node).textContent = `Slide #${idx+1}`;
-      $('.type', node).value    = s.type || 'text';
-      $('.duration', node).value= s.duration ?? 8;
-      $('.title', node).value   = s.title || '';
-      $('.muted', node).textContent = `type: ${s.type || 'text'}`;
-      const cf = $('.content-fields', node);
-      const pv = $('.preview', node);
-      fillContentFields(cf, pv, s);
+function collect(){
+  const data=structuredClone(state.data||{});
+  data.brand   = $('#brand').value.trim();
+  data.logoUrl = $('#logoUrl').value.trim();
+  const theme = { bg1: $('#theme-bg1').value.trim(), bg2: $('#theme-bg2').value.trim(), accent: $('#theme-accent').value.trim() };
+  const refreshMs = Math.max(300000, Number($('#refreshMs').value||0) || 300000);
+  const plan = parseEmptiesPlan($('#empties-plan').value);
+  const bdays = parseBirthdays($('#birthdays').value);
 
-      $('.type', node).addEventListener('change', e => {
-        s.type = e.target.value;
-        $('.muted', node).textContent = `type: ${s.type}`;
-        fillContentFields(cf, pv, s);
-      });
-      $('.duration', node).addEventListener('input', e => s.duration = Number(e.target.value));
-      $('.title', node).addEventListener('input', e => s.title = e.target.value);
-      $('.remove', node).addEventListener('click', () => {
-        const i = state.data.slides.indexOf(s);
-        if (i >= 0) { state.data.slides.splice(i,1); renderSlides($('#slides'), state.data.slides); }
-      });
+  data.settings = data.settings || {};
+  data.settings.theme = theme;
+  data.settings.refreshMs = refreshMs;
+  data.settings.empties = data.settings.empties || {};
+  data.settings.empties.plan = plan;
+  data.settings.birthdays = bdays;
 
-      return node;
-    }
+  return data;
+}
 
-    function fillContentFields(cf, pv, s) {
-      cf.innerHTML = ''; pv.innerHTML = '';
-      if (s.type === 'image') {
-        const i = document.createElement('input');
-        i.placeholder = '/media/Slide1.jpg ELLER fuld URL (fx https://raw.githubusercontent.com/...)';
-        i.value = s.image || '';
-        i.addEventListener('input', e => { s.image = e.target.value; renderPreview(); });
-        cf.appendChild(labelWrap('Billede-URL', i));
-        renderPreview();
-        function renderPreview(){
-          pv.innerHTML = '';
-          if (s.image) {
-            const img = document.createElement('img');
-            img.src = s.image; img.alt = 'preview';
-            pv.appendChild(img);
-          }
-        }
-      } else if (s.type === 'text') {
-        const a = document.createElement('textarea');
-        a.placeholder = 'Din tekst…';
-        a.value = s.text || '';
-        a.addEventListener('input', e => s.text = e.target.value);
-        cf.appendChild(labelWrap('Tekst', a));
-      } else {
-        pv.innerHTML = '';
-        cf.appendChild(div('<div class="muted">Ingen ekstra felter. Bruger indstillingerne i venstre panel.</div>'));
-      }
-    }
+async function save(){
+  $('#status').textContent='Gemmer…';
+  const pin=$('#pin').value.trim(); localStorage.setItem('ADMIN_PIN', pin);
+  const r=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json','x-admin-pin':pin},body:JSON.stringify({data:collect(),sha:state.sha})});
+  const jr=await r.json();
+  if(!r.ok){ if(r.status===409){ $('#status').textContent='Konflikt – genindlæser…'; await load(); return; } $('#status').textContent='Fejl: '+(jr?.message||jr?.error||r.status); return; }
+  $('#status').textContent='Gemt!'; await load();
+}
 
-    function labelWrap(text, inputEl){ const w=document.createElement('div'); const l=document.createElement('label'); l.textContent=text; w.appendChild(l); w.appendChild(inputEl); return w; }
-    function div(html){ const d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; }
+// events
+$('#add-image').addEventListener('click',()=>{ state.data.slides.push({type:'image',title:'Kampagne',image:'/media/Slide1.jpg',duration:8}); renderSlides($('#slides'),state.data.slides); });
+$('#add-text').addEventListener('click',()=>{ state.data.slides.push({type:'text',title:'Info',text:'',duration:8}); renderSlides($('#slides'),state.data.slides); });
+$('#add-empties').addEventListener('click',()=>{ state.data.slides.push({type:'empties',title:'TØMNINGS DAGE',duration:12}); renderSlides($('#slides'),state.data.slides); });
+$('#add-birthday').addEventListener('click',()=>{ state.data.slides.push({type:'birthday',title:'Fødselsdage',duration:12}); renderSlides($('#slides'),state.data.slides); });
+$('#save').addEventListener('click',save);
 
-    async function save() {
-      $('#status').textContent = 'Gemmer…';
-      const pin = $('#pin').value.trim();
-      localStorage.setItem('ADMIN_PIN', pin);
-
-      const payload = { data: collect(), sha: state.sha };
-      const r = await fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', 'x-admin-pin': pin },
-        body: JSON.stringify(payload)
-      });
-      const jr = await r.json();
-
-      if (!r.ok) {
-        if (r.status === 409) { // konflikt
-          $('#status').textContent = 'Konflikt – genindlæser…';
-          await load();
-          return;
-        }
-        $('#status').textContent = 'Fejl: ' + (jr?.message || jr?.error || r.status);
-        return;
-      }
-      $('#status').textContent = 'Gemt!';
-      await load();
-    }
-
-    $('#add-image').addEventListener('click', () => { state.data.slides.push({ type:'image', title:'Billede', image:'/media/Slide1.jpg', duration:8 }); renderSlides($('#slides'), state.data.slides); });
-    $('#add-text').addEventListener('click', () => { state.data.slides.push({ type:'text',  title:'Tekst',   text:'', duration:8 }); renderSlides($('#slides'), state.data.slides); });
-    $('#add-empties').addEventListener('click', () => { state.data.slides.push({ type:'empties', title:'Tømning', duration:12 }); renderSlides($('#slides'), state.data.slides); });
-    $('#add-birthday').addEventListener('click', () => { state.data.slides.push({ type:'birthday', title:'Tillykke', duration:12 }); renderSlides($('#slides'), state.data.slides); });
-    $('#save').addEventListener('click', save);
-
-    load().catch(e => $('#status').textContent = 'Fejl: ' + e.message);
-  </script>
+load().catch(e=>$('#status').textContent='Fejl: '+e.message);
+</script>
 </body>
 </html>
