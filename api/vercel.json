@@ -1,13 +1,9 @@
 {
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
+  "version": 2,
   "routes": [
-    { "src": "/admin", "dest": "/admin.html" },
-    { "src": "/kalender", "dest": "/kalender.html" }
+    { "src": "^/api/save$", "dest": "/api/save.js" },
+    { "src": "^/api/upload-image$", "dest": "/api/upload-image.js" },
+    { "src": "^/admin$", "dest": "/admin.html" },
+    { "src": "^/$", "dest": "/index.html" }
   ]
 }
-
-
