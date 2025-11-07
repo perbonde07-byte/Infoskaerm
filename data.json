@@ -24,11 +24,11 @@
         }
       ]
     },
-    "birthdaysMessage": "Tillykke!",
+    "birthdaysMessage": "Tillykke med fødselsdagen - Håber du har dig en god uge.",
     "birthdays": [
       {
         "name": "Peter",
-        "date": "03.11",
+        "date": "03.11.1986",
         "image": "/media/peter.jpg"
       },
       {
