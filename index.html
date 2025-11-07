@@ -67,38 +67,18 @@ const elSlides=document.getElementById('slides'),elBrand=document.getElementById
 
 /* --- Hjælpere --- */
 function parseDMY(s){if(!s)return null;const m=s.trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);if(!m)return null;const d=+m[1],mo=+m[2]-1,y=m[3]?+m[3]:new Date().getFullYear();const dt=new Date(y,mo,d,12,0,0);return isNaN(dt)?null:dt;}
+const WD_MAP={mon:1,tue:2,wed:3,thu:4,fri:5,sat:6,sun:0}; // JS: 0=sun
 
-/* --- Slidegenerering --- */
-function slideImage(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('img',{src:s.image,alt:s.title||'',style:'max-width:100%;max-height:70vh;border-radius:16px'})])]);}
-function slideText(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('div',{class:'text',text:s.text||''})])]);}
-function slideEmpties(s,settings){
-  const plan=settings?.empties?.plan||[];
-  const parsed=plan.map(p=>({...p,_date:parseDMY(String(p.date||''))})).filter(p=>p._date);
-  const today=new Date();today.setHours(0,0,0,0);
-  const upcoming=parsed.find(p=>{const t=new Date(p._date);t.setFullYear(today.getFullYear());return t>=today;})||null;
-
-  const table=h('table',{},[
-    h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
-    h('tbody',{},parsed.sort((a,b)=>a._date-b._date).map(p=>{
-      const show=new Date(p._date);show.setFullYear(today.getFullYear());
-      const isCurrent=(upcoming && p.name===upcoming.name && show>=today);
-      return h('tr',{class:isCurrent?'current':'row'},[
-        h('td',{text:p.name||''}),
-        h('td',{text:show.toLocaleDateString('da-DK')})
-      ]);
-    }))
-  ]);
-  return h('div',{class:'slide'},[h('div',{class:'empties'},[h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}),table])]);
-}
+/* --- Fødselsdage --- */
 function slideBirthdayList(s,settings){
   const list=settings?.birthdays||[];
   return h('div',{class:'slide'},[h('div',{},[
     h('div',{class:'title',text:s.title||'Fødselsdage'}),
-    h('div',{class:'text',text:list.map(b=>`${b.name} – ${b.date}`).join('   ')})
+    h('div',{class:'text',text:list.map(b=>{
+      const d=parseDMY(String(b.date||'')); return `${b.name} – ${d?d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit'}):b.date}`;
+    }).join('   ')})
   ])]);
 }
-
-/* --- Fødselsdags-alarmer (mandagen i ugen + selve dagen) — UDEN årstal i tekst --- */
 function birthdayAlertSlides(settings){
   const list=settings?.birthdays||[];
   const defaultMsg=settings?.birthdaysMessage || 'Tillykke!';
@@ -117,12 +97,8 @@ function birthdayAlertSlides(settings){
       const isToday = today.getTime()===when.getTime();
       if(isAlertWeek || isToday){
         out.push({
-          type:'_bdalert',
-          title:'Fødselsdag',
-          name:b.name,
-          image:b.image || '',
+          type:'_bdalert', title:'Fødselsdag', name:b.name, image:b.image||'',
           message: defaultMsg,
-          // Kun dag og måned (dd.mm) – ingen år
           dayShort: when.toLocaleDateString('da-DK', { day:'2-digit', month:'2-digit' })
         });
         break;
@@ -136,11 +112,91 @@ function renderBirthdayAlertSlide(s){
     h('div',{class:'title',text:s.title}),
     s.image ? h('img',{src:s.image,alt:s.name}) : h('div'),
     h('div',{class:'name',text:s.name||''}),
-    // viser standard-besked + dato uden år
     h('div',{class:'msg',text:`${s.message} (${s.dayShort})`})
   ])]);
 }
 
+/* --- Tømning: auto-generator + fallback --- */
+function buildAutoEmpties(settings){
+  const auto=settings?.empties?.auto;
+  if(!auto || !auto.enabled) return null;
+
+  const names=(auto.names||[]).map(s=>String(s).trim()).filter(Boolean);
+  if(!names.length) return null;
+
+  let d0 = auto.startDate ? new Date(auto.startDate+'T12:00:00') : null; // yyyy-mm-dd
+  if(!d0 || isNaN(d0)) return null;
+
+  const weekdays=(auto.weekdays||[]).map(w=>WD_MAP[w]).filter(v=>v!==undefined);
+  if(!weekdays.length) return null;
+
+  const exclSet=new Set((auto.exclude||[]).map(s=>{
+    const p=parseDMY(String(s)); return p? new Date(p.getFullYear(),p.getMonth(),p.getDate()).getTime(): null;
+  }).filter(Boolean));
+
+  const horizon=Math.max(1, Number(auto.horizon||12));
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  const items=[];
+  let rosterIdx=0;
+  let safe=0;
+  // Gå fra startdato fremad og lav uendelig plan; filtrér til >= today og tag horizon
+  let cur=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate(),12,0,0);
+
+  while(items.length < horizon && safe < 20000){
+    safe++;
+    const isAllowed = weekdays.includes(cur.getDay()) || (cur.getDay()===0 && weekdays.includes(0));
+    const key=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()).getTime();
+    if(isAllowed && !exclSet.has(key)){
+      if(cur >= today){
+        items.push({
+          name: names[rosterIdx % names.length],
+          _date: new Date(cur)
+        });
+      }
+      rosterIdx++;
+    }
+    // næste dag
+    cur.setDate(cur.getDate()+1);
+  }
+
+  // formatér
+  return items.map(p=>({
+    name: p.name,
+    date: p._date.toLocaleDateString('da-DK')
+  }));
+}
+
+function slideEmpties(s,settings){
+  // 1) Forsøg auto
+  const autoList = buildAutoEmpties(settings);
+  const plan = autoList && autoList.length ? autoList
+              : (settings?.empties?.plan || []); // 2) Fallback manuel
+
+  // find “næste” (første dato >= i dag)
+  const today=new Date(); today.setHours(0,0,0,0);
+  const parsed = plan.map(p=>({...p,_d: parseDMY(String(p.date||''))})).filter(p=>p._d);
+  parsed.forEach(p=>p._d.setFullYear(today.getFullYear())); // vis år = i år
+  const upcoming = parsed.find(p=>p._d >= today) || null;
+
+  const table=h('table',{},[
+    h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
+    h('tbody',{},parsed.map(p=>{
+      const tr=h('tr',{class:(upcoming && p.name===upcoming.name && p._d.getTime()===upcoming._d.getTime())?'current':'row'},[
+        h('td',{text:p.name||''}),
+        h('td',{text:p._d.toLocaleDateString('da-DK')})
+      ]);
+      return tr;
+    }))
+  ]);
+  return h('div',{class:'slide'},[h('div',{class:'empties'},[h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}),table])]);
+}
+
+/* --- Almindelige slides --- */
+function slideImage(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('img',{src:s.image,alt:s.title||'',style:'max-width:100%;max-height:70vh;border-radius:16px'})])]);}
+function slideText(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('div',{class:'text',text:s.text||''})])]);}
+
+/* --- Orkestrering --- */
 function buildSlides(model){
   // Tema
   const theme=model?.settings?.theme||{};
@@ -168,7 +224,6 @@ function runCarousel(nodes){let i=0;function show(idx){nodes.forEach(n=>n.classL
     const minMs=300000; // 5 min minimum
     const cfgMs=Number(data?.settings?.refreshMs||minMs);
     const every=Math.max(minMs, isFinite(cfgMs)?cfgMs:minMs);
-
     setInterval(async()=>{ try{ const { data:fresh } = await loadData(); buildSlides(fresh); adjustFrame(); }catch{} }, every);
   }catch(e){
     document.body.innerHTML = `<pre style="padding:2rem;color:#fff">${e.message}</pre>`;
