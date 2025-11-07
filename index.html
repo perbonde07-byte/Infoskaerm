@@ -98,12 +98,13 @@ function slideBirthdayList(s,settings){
   ])]);
 }
 
+/* --- Fødselsdags-alarmer (mandagen i ugen + selve dagen) — UDEN årstal i tekst --- */
 function birthdayAlertSlides(settings){
   const list=settings?.birthdays||[];
   const defaultMsg=settings?.birthdaysMessage || 'Tillykke!';
   const out=[];
-  const today=new Date();today.setHours(0,0,0,0);
-  const mondayOfWeek=d=>{const n=new Date(d);const day=n.getDay();const diff=(day===0?-6:1-day);n.setDate(n.getDate()+diff);n.setHours(0,0,0,0);return n;};
+  const today=new Date(); today.setHours(0,0,0,0);
+  const mondayOfWeek=d=>{ const n=new Date(d); const day=n.getDay(); const diff=(day===0?-6:1-day); n.setDate(n.getDate()+diff); n.setHours(0,0,0,0); return n; };
 
   for(const b of list){
     const dt=parseDMY(String(b.date||'')); if(!dt) continue;
@@ -115,7 +116,15 @@ function birthdayAlertSlides(settings){
       const isAlertWeek=(today>=monday && today<=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+6));
       const isToday = today.getTime()===when.getTime();
       if(isAlertWeek || isToday){
-        out.push({type:'_bdalert',title:'Fødselsdag',name:b.name,image:b.image||'',message:defaultMsg,day:when.toLocaleDateString('da-DK')});
+        out.push({
+          type:'_bdalert',
+          title:'Fødselsdag',
+          name:b.name,
+          image:b.image || '',
+          message: defaultMsg,
+          // Kun dag og måned (dd.mm) – ingen år
+          dayShort: when.toLocaleDateString('da-DK', { day:'2-digit', month:'2-digit' })
+        });
         break;
       }
     }
@@ -127,7 +136,8 @@ function renderBirthdayAlertSlide(s){
     h('div',{class:'title',text:s.title}),
     s.image ? h('img',{src:s.image,alt:s.name}) : h('div'),
     h('div',{class:'name',text:s.name||''}),
-    h('div',{class:'msg',text:`${s.message} (${s.day})`})
+    // viser standard-besked + dato uden år
+    h('div',{class:'msg',text:`${s.message} (${s.dayShort})`})
   ])]);
 }
 
@@ -155,7 +165,7 @@ function runCarousel(nodes){let i=0;function show(idx){nodes.forEach(n=>n.classL
     buildSlides(data);
     adjustFrame();
 
-    const minMs=300000;
+    const minMs=300000; // 5 min minimum
     const cfgMs=Number(data?.settings?.refreshMs||minMs);
     const every=Math.max(minMs, isFinite(cfgMs)?cfgMs:minMs);
 
@@ -167,4 +177,3 @@ function runCarousel(nodes){let i=0;function show(idx){nodes.forEach(n=>n.classL
 </script>
 </body>
 </html>
-
