@@ -1,52 +1,79 @@
-// /api/save.js
+// api/save.js – gem data.json i GitHub og kræv admin-PIN
 export const config = { runtime: 'nodejs' };
 
-// Gemmer hele JSON-body som FILEPATH på BRANCH i OWNER/REPO
-// ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, FILEPATH
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
-
-  const miss = ['GITHUB_TOKEN','OWNER','REPO','BRANCH','FILEPATH'].filter(k => !process.env[k]);
-  if (miss.length) return res.status(400).json({ error: `Missing required ENV vars: ${miss.join(', ')}` });
-
   try {
-    const token   = process.env.GITHUB_TOKEN;
-    const OWNER   = process.env.OWNER;
-    const REPO    = process.env.REPO;
-    const BRANCH  = process.env.BRANCH;
-    const FILEPATH= process.env.FILEPATH;
-
-    const content = Buffer.from(JSON.stringify(req.body, null, 2)).toString('base64');
-
-    // find sha hvis fil findes
-    let sha = null;
-    {
-      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(FILEPATH)}?ref=${encodeURIComponent(BRANCH)}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-      });
-      if (r.ok) sha = (await r.json()).sha;
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
     }
 
-    const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(FILEPATH)}`, {
+    const {
+      OWNER, REPO, BRANCH = 'main', FILEPATH = 'data.json', GITHUB_TOKEN, ADMIN_PIN
+    } = process.env;
+
+    if (!OWNER || !REPO || !BRANCH || !FILEPATH || !GITHUB_TOKEN) {
+      res.status(500).json({ error: 'Missing required ENV vars: OWNER, REPO, BRANCH, FILEPATH, GITHUB_TOKEN' });
+      return;
+    }
+
+    // PIN-tjek
+    const pinHeader = req.headers['x-admin-pin'] || req.headers['X-Admin-Pin'];
+    if (!ADMIN_PIN || pinHeader !== ADMIN_PIN) {
+      res.status(401).json({ error: 'Unauthorized (bad or missing PIN)' });
+      return;
+    }
+
+    const body = await getBody(req);
+    const content = Buffer.from(JSON.stringify(body, null, 2)).toString('base64');
+
+    // Hent eksisterende blob sha (krævet af GitHub for at opdatere fil)
+    const fileResp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILEPATH}?ref=${BRANCH}`, {
+      headers: { Authorization: `token ${GITHUB_TOKEN}`, 'User-Agent': 'infoskaerm' }
+    });
+
+    let sha = undefined;
+    if (fileResp.status === 200) {
+      const fileJson = await fileResp.json();
+      sha = fileJson.sha;
+    } else if (fileResp.status !== 404) {
+      const t = await fileResp.text();
+      res.status(500).json({ error: `Failed to read file: ${fileResp.status} ${t}` });
+      return;
+    }
+
+    const commit = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILEPATH}`, {
       method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
+      headers: { Authorization: `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json', 'User-Agent': 'infoskaerm' },
       body: JSON.stringify({
-        message: sha ? `Update ${FILEPATH}` : `Create ${FILEPATH}`,
-        content, branch: BRANCH, ...(sha ? { sha } : {})
+        message: 'Update data.json',
+        content,
+        branch: BRANCH,
+        sha
       })
     });
 
-    if (!put.ok) {
-      const detail = await put.text();
-      return res.status(put.status).json({ error: 'GitHub update failed', detail });
+    if (!commit.ok) {
+      const t = await commit.text();
+      res.status(commit.status).json({ error: `GitHub write failed: ${t}` });
+      return;
     }
-    const out = await put.json();
-    return res.status(200).json({ ok: true, path: out.content?.path || FILEPATH });
+
+    res.status(200).json({ ok: true });
   } catch (e) {
-    return res.status(500).json({ error: e.message || String(e) });
+    res.status(500).json({ error: e.message || String(e) });
   }
 }
+
+function getBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (c) => (data += c));
+    req.on('end', () => {
+      try { resolve(JSON.parse(data || '{}')); }
+      catch (e) { reject(e); }
+    });
+    req.on('error', reject);
+  });
+}
+
