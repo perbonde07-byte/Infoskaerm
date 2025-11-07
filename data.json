@@ -5,7 +5,7 @@
     "theme": {
       "bg1": "#0d4b59",
       "bg2": "#134d60",
-      "accent": "#c83d2e"
+      "accent": "#e8b15c"
     },
     "refreshMs": 300000,
     "empties": {
