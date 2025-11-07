@@ -1,67 +1,67 @@
-// api/upload-image.js
-// Lægger base64-billede i OWNER/REPO på BRANCH under MEDIA_DIR/filnavn
-// Kræver ENV: GITHUB_TOKEN, OWNER, REPO, BRANCH, MEDIA_DIR
+// Upload base64-billede til /media/<name> i repo.
+// Kræver env: ADMIN_PIN, OWNER, REPO, BRANCH, MEDIA_DIR, GITHUB_TOKEN
 
-export const config = { runtime: 'nodejs', api: { bodyParser: { sizeLimit: '10mb' } } };
+export const config = { runtime: 'nodejs20' };
+
+const {
+  ADMIN_PIN = '',
+  OWNER = '',
+  REPO = '',
+  BRANCH = 'main',
+  MEDIA_DIR = 'media',
+  GITHUB_TOKEN = '',
+} = process.env;
+
+async function getSha(path) {
+  const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`, {
+    headers: { Authorization: `token ${GITHUB_TOKEN}`, 'User-Agent': 'infoskaerm' },
+    cache: 'no-store'
+  });
+  if (r.status === 404) return null;
+  const j = await r.json();
+  return j.sha || null;
+}
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
-
-  const need = ['GITHUB_TOKEN','OWNER','REPO','BRANCH','MEDIA_DIR'];
-  const miss = need.filter(k => !process.env[k]);
-  if (miss.length) return res.status(400).json({ error: `Missing ENV: ${miss.join(', ')}` });
-
   try {
-    const token   = process.env.GITHUB_TOKEN;
-    const OWNER   = process.env.OWNER;
-    const REPO    = process.env.REPO;
-    const BRANCH  = process.env.BRANCH;
-    const MEDIA   = process.env.MEDIA_DIR.replace(/\/+$/,'');
-
-    const body = typeof req.body === 'object' ? req.body : JSON.parse(req.body||'{}');
-    const { name, data } = body;
-    if (!name || !data) return res.status(400).json({ error: 'Missing {name, data}' });
-
-    const path = `${MEDIA}/${name}`;
-
-    // check existing sha
-    let sha = null;
-    {
-      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(BRANCH)}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-      });
-      if (r.ok) sha = (await r.json()).sha;
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    if (!req.headers['x-admin-pin'] || req.headers['x-admin-pin'] !== ADMIN_PIN) {
+      return res.status(401).json({ error: 'PIN forkert' });
     }
+    const { name, data } = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+    if (!name || !data) return res.status(400).json({ error: 'name og data påkrævet' });
 
-    const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
+    const safeName = name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${MEDIA_DIR}/${safeName}`;
+
+    const sha = await getSha(path);
+    const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
+        Authorization: `token ${GITHUB_TOKEN}`,
+        'User-Agent': 'infoskaerm',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: sha ? `Update image ${name}` : `Add image ${name}`,
-        content: data, // base64 uden data: prefix
+        message: `Upload ${safeName}`,
+        content: data, // allerede base64 fra klienten
+        sha: sha || undefined,
         branch: BRANCH,
-        ...(sha ? { sha } : {})
       })
     });
 
-    if (!put.ok) {
-      const detail = await put.text();
-      return res.status(put.status).json({ error: 'GitHub upload failed', detail });
+    if (!resp.ok) {
+      const t = await resp.text();
+      return res.status(resp.status).send(t);
     }
 
-    // hurtige CDN links
-    const rawUrl = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${path}`;
-    const cdnUrl = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${path}`;
-
-    return res.status(200).json({ ok:true, path, rawUrl, cdnUrl });
+    const rawUrl = `https://${OWNER}.github.io/${REPO}/${MEDIA_DIR}/${encodeURIComponent(safeName)}`;
+    return res.status(200).json({ ok: true, rawUrl });
   } catch (e) {
-    return res.status(500).json({ error: e.message || String(e) });
+    return res.status(500).json({ error: String(e.message || e) });
   }
 }
+
 
 
 
