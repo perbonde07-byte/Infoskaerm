@@ -28,6 +28,9 @@
   .bd-list{display:grid;gap:10px}
   .bd-item{display:grid;grid-template-columns:1.2fr 1fr 1.4fr auto;gap:8px;align-items:center}
   .bd-item .remove{height:40px}
+  .weekdays{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #333;border-radius:10px;background:#0e0e0e}
+  .chip input{margin:0}
 </style>
 </head>
 <body>
@@ -50,38 +53,61 @@
       <h2>Branding & faste indstillinger</h2>
       <label>Brand</label>
       <input id="brand" placeholder="Bredsgaard • Infoskærm"/>
-
       <label>Logo URL</label>
       <input id="logoUrl" placeholder="/media/logo.png"/>
 
       <div class="hr"></div>
       <h3>Tema</h3>
       <div class="row">
-        <div>
-          <label>Baggrund 1 (bg1)</label>
-          <input id="theme-bg1" placeholder="#0f2b8a"/>
-        </div>
-        <div>
-          <label>Baggrund 2 (bg2) – valgfri</label>
-          <input id="theme-bg2" placeholder="#0a1e66"/>
-        </div>
+        <div><label>Baggrund 1 (bg1)</label><input id="theme-bg1" placeholder="#0f2b8a"/></div>
+        <div><label>Baggrund 2 (bg2) – valgfri</label><input id="theme-bg2" placeholder="#0a1e66"/></div>
       </div>
-      <label>Accentfarve</label>
-      <input id="theme-accent" placeholder="#2bb673"/>
-
-      <label>Opdaterings-interval (ms) – min. 300000</label>
-      <input id="refreshMs" type="number" placeholder="300000" value="300000"/>
+      <label>Accentfarve</label><input id="theme-accent" placeholder="#2bb673"/>
+      <label>Opdaterings-interval (ms) – min. 300000</label><input id="refreshMs" type="number" placeholder="300000" value="300000"/>
 
       <div class="hr"></div>
-      <h3>Affaldstømning – plan</h3>
+      <h3>Affaldstømning</h3>
+
+      <label><input type="checkbox" id="auto-enabled"/> Brug automatisk plan</label>
+
+      <div id="auto-panel">
+        <label>Startdato</label>
+        <input id="auto-start" type="date"/>
+
+        <label>Ugedage (vælg de dage hvor tømning kan ligge)</label>
+        <div class="weekdays">
+          <label class="chip"><input type="checkbox" value="mon"/> Man</label>
+          <label class="chip"><input type="checkbox" value="tue"/> Tir</label>
+          <label class="chip"><input type="checkbox" value="wed"/> Ons</label>
+          <label class="chip"><input type="checkbox" value="thu"/> Tor</label>
+          <label class="chip"><input type="checkbox" value="fri"/> Fre</label>
+          <label class="chip"><input type="checkbox" value="sat"/> Lør</label>
+          <label class="chip"><input type="checkbox" value="sun"/> Søn</label>
+        </div>
+
+        <label>Navne (rækkefølge — én pr. linje)</label>
+        <textarea id="auto-names" placeholder="Per&#10;Martin&#10;Kasper"></textarea>
+
+        <label>Ekskluder datoer (én pr. linje — dd.mm.yyyy)</label>
+        <textarea id="auto-exclude" placeholder="25.12.2025&#10;01.01.2026"></textarea>
+
+        <div class="row">
+          <div><label>Horizon (antal kommende linjer der vises)</label><input id="auto-horizon" type="number" value="12"/></div>
+        </div>
+
+        <div class="muted" style="margin-top:6px">Når automatisk plan er slået til, ignoreres den manuelle liste nedenfor.</div>
+      </div>
+
+      <div class="hr"></div>
+      <h3>Affaldstømning – manuel plan (fallback)</h3>
       <label>Liste (en pr. linje: Navn – dd.mm.åååå)</label>
       <textarea id="empties-plan" placeholder="Per – 03.11.2025&#10;Martin – 05.11.2025"></textarea>
 
       <div class="hr"></div>
       <h3>Fødselsdage</h3>
       <label>Standard-besked (bruges i alarm-slides)</label>
-      <input id="birthdays-msg" placeholder="Tillykke!"/>
-      <div class="muted" style="margin:8px 0 12px">Tilføj personer herunder (Navn, Dato, Billede). Dato kan være <code>dd.mm</code> eller <code>dd.mm.yyyy</code>.</div>
+      <input id="birthdays-msg" placeholder="Tillykke med fødselsdagen!"/>
+      <div class="muted" style="margin:8px 0 12px">Tilføj personer herunder (Navn, Dato, Billede). Dato kan være dd.mm eller dd.mm.yyyy.</div>
       <div id="bd-list" class="bd-list"></div>
       <button class="btn" id="bd-add">+ Tilføj person</button>
     </div>
@@ -132,37 +158,16 @@
 
 <script>
 const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
 const state={sha:null,data:null};
 
-async function load(){
-  $('#status').textContent='Indlæser…';
-  const r=await fetch('/api/data',{cache:'no-store'});
-  if(!r.ok) throw new Error('Fejl ved hentning');
-  const { sha, data } = await r.json();
-  state.sha=sha; state.data=data;
-
-  // settings
-  $('#brand').value   = data.brand||'';
-  $('#logoUrl').value = data.logoUrl||'';
-  $('#theme-bg1').value = data.settings?.theme?.bg1 || '';
-  $('#theme-bg2').value = data.settings?.theme?.bg2 || '';
-  $('#theme-accent').value = data.settings?.theme?.accent || '';
-  $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
-
-  $('#empties-plan').value = (data.settings?.empties?.plan||[]).map(p=>`${p.name} – ${p.date}`).join('\n');
-
-  // Fødselsdage
-  $('#birthdays-msg').value = data.settings?.birthdaysMessage || 'Tillykke!';
-  renderBirthdaysList(data.settings?.birthdays || []);
-
-  // slides
-  data.slides = Array.isArray(data.slides) ? data.slides : [];
-  renderSlides($('#slides'), data.slides);
-
-  // PIN
-  $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
-
-  $('#status').textContent='Klar';
+function parseEmptiesPlan(text){
+  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
+    let name=l, date='';
+    const m=l.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
+    else{ const p=l.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
+    return { name, date };
+  });
 }
 
 function renderSlides(container, slides){
@@ -201,18 +206,15 @@ function spanMuted(t){ const s=document.createElement('div'); s.className='muted
 
 /* --- Fødselsdage UI --- */
 function renderBirthdaysList(items){
-  const listEl = $('#bd-list');
-  listEl.innerHTML='';
-  (items||[]).forEach((b,idx)=> listEl.appendChild(makeBdItem(b,idx)));
+  const listEl = $('#bd-list'); listEl.innerHTML='';
+  (items||[]).forEach((b)=> listEl.appendChild(makeBdItem(b)));
 }
-function makeBdItem(b, idx){
+function makeBdItem(b){
   const t=$('#tpl-bd-item'), node=t.content.firstElementChild.cloneNode(true);
   const nameEl = node.querySelector('.bd-name');
   const dateEl = node.querySelector('.bd-date');
   const imgEl  = node.querySelector('.bd-image');
-  nameEl.value = b.name || '';
-  dateEl.value = b.date || '';
-  imgEl.value  = b.image || '';
+  nameEl.value = b.name || ''; dateEl.value = b.date || ''; imgEl.value  = b.image || '';
   nameEl.addEventListener('input',e=>b.name=e.target.value);
   dateEl.addEventListener('input',e=>b.date=e.target.value);
   imgEl.addEventListener('input',e=>b.image=e.target.value);
@@ -231,30 +233,79 @@ $('#bd-add').addEventListener('click', ()=>{
   renderBirthdaysList(state.data.settings.birthdays);
 });
 
-/* --- Saml & gem --- */
-function parseEmptiesPlan(text){
-  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
-    let name=l, date='';
-    const m=l.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
-    else{ const p=l.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
-    return { name, date };
-  });
+/* --- LOAD --- */
+async function load(){
+  $('#status').textContent='Indlæser…';
+  const r=await fetch('/api/data',{cache:'no-store'});
+  if(!r.ok) throw new Error('Fejl ved hentning');
+  const { sha, data } = await r.json();
+  state.sha=sha; state.data=data;
+
+  // settings
+  $('#brand').value   = data.brand||'';
+  $('#logoUrl').value = data.logoUrl||'';
+  $('#theme-bg1').value = data.settings?.theme?.bg1 || '';
+  $('#theme-bg2').value = data.settings?.theme?.bg2 || '';
+  $('#theme-accent').value = data.settings?.theme?.accent || '';
+  $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
+
+  // Auto tømning
+  const auto = data.settings?.empties?.auto || {};
+  $('#auto-enabled').checked = !!auto.enabled;
+  $('#auto-start').value = auto.startDate || '';
+  // weekdays
+  const set = new Set(auto.weekdays||[]);
+  $$('.weekdays input').forEach(cb=> cb.checked = set.has(cb.value));
+  $('#auto-names').value = (auto.names||[]).join('\n');
+  $('#auto-exclude').value = (auto.exclude||[]).join('\n');
+  $('#auto-horizon').value = auto.horizon ?? 12;
+
+  // Manuel fallback
+  $('#empties-plan').value = (data.settings?.empties?.plan||[]).map(p=>`${p.name} – ${p.date}`).join('\n');
+
+  // Fødselsdage
+  $('#birthdays-msg').value = data.settings?.birthdaysMessage || 'Tillykke!';
+  renderBirthdaysList(data.settings?.birthdays || []);
+
+  // slides
+  data.slides = Array.isArray(data.slides) ? data.slides : [];
+  renderSlides($('#slides'), data.slides);
+
+  // PIN
+  $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
+
+  $('#status').textContent='Klar';
 }
+
+/* --- COLLECT --- */
 function collect(){
   const data=structuredClone(state.data||{});
   data.brand   = $('#brand').value.trim();
   data.logoUrl = $('#logoUrl').value.trim();
+
   const theme = { bg1: $('#theme-bg1').value.trim(), bg2: $('#theme-bg2').value.trim(), accent: $('#theme-accent').value.trim() };
   const refreshMs = Math.max(300000, Number($('#refreshMs').value||0) || 300000);
-  const plan = parseEmptiesPlan($('#empties-plan').value);
 
   data.settings = data.settings || {};
   data.settings.theme = theme;
   data.settings.refreshMs = refreshMs;
-  data.settings.empties = data.settings.empties || {};
-  data.settings.empties.plan = plan;
 
-  // fødselsdage
+  // Auto tømning
+  const auto = {
+    enabled: $('#auto-enabled').checked,
+    startDate: $('#auto-start').value.trim(),           // yyyy-mm-dd
+    weekdays: $$('.weekdays input:checked').map(cb=>cb.value),
+    names: $('#auto-names').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
+    exclude: $('#auto-exclude').value.split(/\n+/).map(s=>s.trim()).filter(Boolean), // dd.mm.yyyy
+    horizon: Math.max(1, Number($('#auto-horizon').value || 12))
+  };
+  data.settings.empties = data.settings.empties || {};
+  data.settings.empties.auto = auto;
+
+  // Manuel fallback
+  data.settings.empties.plan = parseEmptiesPlan($('#empties-plan').value);
+
+  // Fødselsdage
   const list = [];
   document.querySelectorAll('#bd-list .bd-item').forEach(row=>{
     const name=row.querySelector('.bd-name').value.trim();
@@ -268,6 +319,7 @@ function collect(){
   return data;
 }
 
+/* --- SAVE --- */
 async function save(){
   $('#status').textContent='Gemmer…';
   const pin=$('#pin').value.trim(); localStorage.setItem('ADMIN_PIN', pin);
