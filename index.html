@@ -1,125 +1,212 @@
 <!doctype html>
 <html lang="da">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Infoskærm</title>
-  <style>
-    html, body { height:100%; margin:0; font-family:system-ui,sans-serif; background:#0b0b0b; color:#fff; }
-    .screen { position:relative; height:100%; display:grid; grid-template-rows:1fr auto; }
-    .slide { display:none; align-items:center; justify-content:center; padding:4vh; text-align:center; }
-    .slide.active { display:flex; }
-    .slide img { max-width:100%; max-height:70vh; object-fit:contain; border-radius:16px; }
-    .brandbar { display:flex; align-items:center; gap:16px; padding:12px 20px; background:#111; border-top:1px solid #222; }
-    .brandbar img { height:28px; }
-    .title { font-size:5vh; font-weight:700; margin-bottom:2vh; }
-    .text { font-size:3vh; line-height:1.3; }
-    .list { font-size:3vh; display:grid; gap:1vh; }
-    .muted { opacity:.8; font-size:2.2vh; }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Infoskærm</title>
+<style>
+  :root{ --bg1:#0f2b8a; --bg2:#0a1e66; --accent:#2bb673; --panel:rgba(255,255,255,.06); --grid:#2a3c7a; --muted:#cfe2ff;}
+  html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg1);color:#fff;}
+  .screen{position:relative;height:100%;display:grid;grid-template-rows:1fr auto;}
+  /* blød “ramme” */
+  .frame{position:absolute;inset:2.6vh; border-radius:22px; box-shadow:inset 0 0 0 2px rgba(255,255,255,.12), inset 0 0 0 12px rgba(0,0,0,.18);}
+  .bggrad{position:absolute;inset:0;background:linear-gradient(145deg,var(--bg1),var(--bg2));z-index:-1;}
+  .slide{display:none;align-items:center;justify-content:center;padding:4vh;text-align:left;}
+  .slide.active{display:flex;}
+  .title{font-size:4.8vh;font-weight:800;letter-spacing:.02em;margin:0 0 2vh 0;text-transform:uppercase;}
+  .muted{color:var(--muted);font-size:2.2vh;}
+  .brandbar{display:flex;align-items:center;gap:16px;padding:12px 20px;background:rgba(0,0,0,.35);border-top:1px solid rgba(255,255,255,.12);}
+  .brandbar img{height:28px}
+  .text{font-size:3vh;line-height:1.35}
+
+  /* Tabel til tømning */
+  .empties{width:min(1100px,94vw);}
+  table{width:100%;border-collapse:collapse;font-size:3vh;}
+  th,td{border-bottom:1px solid var(--grid);padding:.7em 1em;}
+  th{font-weight:800;border-bottom:2px solid var(--grid);text-transform:uppercase;letter-spacing:.04em}
+  tr.current{background:color-mix(in oklab, var(--accent) 33%, rgba(0,0,0,.25));}
+  tr.current td{font-weight:800}
+
+  /* Fødselsdagskort */
+  .bd{display:grid;gap:2vh;align-items:center;justify-items:center}
+  .bd .msg{font-size:4vh}
+  .bd .name{font-size:6vh;font-weight:900}
+  .bd img{max-width:45vw;max-height:50vh;border-radius:20px;border:3px solid var(--accent)}
+</style>
 </head>
 <body>
-  <div class="screen">
-    <div id="slides"></div>
-    <div class="brandbar">
-      <img id="logo" alt="logo" />
-      <div id="brand" class="muted"></div>
-    </div>
+<div class="bggrad"></div>
+<div class="screen">
+  <div class="frame"></div>
+  <div id="slides"></div>
+  <div class="brandbar">
+    <img id="logo" alt="logo"/>
+    <div id="brand" class="muted"></div>
   </div>
+</div>
 
-  <script>
-    const elSlides = document.getElementById('slides');
-    const elBrand  = document.getElementById('brand');
-    const elLogo   = document.getElementById('logo');
+<script>
+async function loadData(){ const r=await fetch('/api/data',{cache:'no-store'}); if(!r.ok) throw new Error('Kunne ikke hente data'); return await r.json(); }
+function h(tag,attrs={},children=[]){ const el=document.createElement(tag); for(const [k,v] of Object.entries(attrs)){ if(k==='class')el.className=v; else if(k==='text')el.textContent=v; else el.setAttribute(k,v);} children.forEach(c=>el.appendChild(c)); return el; }
 
-    async function loadData(){
-      const r = await fetch('/api/data', { cache: 'no-store' });
-      if(!r.ok) throw new Error('Kunne ikke hente data');
-      return await r.json(); // { sha, data }
-    }
+const elSlides=document.getElementById('slides'), elBrand=document.getElementById('brand'), elLogo=document.getElementById('logo');
 
-    function h(tag, attrs={}, children=[]){
-      const el = document.createElement(tag);
-      for (const [k,v] of Object.entries(attrs)) {
-        if (k === 'class') el.className = v;
-        else if (k === 'text') el.textContent = v;
-        else el.setAttribute(k, v);
+function parseDMY(s){ // "dd.mm" eller "dd.mm.yyyy"
+  if(!s) return null;
+  const m=s.trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);
+  if(!m) return null;
+  const d=+m[1], mo=+m[2]-1, y=m[3]?+m[3]:new Date().getFullYear();
+  const dt=new Date(y,mo,d,12,0,0); // midt på dagen for at undgå TZ-drys
+  return isNaN(dt) ? null : dt;
+}
+
+function nextFromToday(dates){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const sorted=[...dates].sort((a,b)=>a.getTime()-b.getTime());
+  for(const x of sorted){ const dx=new Date(x); dx.setFullYear(today.getFullYear()); if(dx>=today) return dx; }
+  // hvis alle er passeret i år, vælg første i næste år
+  const first=new Date(sorted[0]); first.setFullYear(today.getFullYear()+1); return first;
+}
+
+function slideImage(s){ return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}), h('img',{src:s.image,alt:s.title||'',style:'max-width:100%;max-height:70vh;border-radius:16px'})])]); }
+function slideText(s){ return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}), h('div',{class:'text',text:s.text||''})])]); }
+function slideEmpties(s, settings){
+  const plan = settings?.empties?.plan || []; // [{name,date}]
+  const parsed = plan.map(p=>({ ...p, _date: parseDMY(String(p.date||'')) })).filter(p=>p._date);
+  const today=new Date(); today.setHours(0,0,0,0);
+  const upcoming = parsed.find(p=>{ const t=new Date(p._date); t.setFullYear(today.getFullYear()); return t>=today; }) || null;
+
+  const table=h('table',{},[
+    h('thead',{},[ h('tr',{},[ h('th',{text:'Navn'}), h('th',{text:'Dato'}) ]) ]),
+    h('tbody',{}, parsed
+      .sort((a,b)=>a._date-b._date)
+      .map(p=>{
+        const show=new Date(p._date); show.setFullYear(today.getFullYear());
+        const tr=h('tr',{class: (upcoming && p.name===upcoming.name && show.getTime()===new Date(upcoming._date.setFullYear(today.getFullYear())).getTime()) ? 'current' : 'row'},[
+          h('td',{text:p.name||''}),
+          h('td',{text: show.toLocaleDateString('da-DK') })
+        ]);
+        return tr;
+      })
+    )
+  ]);
+
+  return h('div',{class:'slide'},[ h('div',{class:'empties'},[ h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}), table ]) ]);
+}
+
+function slideBirthdayList(s,settings){
+  const list=settings?.birthdays||[];
+  return h('div',{class:'slide'},[h('div',{},[
+    h('div',{class:'title',text:s.title||'Fødselsdage'}),
+    h('div',{class:'text',text:list.map(b=>`${b.name} – ${b.date}`).join('   ')})
+  ])]);
+}
+
+function birthdayAlertSlides(settings){
+  const list=settings?.birthdays||[];
+  const out=[];
+  const today=new Date(); today.setHours(0,0,0,0);
+  const mondayOfWeek = d => { const n=new Date(d); const day=n.getDay(); const diff=(day===0? -6 : 1-day); n.setDate(n.getDate()+diff); n.setHours(0,0,0,0); return n; };
+
+  for(const b of list){
+    const dt=parseDMY(String(b.date||'')); if(!dt) continue;
+    const thisYear=new Date(dt); thisYear.setFullYear(today.getFullYear()); thisYear.setHours(0,0,0,0);
+    const nextYear=new Date(dt); nextYear.setFullYear(today.getFullYear()+1); nextYear.setHours(0,0,0,0);
+
+    const candidates=[thisYear, nextYear];
+    for(const when of candidates){
+      const monday=mondayOfWeek(when);
+      const isAlertWeek = (today>=monday && today<=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+6));
+      const isToday = today.getTime()===when.getTime();
+      if(isAlertWeek || isToday){
+        out.push({
+          type:'_bdalert',
+          title: 'Fødselsdag',
+          name: b.name,
+          image: b.image || '',
+          message: b.message || 'Tillykke!',
+          day: when.toLocaleDateString('da-DK')
+        });
+        break;
       }
-      children.forEach(c => el.appendChild(c));
-      return el;
     }
+  }
+  return out;
+}
 
-    const slideImage   = s => h('div',{class:'slide'},[ h('div',{},[ h('div',{class:'title',text:s.title||''}), h('img',{src:s.image,alt:s.title||''}) ]) ]);
-    const slideText    = s => h('div',{class:'slide'},[ h('div',{},[ h('div',{class:'title',text:s.title||''}), h('div',{class:'text',text:s.text||''}) ]) ]);
-    const slideEmpties = (s,settings) => {
-      const names = settings?.empties?.names || [];
-      const weekdays = (settings?.empties?.weekdays || []).join(', ');
-      return h('div',{class:'slide'},[
-        h('div',{},[
-          h('div',{class:'title',text:s.title||'Tømning'}),
-          h('div',{class:'text',text:`Ugedage: ${weekdays}`}),
-          h('div',{class:'list'}, names.map(n => h('div',{text:`• ${n}`})))
-        ])
-      ]);
-    };
-    const slideBirthday = (s,settings) => {
-      const list = settings?.birthdays || [];
-      return h('div',{class:'slide'},[
-        h('div',{},[
-          h('div',{class:'title',text:s.title||'Fødselsdage'}),
-          h('div',{class:'list'}, list.map(b => h('div',{text:`${b.name} – ${b.date}`})))
-        ])
-      ]);
-    };
+function renderBirthdayAlertSlide(s){
+  return h('div',{class:'slide'},[
+    h('div',{class:'bd'},[
+      h('div',{class:'title',text:`${s.title}`}),
+      s.image ? h('img',{src:s.image,alt:s.name}) : h('div'),
+      h('div',{class:'name',text:s.name||''}),
+      h('div',{class:'msg',text:`${s.message||'Tillykke!'} (${s.day})`})
+    ])
+  ]);
+}
 
-    function buildSlides(model){
-      elSlides.innerHTML = '';
-      elBrand.textContent = model.brand || '';
-      if (model.logoUrl) elLogo.src = model.logoUrl; else elLogo.remove();
+function buildSlides(model){
+  // tema
+  const theme=model?.settings?.theme||{};
+  if(theme.bg1) document.documentElement.style.setProperty('--bg1', theme.bg1);
+  if(theme.bg2) document.documentElement.style.setProperty('--bg2', theme.bg2);
+  if(theme.accent) document.documentElement.style.setProperty('--accent', theme.accent);
 
-      const makers = {
-        image: slideImage,
-        text: slideText,
-        empties: s => slideEmpties(s, model.settings),
-        birthday: s => slideBirthday(s, model.settings)
-      };
+  elSlides.innerHTML='';
+  elBrand.textContent=model.brand||'';
+  if(model.logoUrl) elLogo.src=model.logoUrl; else elLogo.remove();
 
-      const nodes = (model.slides || []).map(s => {
-        const make = makers[s.type] || slideText;
-        const n = make(s);
-        n.dataset.duration = Math.max(3, Number(s.duration || 8));
-        return n;
-      });
+  const makers={
+    image: slideImage,
+    text: slideText,
+    empties: (s)=>slideEmpties(s, model.settings),
+    birthday: (s)=>slideBirthdayList(s, model.settings),
+    _bdalert: renderBirthdayAlertSlide
+  };
 
-      nodes.forEach(n => elSlides.appendChild(n));
-      runCarousel(nodes);
-    }
+  // Generér “alarm”-slides for fødselsdage (mandag i samme uge + selve dagen)
+  const alertSlides = birthdayAlertSlides(model.settings);
 
-    function runCarousel(nodes){
-      let i = 0;
-      function show(idx){
-        nodes.forEach(n => n.classList.remove('active'));
-        nodes[idx].classList.add('active');
-        const d = Number(nodes[idx].dataset.duration) * 1000;
-        setTimeout(() => { i = (i + 1) % nodes.length; show(i); }, d);
-      }
-      if(nodes.length) show(0);
-    }
+  const seq = [...alertSlides, ...(model.slides||[])];
 
-    (async () => {
-      try {
-        const { data } = await loadData();
-        buildSlides(data);
-        setInterval(async () => {
-          try {
-            const { data: fresh } = await loadData();
-            if (JSON.stringify(fresh) !== JSON.stringify(data)) buildSlides(fresh);
-          } catch {}
-        }, 60000);
-      } catch (e) {
-        document.body.innerHTML = `<pre style="padding:2rem;color:#fff">${e.message}</pre>`;
-      }
-    })();
-  </script>
+  const nodes = seq.map(s=>{
+    const make = makers[s.type] || slideText;
+    const n = make(s);
+    n.dataset.duration = Math.max(3, Number(s.duration || (s.type==='_bdalert'? 10 : 8)));
+    return n;
+  });
+
+  nodes.forEach(n=>elSlides.appendChild(n));
+  runCarousel(nodes);
+}
+
+function runCarousel(nodes){
+  let i=0;
+  function show(idx){
+    nodes.forEach(n=>n.classList.remove('active'));
+    nodes[idx].classList.add('active');
+    const d=Number(nodes[idx].dataset.duration)*1000;
+    setTimeout(()=>{ i=(i+1)%nodes.length; show(i); }, d);
+  }
+  if(nodes.length) show(0);
+}
+
+(async ()=>{
+  try {
+    const { data } = await loadData();
+    buildSlides(data);
+
+    const minMs=300000; // 5 min minimum
+    const cfgMs = Number(data?.settings?.refreshMs || minMs);
+    const every = Math.max(minMs, isFinite(cfgMs)?cfgMs:minMs);
+
+    setInterval(async ()=>{
+      try{ const { data:fresh } = await loadData(); buildSlides(fresh); }catch{}
+    }, every);
+  } catch (e) {
+    document.body.innerHTML = `<pre style="padding:2rem;color:#fff">${e.message}</pre>`;
+  }
+})();
+</script>
 </body>
 </html>
