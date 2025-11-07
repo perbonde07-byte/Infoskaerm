@@ -1,96 +1,101 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Infoskærm • Admin</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin · Infoskærm</title>
   <style>
-    body { font-family: sans-serif; background: #0b1220; color: #e8eefb; margin: 0; }
-    .topbar { background:#111a2d; padding:10px; display:flex; justify-content:space-between; align-items:center; }
-    .btn { background:#5aa2ff; border:none; color:#061022; padding:10px 14px; border-radius:8px; font-weight:bold; cursor:pointer; }
-    .wrap { max-width:900px; margin:20px auto; padding:20px; background:#111a2d; border-radius:10px; }
-    input, textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #243147; background:#0f172a; color:#fff; margin-bottom:10px; }
-    .hide { display:none; }
-    .pill { padding:6px 10px; background:#1a2440; border-radius:20px; font-size:12px; }
-    .gate { position:fixed; inset:0; background:rgba(0,0,0,.8); display:flex; justify-content:center; align-items:center; z-index:999; }
-    .card { background:#0f172a; padding:20px; border-radius:10px; border:1px solid #243147; width:300px; text-align:center; }
+    :root { --bg:#0b0b0b; --panel:#111; --muted:#aaa; --fg:#fff; --accent:#4caf50; --danger:#ff5555; }
+    html, body { height:100%; margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+    .wrap { max-width:1100px; margin:0 auto; padding:20px; }
+    h1 { font-size:24px; margin:0 0 12px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+    .card { background:var(--panel); border:1px solid #222; border-radius:14px; padding:16px; }
+    label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:10px 0 6px; }
+    input, textarea, select { width:100%; box-sizing:border-box; padding:10px; background:#0e0e0e; border:1px solid #222; border-radius:10px; color:var(--fg); }
+    textarea { min-height:84px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .slides { display:grid; gap:10px; }
+    .slide { background:#0e0e0e; border:1px solid #222; border-radius:12px; padding:12px; position:relative; }
+    .slide h3 { margin:0 0 10px; font-size:14px; letter-spacing:.02em; }
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:12px; border:1px solid #222; background:#161616; color:#fff; cursor:pointer; }
+    .btn.primary { background:var(--accent); border-color:transparent; color:#000; font-weight:700; }
+    .btn.danger { background:transparent; border-color:#333; color:#ff9a9a; }
+    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin:14px 0; }
+    .muted { color:var(--muted); font-size:12px; }
+    .hr { height:1px; background:#222; margin:16px -16px; }
+    .list { display:flex; gap:8px; flex-wrap:wrap; }
+    .preview { display:flex; gap:10px; align-items:center; margin-top:8px; }
+    .preview img { height:48px; border-radius:8px; border:1px solid #222; }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <h1>Admin · Infoskærm</h1>
+    <div class="toolbar">
+      <div class="muted" id="status">Indlæser…</div>
+      <div class="list">
+        <input id="pin" placeholder="PIN (ADMIN_PIN)" style="width:130px" />
+        <button class="btn" id="add-image">+ Billede</button>
+        <button class="btn" id="add-text">+ Tekst</button>
+        <button class="btn" id="add-empties">+ Tømning</button>
+        <button class="btn" id="add-birthday">+ Fødselsdage</button>
+        <button class="btn primary" id="save">Gem ændringer</button>
+      </div>
+    </div>
 
-  <div class="gate" id="pinGate">
-    <div class="card">
-      <h3>Adgangskode påkrævet</h3>
-      <input id="pinInput" type="password" placeholder="••••">
-      <button class="btn" id="pinOk">Åbn admin</button>
-      <p id="pinMsg" class="pill">Indtast kode for at fortsætte</p>
+    <div class="grid">
+      <div class="card">
+        <h2>Branding & faste indstillinger</h2>
+        <label>Brand</label>
+        <input id="brand" placeholder="Bredsgaard • Infoskærm" />
+
+        <label>Logo URL (fx /media/logo.png eller fuld URL)</label>
+        <input id="logoUrl" placeholder="/media/logo.png" />
+
+        <div class="hr"></div>
+        <h3>Affaldstømning</h3>
+        <label>Ugedage (kommasepareret, fx mon,wed,fri)</label>
+        <input id="empties-weekdays" placeholder="mon,wed,fri" />
+
+        <label>Navne (en pr. linje)</label>
+        <textarea id="empties-names" placeholder="Pap&#10;Plast&#10;Rest"></textarea>
+
+        <div class="hr"></div>
+        <h3>Fødselsdage</h3>
+        <label>Liste (en pr. linje: Navn – dd.mm.yyyy)</label>
+        <textarea id="birthdays" placeholder="Per – 07.11.1988&#10;Lise – 12.01.1991"></textarea>
+      </div>
+
+      <div class="card">
+        <h2>Slides (rækkefølge = visningsrækkefølge)</h2>
+        <div id="slides" class="slides"></div>
+      </div>
     </div>
   </div>
 
-  <div class="topbar">
-    <strong>Infoskærm • Admin</strong>
-    <button class="btn" id="saveBtn">Gem ændringer</button>
-  </div>
-
-  <div class="wrap">
-    <h2>Slides</h2>
-    <label>Titel</label>
-    <input id="title" placeholder="Titel">
-    <label>Varighed</label>
-    <input id="duration" type="number" value="12">
-    <label>Billede URL</label>
-    <input id="image" placeholder="/media/eksempel.jpg">
-    <button class="btn" id="addSlide">Tilføj slide</button>
-    <pre id="preview"></pre>
-  </div>
-
-  <script>
-    const gate = document.getElementById("pinGate");
-    const pinInput = document.getElementById("pinInput");
-    const pinOk = document.getElementById("pinOk");
-    const pinMsg = document.getElementById("pinMsg");
-
-    function getPin() { return localStorage.getItem("admin_pin") || ""; }
-    function setPin(p) { localStorage.setItem("admin_pin", p); }
-
-    pinOk.onclick = () => {
-      const pin = pinInput.value.trim();
-      if (!pin) { pinMsg.textContent = "Indtast kode"; return; }
-      setPin(pin);
-      pinMsg.textContent = "Godkendt!";
-      gate.style.display = "none";
-    };
-
-    // Admin funktioner
-    const data = { slides: [] };
-
-    document.getElementById("addSlide").onclick = () => {
-      const s = {
-        type: "image",
-        title: document.getElementById("title").value,
-        image: document.getElementById("image").value,
-        duration: Number(document.getElementById("duration").value) || 12
-      };
-      data.slides.push(s);
-      document.getElementById("preview").textContent = JSON.stringify(data, null, 2);
-    };
-
-    document.getElementById("saveBtn").onclick = async () => {
-      try {
-        const res = await fetch("/api/save", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-pin": getPin()
-          },
-          body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error(await res.text());
-        alert("✅ Gemt!");
-      } catch (e) {
-        alert("Fejl ved gemning:\n" + e.message);
-      }
-    };
-  </script>
-</body>
-</html>
+  <template id="tpl-slide">
+    <div class="slide">
+      <h3></h3>
+      <div class="row">
+        <div>
+          <label>Type</label>
+          <select class="type">
+            <option value="image">image</option>
+            <option value="text">text</option>
+            <option value="empties">empties</option>
+            <option value="birthday">birthday</option>
+          </select>
+        </div>
+        <div>
+          <label>Varighed (sek.)</label>
+          <input class="duration" type="number" min="3" value="8" />
+        </div>
+      </div>
+      <label>Titel</label>
+      <input class="title" placeholder="Titel" />
+      <div class="content-fields"></div>
+      <div class="preview"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+        <span class="muted"></span>
+        <button class
