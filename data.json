@@ -49,6 +49,17 @@
       "title": "Test billede",
       "image": "/media/Slide1.jpg",
       "duration": 8
+    },
+    {
+      "type": "text",
+      "title": "Tekst info",
+      "text": "Dette er en simple test",
+      "duration": 8
+    },
+    {
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 12
     }
   ]
 }
