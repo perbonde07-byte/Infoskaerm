@@ -11,10 +11,6 @@
     }
     *{box-sizing:border-box}
     html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-
-    /* VIGTIGT: brugt overalt til at skjule sektioner/felter */
-    .hide{display:none !important}
-
     .topbar{position:sticky;top:0;z-index:30;height:64px;background:rgba(15,23,42,.92);backdrop-filter:blur(6px);
       display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.08)}
     .pill{padding:6px 10px;border-radius:999px;background:#0f1b34;border:1px solid #203258;font-size:12px}
@@ -26,7 +22,7 @@
     section{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;margin:14px 0}
     h1{margin:0 0 6px 2px} h2{margin:0 0 12px}
     label{display:block;margin:10px 0 6px}
-    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid --var(--muted);background:#0f172a;color:var(--text);font-size:15px}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--muted);background:#0f172a;color:var(--text);font-size:15px}
     textarea{min-height:92px}
     .row{display:grid;gap:12px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)} .inline{display:flex;gap:8px;align-items:flex-start}
     .tabs{display:flex;gap:10px;margin:6px 0 14px}
@@ -35,23 +31,24 @@
     table{width:100%;border-collapse:collapse;margin-top:12px}
     th,td{padding:8px 10px;border-bottom:1px solid var(--muted);text-align:left}
     th{opacity:.85}
+    .hide{display:none}
     .gate{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:1000}
     .gate .card{width:min(420px,92vw);background:#0f172a;border:1px solid #203258;border-radius:16px;padding:20px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
   </style>
 </head>
 <body>
-  <!-- PIN overlay -->
+  <!-- PIN overlay (login) -->
   <div class="gate" id="pinGate">
     <div class="card">
       <h3>Adgangskode påkrævet</h3>
       <p>Indtast koden for at åbne administrationen.</p>
-      <label>Kode</label>
+      <label for="pinInput">Kode</label>
       <input id="pinInput" type="password" placeholder="••••" />
       <div class="inline" style="margin-top:12px">
         <button class="btn" id="pinOk">Åbn admin</button>
         <span id="pinMsg" class="pill" style="margin-left:auto">Klar</span>
       </div>
-      <div class="pill" style="margin-top:10px">Tip: Koden gemmes midlertidigt i denne browser session, så du kan gemme.</div>
+      <div class="pill" style="margin-top:10px">Når koden er godkendt, sættes en session-cookie (24 timer).</div>
     </div>
   </div>
 
@@ -220,17 +217,32 @@
   </div>
 
   <script>
-    // ===== PIN gate =====
+    // ===== PIN gate (nyt: kalder /api/auth og får HttpOnly session-cookie) =====
     const pinGate = document.getElementById('pinGate');
     const pinInput = document.getElementById('pinInput');
     const pinOk = document.getElementById('pinOk');
     const pinMsg = document.getElementById('pinMsg');
-    const setPin = pin => sessionStorage.setItem('admin_pin', pin);
-    const getPin = () => sessionStorage.getItem('admin_pin') || '';
-    pinOk.onclick = ()=>{
-      const p = (pinInput.value||'').trim();
-      if(!p){ pinMsg.textContent='Indtast kode'; return; }
-      setPin(p); pinGate.classList.add('hide');
+
+    pinOk.onclick = async () => {
+      try {
+        pinMsg.textContent = 'Tjekker kode…';
+        const p = (pinInput.value || '').trim();
+        if (!p) { pinMsg.textContent = 'Indtast kode'; return; }
+        const r = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: p })
+        });
+        if (!r.ok) {
+          const j = await r.json().catch(()=>({}));
+          pinMsg.textContent = j.error || 'Forkert kode';
+          return;
+        }
+        pinMsg.textContent = 'OK';
+        pinGate.style.display = 'none'; // login ok – cookie sat
+      } catch (e) {
+        pinMsg.textContent = 'Fejl – prøv igen';
+      }
     };
 
     // ===== Admin UI =====
@@ -253,30 +265,17 @@
     const defaultData = () => ({
       brand:'Bredsgaard • Infoskærm',
       logoUrl:'', logoPos:'top-right',
-      media:{}, // ikke i brug længere
       settings:{ calendarUrl:'', empties:{weekdays:[],skip:[],names:[]}, birthdays:[] },
       slides:[]
     });
     const state = { dataUrl:'', data: defaultData() };
 
-    const fmtDa = iso => {
-      if(!iso) return '';
-      const d = new Date(iso);
-      if (Number.isNaN(d.getTime())) return iso;
-      return d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'});
-    };
+    const fmtDa=iso=>{ if(!iso) return ''; const d=new Date(iso); return Number.isNaN(d)?iso:d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit',year:'numeric'}); }
     const esc=s=>(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 
-    // TAB-SKIFT – retter mappet så det matcher dataset værdierne
     function showTab(name){
       els.tabButtons.forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
-      const map={
-        slidesTab:'slides',
-        emptiesTab:'empties',
-        birthdaysTab:'birthdays',
-        settingsTab:'settings',
-        sourceTab:'source'
-      };
+      const map={slides:'slides',empties:'empties',birthdays:'birthdays',settings:'settings',source:'source'};
       Object.entries(els.tabs).forEach(([k,el])=> el.classList.toggle('hide', k!==map[name]));
     }
     els.tabButtons.forEach(b=> b.addEventListener('click', ()=> showTab(b.dataset.tab)));
@@ -356,7 +355,7 @@
       try{
         els.status.textContent='Gemmer…'; els.saveBtn.disabled=true;
         const res=await fetch('/api/save',{method:'POST',headers:{
-          'Content-Type':'application/json','x-admin-pin': getPin() || ''
+          'Content-Type':'application/json'
         },body:JSON.stringify(state.data)});
         const txt=await res.text();
         if(!res.ok){ let msg=txt; try{const j=JSON.parse(txt); msg=j.error||j.detail||txt;}catch{}; throw new Error(`HTTP ${res.status} – ${msg}`);}
@@ -369,9 +368,7 @@
     function toggleTypeUI(){
       const t=els.s_type.value;
       els.box_bullets.classList.toggle('hide', t!=='bullets');
-      els.box_image.classList.toggle('hide', !(t==='image' || t==='birthday'));
-      if (t!=='bullets') els.s_lines.value='';
-      if (!(t==='image' || t==='birthday')) els.s_image.value='';
+      els.box_image.classList.toggle('hide', t!=='image' && t!=='birthday');
     }
     els.s_type.addEventListener('change', toggleTypeUI); toggleTypeUI();
 
@@ -417,9 +414,12 @@
       const stored=localStorage.getItem('admin_data_url')||'';
       state.dataUrl = stored || '/data.json';
       els.dataUrl.value=state.dataUrl; els.dataUrlView.textContent=state.dataUrl;
+      // Vis login gate fra start
+      pinGate.style.display = 'flex';
       load();
     })();
   </script>
 </body>
 </html>
+
 
