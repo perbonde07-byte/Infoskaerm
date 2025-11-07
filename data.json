@@ -1,23 +1,2 @@
-{
-  "brand": "Bredsgaard • Infoskærm",
-  "logoUrl": "",
-  "logoPos": "top-right",
-  "settings": {
-    "calendarUrl": "",
-    "empties": {
-      "weekdays": ["mon","wed","fri"],
-      "skip": [],
-      "names": ["Per","Martin","Kasper"]
-    },
-    "birthdays": [
-      { "name": "Per", "date": "1986-05-07", "photo": "" }
-    ]
-  },
-  "slides": [
-    { "type": "bullets", "title": "Info", "lines": ["Velkommen", "Husk sikkerhed"], "duration": 12 },
-    { "type": "image",   "title": "Kampagne", "image": "/media/eksempel.jpg", "duration": 12 },
-    { "type": "empties", "title": "Tømning", "duration": 12 },
-    { "type": "birthday","title": "Tillykke", "image": "", "duration": 12 }
-  ]
-}
 
+{ "type": "image", "title": "Kampagne", "image": "https://infoskaerm.vercel.app/media/eks1.jpg", "duration": 12 }
