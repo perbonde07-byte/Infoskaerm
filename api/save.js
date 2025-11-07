@@ -1,92 +1,97 @@
-// api/save.js
-// Minimal serverless "Gem data.json til GitHub" + PIN-beskyttelse.
-// Kræver env vars: ADMIN_PIN, GITHUB_TOKEN, OWNER, REPO, BRANCH, FILEPATH
-// Eksempel: OWNER=perbonde07-byte, REPO=Infoskaerm, BRANCH=main, FILEPATH=data.json
+// File: api/save.js
+import crypto from 'crypto';
 
-export default async function handler(req, res) {
+function verifyToken(token, secret) {
+  if (!token || !secret) return false;
+  const [payload, sig] = String(token).split('.');
+  if (!payload || !sig) return false;
+  const expectedSig = crypto.createHmac('sha256', secret).update(payload).digest('base64url');
+  if (sig !== expectedSig) return false;
   try {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Only POST allowed' });
-    }
-
-    // PIN-kontrol (samme som du taster i admin)
-    const pinHeader = req.headers['x-admin-pin'] || '';
-    const ADMIN_PIN = process.env.ADMIN_PIN || '';
-    if (!ADMIN_PIN || pinHeader !== ADMIN_PIN) {
-      return res.status(401).json({ error: 'Unauthorized (PIN)' });
-    }
-
-    const bodyText = await readBody(req);
-    let data;
-    try {
-      data = JSON.parse(bodyText);
-    } catch (e) {
-      return res.status(400).json({ error: 'Invalid JSON body' });
-    }
-
-    const OWNER   = process.env.OWNER;     // fx "perbonde07-byte"
-    const REPO    = process.env.REPO;      // fx "Infoskaerm"
-    const BRANCH  = process.env.BRANCH || 'main';
-    const FILE    = process.env.FILEPATH || 'data.json';
-    const TOKEN   = process.env.GITHUB_TOKEN;
-
-    if (!OWNER || !REPO || !TOKEN) {
-      return res.status(500).json({ error: 'Missing env vars (OWNER/REPO/GITHUB_TOKEN)' });
-    }
-
-    // 1) Hent eksisterende SHA (krævet for at opdatere via GitHub Contents API)
-    const getUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(FILE)}?ref=${encodeURIComponent(BRANCH)}`;
-    let sha = null;
-    const getResp = await fetch(getUrl, {
-      headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' }
-    });
-
-    if (getResp.ok) {
-      const j = await getResp.json();
-      sha = j.sha || null;
-    } else if (getResp.status !== 404) {
-      const t = await getResp.text();
-      return res.status(502).json({ error: 'GitHub read failed', detail: t });
-    }
-
-    // 2) PUT ny fil (eller update) med base64-indhold
-    const putUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(FILE)}`;
-    const content = Buffer.from(JSON.stringify(data, null, 2), 'utf8').toString('base64');
-
-    const putBody = {
-      message: 'Update data.json via /api/save',
-      content,
-      branch: BRANCH
-    };
-    if (sha) putBody.sha = sha;
-
-    const putResp = await fetch(putUrl, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(putBody)
-    });
-
-    if (!putResp.ok) {
-      const txt = await putResp.text();
-      return res.status(502).json({ error: 'GitHub write failed', detail: txt });
-    }
-
-    return res.status(200).json({ ok: true });
-  } catch (err) {
-    return res.status(500).json({ error: 'Server error', detail: String(err) });
+    const data = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+    const now = Math.floor(Date.now() / 1000);
+    if (typeof data.exp !== 'number' || data.exp < now) return false;
+    return true;
+  } catch {
+    return false;
   }
 }
 
-// Hjælper til at læse rå body (Vercel Node runtime)
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let raw = '';
-    req.on('data', (c) => (raw += c));
-    req.on('end', () => resolve(raw));
-    req.on('error', reject);
-  });
+function readCookie(req, name) {
+  const raw = req.headers.cookie || '';
+  const parts = raw.split(';').map(s => s.trim());
+  for (const p of parts) {
+    if (p.startsWith(name + '=')) return p.slice(name.length + 1);
+  }
+  return '';
 }
+
+export default async function handler(req, res) {
+  try {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+    // 1) Cookie-auth (ingen PIN i request body/header)
+    const secret = process.env.ADMIN_PIN || '';
+    const token = readCookie(req, 'admin_session');
+    if (!verifyToken(token, secret)) {
+      return res.status(401).json({ error: 'Unauthorized (session)' });
+    }
+
+    // 2) Payload
+    const body = req.body || {};
+    const content = JSON.stringify(body, null, 2);
+
+    // 3) GitHub ENV
+    const tokenGH = process.env.GITHUB_TOKEN;
+    const owner   = process.env.OWNER;
+    const repo    = process.env.REPO;
+    const branch  = process.env.BRANCH || 'main';
+    const path    = process.env.FILEPATH || 'data.json';
+
+    if (!tokenGH || !owner || !repo) {
+      return res.status(500).json({ error: 'Missing env (GITHUB_TOKEN, OWNER, REPO)' });
+    }
+
+    const baseUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+    const headers = {
+      'Authorization': `Bearer ${tokenGH}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      'User-Agent': 'infoskaerm'
+    };
+
+    // Hent SHA hvis fil findes
+    let sha;
+    const getResp = await fetch(`${baseUrl}?ref=${encodeURIComponent(branch)}`, { headers });
+    if (getResp.status === 200) {
+      const j = await getResp.json();
+      sha = j.sha;
+    } else if (getResp.status !== 404) {
+      const t = await getResp.text();
+      return res.status(502).json({ error: `GitHub GET failed (${getResp.status})`, detail: t });
+    }
+
+    // Commit
+    const putResp = await fetch(baseUrl, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        message: 'Update data.json via admin',
+        content: Buffer.from(content, 'utf8').toString('base64'),
+        branch,
+        sha
+      })
+    });
+    const putText = await putResp.text();
+    if (!putResp.ok) {
+      let msg = putText;
+      try { const j = JSON.parse(putText); msg = j.message || putText; } catch {}
+      return res.status(502).json({ error: `GitHub PUT failed (${putResp.status})`, detail: msg });
+    }
+
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error', detail: String(e?.message || e) });
+  }
+}
+
