@@ -43,6 +43,28 @@
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 12
+    },
+    {
+      "type": "birthday",
+      "title": "Fødselsdage",
+      "duration": 12
+    },
+    {
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 12
+    },
+    {
+      "type": "text",
+      "title": "Info",
+      "text": "",
+      "duration": 8
+    },
+    {
+      "type": "image",
+      "title": "Kampagne",
+      "image": "/media/Slide1.jpg",
+      "duration": 8
     }
   ]
 }
