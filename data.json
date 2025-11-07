@@ -45,10 +45,9 @@
       "duration": 12
     },
     {
-      "type": "image",
-      "title": "",
-      "image": "/media/Slide1.jpg",
-      "duration": 8
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 12
     }
   ]
 }
