@@ -1,39 +1,29 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Arbejds-kalender</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Kalender • Infoskærm</title>
   <style>
-    body {
-      background:#0b1220;
-      color:#e8eefb;
-      font-family:system-ui,Segoe UI,Roboto;
-      margin:0;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      height:100vh;
-    }
-    iframe {
-      border:none;
-      width:90vw;
-      height:90vh;
-      border-radius:16px;
-      background:#111a2d;
-    }
-    h1 {
-      margin-bottom:10px;
-      color:#5aa2ff;
-    }
+    html,body{height:100%;margin:0;background:#0b1220}
+    iframe{border:0;width:100%;height:100%}
+    .msg{color:#e8eefb;font-family:system-ui,Segoe UI,Roboto,Arial;display:flex;height:100%;align-items:center;justify-content:center}
   </style>
 </head>
 <body>
-  <h1>Bredsgaard – Arbejds-kalender</h1>
-
-  <!-- Du kan her indsætte din Outlook-kalender som embed -->
-  <iframe src="https://outlook.office.com/calendar/embed?path=/calendar/view/month&rru=calendar" allowfullscreen></iframe>
-
+  <div id="wrap" class="msg">Henter kalender…</div>
+  <script>
+    const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
+    (async ()=>{
+      try{
+        const j = await (await fetch(DATA_URL+'?v='+Date.now())).json();
+        const url = j?.settings?.calendarUrl || '';
+        document.getElementById('wrap').innerHTML = url ? `<iframe src="${url}" loading="lazy"></iframe>` : '<div class="msg">Ingen kalender-link sat i admin.</div>';
+      }catch(e){
+        document.getElementById('wrap').textContent='Kunne ikke hente data.';
+      }
+    })();
+  </script>
 </body>
 </html>
+
