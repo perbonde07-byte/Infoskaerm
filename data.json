@@ -50,7 +50,7 @@
     {
       "type": "empties",
       "title": "TØMNINGS DAGE",
-      "duration": 1
+      "duration": 5
     },
     {
       "type": "image",
@@ -58,7 +58,7 @@
       "image": "/media/Slide1.jpg",
       "sideText": "Tester siden",
       "imageAlign": "right",
-      "duration": 1
+      "duration": 5
     }
   ]
 }
