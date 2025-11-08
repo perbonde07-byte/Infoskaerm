@@ -3,8 +3,8 @@
   "logoUrl": "/media/Bredsgaard-logo transprant.png",
   "settings": {
     "theme": {
-      "bg1": "002D1E",
-      "bg2": "#134d60",
+      "bg1": "#0d4b59",
+      "bg2": "002D1E",
       "accent": "#ffffff"
     },
     "refreshMs": 300000,
