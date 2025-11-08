@@ -184,9 +184,9 @@ const state={sha:null,data:null};
 function slugBase(s){
   return String(s||'')
     .trim()
-    .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')   // fjern diakritik
-    .replace(/[^A-Za-z0-9\s\-_.]/g,'')                  // whitelist
-    .replace(/\s+/g,'-')                                // mellemrum -> -
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^A-Za-z0-9\s\-_.]/g,'')
+    .replace(/\s+/g,'-')
     .replace(/-+/g,'-')
     .replace(/^-|-$/g,'');
 }
@@ -397,7 +397,10 @@ async function save(){
   const headers={'Content-Type':'application/json'}; if(pin) headers['x-admin-pin']=pin;
   const r=await fetch('/api/save',{method:'POST',headers,body:JSON.stringify({data:collect(),sha:state.sha})});
   const jr=await r.json();
-  if(!r.ok){ if(r.status===409){ $('#status').textContent='Konflikt – genindlæser…'; await load(); return; } $('#status').textContent='Fejl: '+(jr?.message||jr?.error||r.status); return; }
+  if(!r.ok){
+    if(r.status===409){ $('#status').textContent='Konflikt – genindlæser…'; await load(); return; }
+    $('#status').textContent='Fejl: '+(jr?.message||jr?.error||r.status); return;
+  }
   $('#status').textContent='Gemt!'; await load();
 }
 
