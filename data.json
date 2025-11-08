@@ -14,7 +14,8 @@
         "enabled": true,
         "startDate": "2025-10-27",
         "weekdays": [
-          "mon"
+          "mon",
+          "thu"
         ],
         "names": [
           "Claus",
