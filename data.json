@@ -14,8 +14,7 @@
         "enabled": true,
         "startDate": "2025-11-03",
         "weekdays": [
-          "mon",
-          "wed"
+          "mon"
         ],
         "names": [
           "Per",
