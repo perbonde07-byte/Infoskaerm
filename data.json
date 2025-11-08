@@ -12,14 +12,23 @@
       "plan": [],
       "auto": {
         "enabled": true,
-        "startDate": "2025-11-03",
+        "startDate": "2025-10-27",
         "weekdays": [
           "mon"
         ],
         "names": [
-          "Per",
-          "Louise",
-          "Max"
+          "Claus",
+          "Peter",
+          "Mads",
+          "Viktor",
+          "Frederik",
+          "Klaus",
+          "Jens",
+          "Vitalii",
+          "Andreii",
+          "Jesper",
+          "Jørgen",
+          "Karsten"
         ],
         "exclude": [
           "29.12.2025"
