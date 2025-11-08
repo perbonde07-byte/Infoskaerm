@@ -48,6 +48,11 @@
       "sideText": "lad os se hvad dette er for en kugle formet starut",
       "imageAlign": "right",
       "duration": 8
+    },
+    {
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 12
     }
   ]
 }
