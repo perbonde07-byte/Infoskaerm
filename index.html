@@ -79,11 +79,63 @@ async function loadData(){const r=await fetch('/api/data',{cache:'no-store'});if
 function h(tag,attrs={},children=[]){const el=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')el.className=v;else if(k==='text')el.textContent=v;else el.setAttribute(k,v);}children.forEach(c=>el.appendChild(c));return el;}
 const elSlides=document.getElementById('slides'),elBrand=document.getElementById('brand'),elLogo=document.getElementById('logo');
 
+/* ---------- Billed-helpers til fødselsdage ---------- */
+function titleCaseHyphen(name){
+  return String(name||'')
+    .trim()
+    .split(/\s+/)
+    .map(w=>w.charAt(0).toUpperCase()+w.slice(1))
+    .join('-');
+}
+function buildImageCandidates(personName, imgValue){
+  const cand = [];
+
+  // Fuld URL / absolut sti respekteres
+  if (imgValue && (/^https?:\/\//i.test(imgValue) || imgValue.startsWith('/'))) {
+    cand.push(imgValue);
+  }
+
+  // Strip evt. /medarbejdere/ og extension
+  const baseFromInput = imgValue
+    ? imgValue.replace(/^\/?medarbejdere\/?/i,'').replace(/\.(jpg|jpeg|png)$/i,'').trim()
+    : '';
+
+  const bases = new Set();
+  if (baseFromInput) {
+    bases.add(baseFromInput);
+    bases.add(baseFromInput.toLowerCase());
+  }
+  if (personName) {
+    const t = titleCaseHyphen(personName);    // Per-Bonde
+    bases.add(t);
+    bases.add(t.toLowerCase());               // per-bonde
+    bases.add(String(personName).replace(/\s+/g,'')); // PerBonde
+  }
+
+  for (const b of bases) {
+    ['/medarbejdere/'].forEach(prefix=>{
+      ['.jpg','.jpeg','.png'].forEach(ext=>{
+        cand.push(prefix + b + ext);
+      });
+    });
+  }
+  return [...new Set(cand)];
+}
+function createImgWithFallback(personName, imgValue){
+  const candidates = buildImageCandidates(personName, imgValue);
+  if (!candidates.length) return null;
+  const img = document.createElement('img');
+  let i = 0;
+  img.src = candidates[i++];
+  img.onerror = ()=>{ if (i < candidates.length) img.src = candidates[i++]; };
+  return img;
+}
+
 /* --- Hjælpere --- */
 function parseDMY(s){if(!s)return null;const m=s.trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);if(!m)return null;const d=+m[1],mo=+m[2]-1,y=m[3]?+m[3]:new Date().getFullYear();const dt=new Date(y,mo,d,12,0,0);return isNaN(dt)?null:dt;}
 const WD_MAP={mon:1,tue:2,wed:3,thu:4,fri:5,sat:6,sun:0}; // JS: 0=sun
 
-/* --- Fødselsdage --- */
+/* --- Fødselsdage (liste + alarmer) --- */
 function slideBirthdayList(s,settings){
   const list=settings?.birthdays||[];
   return h('div',{class:'slide'},[h('div',{},[
@@ -122,15 +174,20 @@ function birthdayAlertSlides(settings){
   return out;
 }
 function renderBirthdayAlertSlide(s){
+  // Billede med smart fallback (navn -> /medarbejdere/Name.jpg|jpeg|png)
+  const holder = document.createElement('div');
+  const imgEl = createImgWithFallback(s.name, s.image || '');
+  if (imgEl) holder.appendChild(imgEl);
+
   return h('div',{class:'slide'},[h('div',{class:'bd'},[
     h('div',{class:'title',text:s.title}),
-    s.image ? h('img',{src:s.image,alt:s.name}) : h('div'),
+    holder,
     h('div',{class:'name',text:s.name||''}),
     h('div',{class:'msg',text:`${s.message} (${s.dayShort})`})
   ])]);
 }
 
-/* --- Tømning: kun automatisk plan + kolonner --- */
+/* --- Tømning: automatisk plan + 1–3 kolonner --- */
 function buildAutoEmpties(settings){
   const auto=settings?.empties?.auto;
   if(!auto || !auto.enabled) return [];
