@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Infoskærm</title>
 <style>
-  :root{ --bg1:#0f2b8a; --bg2:#0a1e66; --accent:#2bb673; --panel:rgba(255,255,255,.06); --grid:#2a3c7a; --muted:#cfe2ff;}
+  :root{ --bg1:#0d4b59; --bg2:#134d60; --accent:#e8b15c; --panel:rgba(255,255,255,.06); --grid:#235a6b; --muted:#cfe2ff;}
   html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg1);color:#fff;}
   .screen{position:relative;height:100%;display:grid;grid-template-rows:1fr auto;}
   .frame{position:absolute;left:2.6vh;right:2.6vh;top:2.6vh;
@@ -19,12 +19,14 @@
   .brandbar img{height:28px}
   .text{font-size:3vh;line-height:1.35}
 
-  /* Tømning */
-  .empties{width:min(1100px,94vw)}
-  table{width:100%;border-collapse:collapse;font-size:3vh}
+  /* Tømning – 1/2 kolonner */
+  .empties{width:min(1200px,94vw)}
+  .empties .cols{display:grid;gap:22px}
+  .empties .cols.cols-2{grid-template-columns:1fr 1fr}
+  table{width:100%;border-collapse:collapse;font-size:3vh;background:transparent}
   th,td{border-bottom:1px solid var(--grid);padding:.7em 1em}
   th{font-weight:800;border-bottom:2px solid var(--grid);text-transform:uppercase;letter-spacing:.04em}
-  tr.current{background:color-mix(in oklab,var(--accent) 33%,rgba(0,0,0,.25))}
+  tr.current{background:color-mix(in oklab,var(--accent) 35%,rgba(0,0,0,.25))}
   tr.current td{font-weight:800}
 
   /* Fødselsdagskort */
@@ -32,6 +34,16 @@
   .bd .msg{font-size:4vh}
   .bd .name{font-size:6vh;font-weight:900}
   .bd img{max-width:45vw;max-height:50vh;border-radius:20px;border:3px solid var(--accent)}
+
+  /* Billede med valgfri sidetekst */
+  .imgsplit{display:grid;gap:3vh;align-items:center;width:min(1400px,94vw)}
+  .imgsplit.two{grid-template-columns:1fr 1fr}
+  .imgwrap{display:flex;justify-content:center}
+  .imgwrap img{max-width:100%;max-height:70vh;border-radius:16px}
+  .sidetext{font-size:3.2vh;line-height:1.4}
+  @media (max-width: 900px){
+    .imgsplit.two{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -116,19 +128,18 @@ function renderBirthdayAlertSlide(s){
   ])]);
 }
 
-/* --- Tømning: auto-generator + fallback --- */
+/* --- Tømning: kun automatisk plan + kolonnevalg --- */
 function buildAutoEmpties(settings){
   const auto=settings?.empties?.auto;
-  if(!auto || !auto.enabled) return null;
-
+  if(!auto || !auto.enabled) return [];
   const names=(auto.names||[]).map(s=>String(s).trim()).filter(Boolean);
-  if(!names.length) return null;
+  if(!names.length) return [];
 
   let d0 = auto.startDate ? new Date(auto.startDate+'T12:00:00') : null; // yyyy-mm-dd
-  if(!d0 || isNaN(d0)) return null;
+  if(!d0 || isNaN(d0)) return [];
 
   const weekdays=(auto.weekdays||[]).map(w=>WD_MAP[w]).filter(v=>v!==undefined);
-  if(!weekdays.length) return null;
+  if(!weekdays.length) return [];
 
   const exclSet=new Set((auto.exclude||[]).map(s=>{
     const p=parseDMY(String(s)); return p? new Date(p.getFullYear(),p.getMonth(),p.getDate()).getTime(): null;
@@ -138,62 +149,86 @@ function buildAutoEmpties(settings){
   const today=new Date(); today.setHours(0,0,0,0);
 
   const items=[];
-  let rosterIdx=0;
-  let safe=0;
-  // Gå fra startdato fremad og lav uendelig plan; filtrér til >= today og tag horizon
+  let rosterIdx=0, safe=0;
   let cur=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate(),12,0,0);
 
   while(items.length < horizon && safe < 20000){
     safe++;
-    const isAllowed = weekdays.includes(cur.getDay()) || (cur.getDay()===0 && weekdays.includes(0));
+    const isAllowed = weekdays.includes(cur.getDay());
     const key=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()).getTime();
     if(isAllowed && !exclSet.has(key)){
       if(cur >= today){
-        items.push({
-          name: names[rosterIdx % names.length],
-          _date: new Date(cur)
-        });
+        items.push({ name: names[rosterIdx % names.length], _date: new Date(cur) });
       }
       rosterIdx++;
     }
-    // næste dag
     cur.setDate(cur.getDate()+1);
   }
 
-  // formatér
-  return items.map(p=>({
-    name: p.name,
-    date: p._date.toLocaleDateString('da-DK')
-  }));
+  return items.map(p=>({ name:p.name, _date:p._date }));
 }
-
+function chunk(arr,n){
+  const out=[]; const size=Math.ceil(arr.length/n);
+  for(let i=0;i<n;i++){ out.push(arr.slice(i*size,(i+1)*size)); }
+  return out;
+}
 function slideEmpties(s,settings){
-  // 1) Forsøg auto
-  const autoList = buildAutoEmpties(settings);
-  const plan = autoList && autoList.length ? autoList
-              : (settings?.empties?.plan || []); // 2) Fallback manuel
+  const items = buildAutoEmpties(settings); // KUN auto
+  const today = new Date(); today.setHours(0,0,0,0);
 
-  // find “næste” (første dato >= i dag)
-  const today=new Date(); today.setHours(0,0,0,0);
-  const parsed = plan.map(p=>({...p,_d: parseDMY(String(p.date||''))})).filter(p=>p._d);
-  parsed.forEach(p=>p._d.setFullYear(today.getFullYear())); // vis år = i år
-  const upcoming = parsed.find(p=>p._d >= today) || null;
+  // Markér “næste”
+  let upcomingIdx = items.findIndex(p=>{const d=new Date(p._date); d.setFullYear(today.getFullYear()); return d>=today;});
+  if (upcomingIdx<0) upcomingIdx = 0;
 
-  const table=h('table',{},[
-    h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
-    h('tbody',{},parsed.map(p=>{
-      const tr=h('tr',{class:(upcoming && p.name===upcoming.name && p._d.getTime()===upcoming._d.getTime())?'current':'row'},[
-        h('td',{text:p.name||''}),
-        h('td',{text:p._d.toLocaleDateString('da-DK')})
-      ]);
-      return tr;
-    }))
+  const cols = Math.max(1, Math.min(2, Number(settings?.empties?.columns || 1)));
+  const groups = cols===1 ? [items] : chunk(items,2);
+
+  const tables = groups.map(group=>{
+    return h('table',{},[
+      h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
+      h('tbody',{},group.map((p,idxAll)=>{
+        const d=new Date(p._date); d.setFullYear(today.getFullYear());
+        const tr=h('tr',{class:(p===items[upcomingIdx])?'current':'row'},[
+          h('td',{text:p.name||''}),
+          h('td',{text:d.toLocaleDateString('da-DK')})
+        ]);
+        return tr;
+      }))
+    ]);
+  });
+
+  const colsWrap = h('div',{class:'cols '+(cols===2?'cols-2':'cols-1')}, tables);
+  return h('div',{class:'slide'},[
+    h('div',{class:'empties'},[
+      h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}),
+      colsWrap
+    ])
   ]);
-  return h('div',{class:'slide'},[h('div',{class:'empties'},[h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}),table])]);
 }
 
-/* --- Almindelige slides --- */
-function slideImage(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('img',{src:s.image,alt:s.title||'',style:'max-width:100%;max-height:70vh;border-radius:16px'})])]);}
+/* --- Billede med valgfri sidetekst --- */
+function slideImage(s){
+  const hasText = (s.sideText||'').trim().length>0;
+  const align = (s.imageAlign==='left'?'left':'right');
+  if(!hasText){
+    return h('div',{class:'slide'},[
+      h('div',{class:'imgsplit'},[
+        h('div',{class:'imgwrap'},[
+          h('img',{src:s.image,alt:s.title||'',style:'max-width:100%;max-height:70vh;border-radius:16px'})
+        ])
+      ])
+    ]);
+  }
+  // to-felts layout
+  const imgEl = h('div',{class:'imgwrap'},[ h('img',{src:s.image,alt:s.title||''}) ]);
+  const txtEl = h('div',{class:'sidetext',text:s.sideText} );
+  const order = align==='left' ? [imgEl,txtEl] : [txtEl,imgEl];
+  return h('div',{class:'slide'},[
+    h('div',{class:'imgsplit two'},[
+      ...order
+    ])
+  ]);
+}
 function slideText(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('div',{class:'text',text:s.text||''})])]);}
 
 /* --- Orkestrering --- */
@@ -206,7 +241,13 @@ function buildSlides(model){
 
   elSlides.innerHTML=''; elBrand.textContent=model.brand||''; if(model.logoUrl) elLogo.src=model.logoUrl; else elLogo.remove();
 
-  const makers={ image:slideImage, text:slideText, empties:(s)=>slideEmpties(s,model.settings), birthday:(s)=>slideBirthdayList(s,model.settings), _bdalert:renderBirthdayAlertSlide };
+  const makers={
+    image:slideImage,
+    text:slideText,
+    empties:(s)=>slideEmpties(s,model.settings),
+    birthday:(s)=>slideBirthdayList(s,model.settings),
+    _bdalert:renderBirthdayAlertSlide
+  };
   const seq=[ ...birthdayAlertSlides(model.settings), ...(model.slides||[]) ];
   const nodes=seq.map(s=>{const make=makers[s.type]||slideText; const n=make(s); n.dataset.duration=Math.max(3, Number(s.duration||(s.type==='_bdalert'?10:8))); return n;});
   nodes.forEach(n=>elSlides.appendChild(n));
@@ -220,7 +261,6 @@ function runCarousel(nodes){let i=0;function show(idx){nodes.forEach(n=>n.classL
     const { data } = await loadData();
     buildSlides(data);
     adjustFrame();
-
     const minMs=300000; // 5 min minimum
     const cfgMs=Number(data?.settings?.refreshMs||minMs);
     const every=Math.max(minMs, isFinite(cfgMs)?cfgMs:minMs);
