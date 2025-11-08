@@ -19,10 +19,12 @@
   .brandbar img{height:28px}
   .text{font-size:3vh;line-height:1.35}
 
-  /* Tømning – 1/2 kolonner */
+  /* Tømning – 1/2/3 kolonner */
   .empties{width:min(1200px,94vw)}
   .empties .cols{display:grid;gap:22px}
+  .empties .cols.cols-1{grid-template-columns:1fr}
   .empties .cols.cols-2{grid-template-columns:1fr 1fr}
+  .empties .cols.cols-3{grid-template-columns:1fr 1fr 1fr}
   table{width:100%;border-collapse:collapse;font-size:3vh;background:transparent}
   th,td{border-bottom:1px solid var(--grid);padding:.7em 1em}
   th{font-weight:800;border-bottom:2px solid var(--grid);text-transform:uppercase;letter-spacing:.04em}
@@ -128,16 +130,14 @@ function renderBirthdayAlertSlide(s){
   ])]);
 }
 
-/* --- Tømning: kun automatisk plan + kolonnevalg --- */
+/* --- Tømning: kun automatisk plan + kolonner --- */
 function buildAutoEmpties(settings){
   const auto=settings?.empties?.auto;
   if(!auto || !auto.enabled) return [];
   const names=(auto.names||[]).map(s=>String(s).trim()).filter(Boolean);
   if(!names.length) return [];
-
-  let d0 = auto.startDate ? new Date(auto.startDate+'T12:00:00') : null; // yyyy-mm-dd
+  const d0 = auto.startDate ? new Date(auto.startDate+'T12:00:00') : null; // yyyy-mm-dd
   if(!d0 || isNaN(d0)) return [];
-
   const weekdays=(auto.weekdays||[]).map(w=>WD_MAP[w]).filter(v=>v!==undefined);
   if(!weekdays.length) return [];
 
@@ -173,31 +173,30 @@ function chunk(arr,n){
   return out;
 }
 function slideEmpties(s,settings){
-  const items = buildAutoEmpties(settings); // KUN auto
+  const items = buildAutoEmpties(settings);
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // Markér “næste”
+  // marker “næste”
   let upcomingIdx = items.findIndex(p=>{const d=new Date(p._date); d.setFullYear(today.getFullYear()); return d>=today;});
   if (upcomingIdx<0) upcomingIdx = 0;
 
-  const cols = Math.max(1, Math.min(2, Number(settings?.empties?.columns || 1)));
-  const groups = cols===1 ? [items] : chunk(items,2);
+  const cols = Math.max(1, Math.min(3, Number(settings?.empties?.columns || 1)));
+  const groups = cols===1 ? [items] : chunk(items, cols);
 
   const tables = groups.map(group=>{
     return h('table',{},[
       h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
-      h('tbody',{},group.map((p,idxAll)=>{
+      h('tbody',{},group.map((p)=>{
         const d=new Date(p._date); d.setFullYear(today.getFullYear());
-        const tr=h('tr',{class:(p===items[upcomingIdx])?'current':'row'},[
+        return h('tr',{class:(p===items[upcomingIdx])?'current':'row'},[
           h('td',{text:p.name||''}),
           h('td',{text:d.toLocaleDateString('da-DK')})
         ]);
-        return tr;
       }))
     ]);
   });
 
-  const colsWrap = h('div',{class:'cols '+(cols===2?'cols-2':'cols-1')}, tables);
+  const colsWrap = h('div',{class:'cols cols-'+cols}, tables);
   return h('div',{class:'slide'},[
     h('div',{class:'empties'},[
       h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}),
@@ -219,16 +218,15 @@ function slideImage(s){
       ])
     ]);
   }
-  // to-felts layout
   const imgEl = h('div',{class:'imgwrap'},[ h('img',{src:s.image,alt:s.title||''}) ]);
   const txtEl = h('div',{class:'sidetext',text:s.sideText} );
   const order = align==='left' ? [imgEl,txtEl] : [txtEl,imgEl];
   return h('div',{class:'slide'},[
-    h('div',{class:'imgsplit two'},[
-      ...order
-    ])
+    h('div',{class:'imgsplit two'}, order)
   ]);
 }
+
+/* --- Alm. tekst --- */
 function slideText(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('div',{class:'text',text:s.text||''})])]);}
 
 /* --- Orkestrering --- */
