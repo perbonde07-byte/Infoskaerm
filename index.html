@@ -6,44 +6,68 @@
 <title>Infoskærm</title>
 <style>
   :root{
+    /* Tema – kan overskrives via settings.theme */
     --bg1:#0d4b59; --bg2:#134d60; --accent:#e8b15c;
     --panel:rgba(255,255,255,.06); --grid:#235a6b; --muted:#cfe2ff;
+
+    /* Globale skaleringer – kan sættes via settings.style */
+    --t:1;            /* textScale */
+    --h:1;            /* titleScale */
+    --imgvh:70;       /* image max-vh for image-slides */
+    --bdimgvh:50;     /* image max-vh for birthday */
+    --imgfit:contain; /* contain | cover */
+
+    /* Lokale (pr. slide) multiplikatorer */
+    --lt:1;           /* local text scale */
+    --lh:1;           /* local title scale */
   }
   html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg1);color:#fff;}
   .screen{position:relative;height:100%;display:grid;grid-template-rows:1fr auto;}
   .frame{position:absolute;left:2.6vh;right:2.6vh;top:2.6vh;border-radius:22px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12),inset 0 0 0 12px rgba(0,0,0,.18);}
   .bggrad{position:absolute;inset:0;background:linear-gradient(145deg,var(--bg1),var(--bg2));z-index:-1;}
+  #slides{height:100%;display:grid;}
   .slide{display:none;align-items:center;justify-content:center;padding:4vh;text-align:left}
   .slide.active{display:flex}
-  .title{font-size:4.8vh;font-weight:800;letter-spacing:.02em;margin:0 0 2vh 0;text-transform:uppercase}
+  .title{font-size:calc(4.8vh * var(--h) * var(--lh));font-weight:800;letter-spacing:.02em;margin:0 0 2vh 0;text-transform:uppercase}
   .muted{color:var(--muted);font-size:2.2vh}
   .brandbar{display:flex;align-items:center;gap:16px;padding:12px 20px;background:rgba(0,0,0,.35);border-top:1px solid rgba(255,255,255,.12);}
   .brandbar img{height:28px}
 
   /* Tekst */
-  .text{font-size:3vh;line-height:1.35}
+  .text{font-size:calc(3vh * var(--t) * var(--lt));line-height:1.35}
+  .sidetext{font-size:calc(3.2vh * var(--t) * var(--lt));line-height:1.4}
 
-  /* Fødselsdag – vertikal centrering */
-  .bd{display:grid;gap:2vh;place-items:center;min-height:70vh}
-  .bd .msg{font-size:4vh}
-  .bd .name{font-size:6vh;font-weight:900}
-  .bd img{max-width:45vw;max-height:50vh;border-radius:20px;border:3px solid var(--accent)}
-
-  /* Billede-slide – vertikal centrering */
+  /* Billede */
   .imgsplit{display:grid;gap:3vh;align-items:center;width:min(1400px,94vw)}
   .imgsplit.two{grid-template-columns:1fr 1fr}
   .imgwrap{display:flex;justify-content:center;align-items:center;min-height:60vh}
-  .imgwrap img{max-width:100%;max-height:70vh;border-radius:16px}
-  .sidetext{font-size:3.2vh;line-height:1.4}
+  .imgwrap img{
+    max-width:100%;
+    max-height:calc(var(--imgvh) * 1vh);
+    border-radius:16px;
+    object-fit:var(--imgfit);
+  }
   @media (max-width: 900px){ .imgsplit.two{grid-template-columns:1fr} }
 
-  /* Tømning – 1/2/3 kolonner + markering */
+  /* Fødselsdag – vertikal centrering */
+  .bd{display:grid;gap:2vh;place-items:center;min-height:70vh}
+  .bd img{
+    max-width:100%;
+    max-height:calc(var(--bdimgvh) * 1vh);
+    border:3px solid var(--accent);
+    border-radius:20px;
+    object-fit:var(--imgfit);
+  }
+  .bd .msg{font-size:calc(4vh * var(--t) * var(--lt))}
+  .bd .name{font-size:calc(6vh * var(--h) * var(--lh));font-weight:900}
+
+  /* Tømning */
   .empties{width:min(1200px,94vw)}
   .empties .cols{display:grid;gap:22px}
   .empties .cols.cols-1{grid-template-columns:1fr}
   .empties .cols.cols-2{grid-template-columns:1fr 1fr}
   .empties .cols.cols-3{grid-template-columns:1fr 1fr 1fr}
-  table{width:100%;border-collapse:collapse;font-size:3vh;background:transparent}
+  table{width:100%;border-collapse:collapse;font-size:calc(3vh * var(--t));background:transparent}
   th,td{border-bottom:1px solid var(--grid);padding:.7em 1em}
   th{font-weight:800;border-bottom:2px solid var(--grid);text-transform:uppercase;letter-spacing:.04em}
   tr.current{background:color-mix(in oklab,var(--accent) 35%, rgba(0,0,0,.25))}
@@ -80,6 +104,7 @@ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(adjustFrame);
 async function loadData(){const r=await fetch('/api/data',{cache:'no-store'});if(!r.ok)throw new Error('Kunne ikke hente data');return await r.json();}
 function h(tag,attrs={},children=[]){const el=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')el.className=v;else if(k==='text')el.textContent=v;else el.setAttribute(k,v);}children.forEach(c=>el.appendChild(c));return el;}
 const elSlides=document.getElementById('slides'),elBrand=document.getElementById('brand'),elLogo=document.getElementById('logo');
+window.CURRENT_MODEL_SETTINGS = {}; // fyldes i buildSlides
 
 /* ---- Billed-hjælpere (fødselsdag) ---- */
 function titleCaseHyphen(name){return String(name||'').trim().split(/\s+/).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join('-');}
@@ -103,6 +128,15 @@ function createImgWithFallback(personName, imgValue){
 
 /* --- Datohjælpere --- */
 function parseDMY(s){if(!s)return null;const m=s.trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);if(!m)return null;const d=+m[1],mo=+m[2]-1,y=m[3]?+m[3]:new Date().getFullYear();const dt=new Date(y,mo,d,12,0,0);return isNaN(dt)?null:dt;}
+function parseBirthdayParts(s){
+  const m = String(s||'').trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?$/);
+  if(!m) return null;
+  const day = String(m[1]).padStart(2,'0');
+  const mon = String(m[2]).padStart(2,'0');
+  let year = m[3] ? String(m[3]) : '';
+  if (year && year.length===2) year = (year > '30' ? '19'+year : '20'+year);
+  return { day, mon, year };
+}
 const WD_MAP={mon:1,tue:2,wed:3,thu:4,fri:5,sat:6,sun:0};
 
 /* --- Fødselsdage --- */
@@ -111,7 +145,8 @@ function slideBirthdayList(s,settings){
   return h('div',{class:'slide'},[h('div',{},[
     h('div',{class:'title',text:s.title||'Fødselsdage'}),
     h('div',{class:'text',text:list.map(b=>{
-      const d=parseDMY(String(b.date||'')); return `${b.name} – ${d?d.toLocaleDateString('da-DK',{day:'2-digit',month:'2-digit'}):b.date}`;
+      const p=parseBirthdayParts(b.date);
+      return p ? `${b.name} – ${p.day}.${p.mon}${p.year?'.'+p.year:''}` : `${b.name} – ${b.date}`;
     }).join('   ')})
   ])]);
 }
@@ -120,6 +155,7 @@ function birthdayAlertSlides(settings){
   const out=[]; const today=new Date(); today.setHours(0,0,0,0);
   const mondayOfWeek=d=>{ const n=new Date(d); const day=n.getDay(); const diff=(day===0?-6:1-day); n.setDate(n.getDate()+diff); n.setHours(0,0,0,0); return n; };
   for(const b of list){
+    const parts=parseBirthdayParts(b.date); if(!parts) continue;
     const dt=parseDMY(String(b.date||'')); if(!dt) continue;
     const thisYear=new Date(dt); thisYear.setFullYear(today.getFullYear()); thisYear.setHours(0,0,0,0);
     const nextYear=new Date(dt); nextYear.setFullYear(today.getFullYear()+1); nextYear.setHours(0,0,0,0);
@@ -128,7 +164,14 @@ function birthdayAlertSlides(settings){
       const isAlertWeek=(today>=monday && today<=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+6));
       const isToday = today.getTime()===when.getTime();
       if(isAlertWeek || isToday){
-        out.push({type:'_bdalert', title:'FØDSELSDAG', name:b.name, image:b.image||'', message: defaultMsg, dayShort: when.toLocaleDateString('da-DK', { day:'2-digit', month:'2-digit' })});
+        out.push({
+          type:'_bdalert',
+          title:'FØDSELSDAG',
+          name:b.name, image:b.image||'',
+          message: defaultMsg,
+          dayShort: `${parts.day}.${parts.mon}`,
+          birthYear: parts.year || ''
+        });
         break;
       }
     }
@@ -136,13 +179,23 @@ function birthdayAlertSlides(settings){
   return out;
 }
 function renderBirthdayAlertSlide(s){
-  const holder=document.createElement('div'); const imgEl=createImgWithFallback(s.name, s.image||''); if(imgEl) holder.appendChild(imgEl);
-  return h('div',{class:'slide'},[h('div',{class:'bd'},[
-    h('div',{class:'title',text:s.title}),
-    holder,
-    h('div',{class:'name',text:s.name||''}),
-    h('div',{class:'msg',text:`${s.message} (${s.dayShort})`})
-  ])]);
+  const st = CURRENT_MODEL_SETTINGS?.style || {};
+  const baseImgVh = Number(st.birthdayImageMaxVh || 50);
+  const imgVh = Math.max(20, Math.min(100, baseImgVh * Number(s.imageScale || 1)));
+
+  const holder=document.createElement('div');
+  const imgEl=createImgWithFallback(s.name, s.image||'');
+  if(imgEl){ imgEl.style.maxHeight = imgVh + 'vh'; holder.appendChild(imgEl); }
+
+  const yearText = s.birthYear ? ` • ${s.birthYear}` : '';
+  return h('div',{class:'slide', style:'--lt:1;--lh:1;'},[
+    h('div',{class:'bd'},[
+      h('div',{class:'title',text:s.title}),
+      holder,
+      h('div',{class:'name',text:s.name||''}),
+      h('div',{class:'msg',text:`${s.message} (${s.dayShort}${yearText})`})
+    ])
+  ]);
 }
 
 /* --- Tømning: generér kommende plan --- */
@@ -163,7 +216,7 @@ function buildAutoEmpties(settings){
   return items.map(p=>({name:p.name,_date:p._date}));
 }
 
-/* --- Tømning: fast markering + én side, låst pr. dag via localStorage --- */
+/* --- Tømning: fast markering + side-lås --- */
 function slideEmpties_makeSlides(s, settings){
   const items = buildAutoEmpties(settings);
   if (!items.length) {
@@ -175,10 +228,11 @@ function slideEmpties_makeSlides(s, settings){
     ]);
   }
 
-  const today = new Date(); today.setHours(0,0,0,0);
-  const dayKey = today.toISOString().slice(0,10); // YYYY-MM-DD
-  const anchorKeyName = 'emptiesAnchorKey';
-  const anchorIdxName = 'emptiesAnchorIdx';
+  // Reference-dato (previewDate for test, ellers dagsdato)
+  const preview = settings?.empties?.previewDate ? parseDMY(String(settings.empties.previewDate)) : null;
+  const ref = preview || (()=>{
+    const d=new Date(); d.setHours(0,0,0,0); return d;
+  })();
 
   // antal kolonner fra admin (1–3)
   const cols = Math.max(1, Math.min(3, Number(settings?.empties?.columns || 1)));
@@ -187,28 +241,46 @@ function slideEmpties_makeSlides(s, settings){
   const ROWS_PER_COL = 6;
   const PAGE_SIZE = ROWS_PER_COL * cols;
 
-  // Forsøg at genbruge dagens anker
-  let hi = null;
-  const savedKey = localStorage.getItem(anchorKeyName);
-  const savedIdx = Number(localStorage.getItem(anchorIdxName));
-  if (savedKey === dayKey && Number.isInteger(savedIdx) && savedIdx >= 0 && savedIdx < items.length) {
-    const sd = new Date(items[savedIdx]._date); sd.setFullYear(today.getFullYear());
-    if (sd >= today) hi = savedIdx;
+  // Find “næste dato” i forhold til ref-dato
+  let hi = items.findIndex(p=>{
+    const d=new Date(p._date); d.setFullYear(ref.getFullYear());
+    return d >= ref;
+  });
+  if (hi < 0) hi = 0;
+
+  // Daglig anker + side-lås (slås fra ved preview)
+  const dayKey = ref.toISOString().slice(0,10);
+  const anchorKeyName = 'emptiesAnchorKey';
+  const anchorIdxName = 'emptiesAnchorIdx';
+  const pageKeyName   = 'emptiesPageStart';
+
+  if (!preview) {
+    const savedKey = localStorage.getItem(anchorKeyName);
+    const savedIdx = Number(localStorage.getItem(anchorIdxName));
+    if (savedKey === dayKey && Number.isInteger(savedIdx) && savedIdx >= 0 && savedIdx < items.length) {
+      const sd = new Date(items[savedIdx]._date); sd.setFullYear(ref.getFullYear());
+      if (sd >= ref) hi = savedIdx;
+    } else {
+      localStorage.setItem(anchorKeyName, dayKey);
+      localStorage.setItem(anchorIdxName, String(hi));
+      localStorage.removeItem(pageKeyName);
+    }
   }
 
-  // Ellers find ny "næste dato" og gem for resten af dagen
-  if (hi === null) {
-    hi = items.findIndex(p=>{
-      const d=new Date(p._date); d.setFullYear(today.getFullYear());
-      return d >= today;
-    });
-    if (hi < 0) hi = 0;
-    localStorage.setItem(anchorKeyName, dayKey);
-    localStorage.setItem(anchorIdxName, String(hi));
+  // Lås siden
+  let pageStartLocked = Number(localStorage.getItem(pageKeyName));
+  if (!Number.isInteger(pageStartLocked) || pageStartLocked < 0 || pageStartLocked >= items.length) {
+    pageStartLocked = Math.floor(hi / PAGE_SIZE) * PAGE_SIZE;
+    localStorage.setItem(pageKeyName, String(pageStartLocked));
+  }
+  const pageEndLocked = pageStartLocked + PAGE_SIZE - 1;
+  if (hi > pageEndLocked) {
+    pageStartLocked = Math.min(pageStartLocked + PAGE_SIZE, Math.max(0, Math.floor((items.length-1)/PAGE_SIZE)*PAGE_SIZE));
+    localStorage.setItem(pageKeyName, String(pageStartLocked));
   }
 
-  // Side-vindue der indeholder hi
-  const pageStart = Math.floor(hi / PAGE_SIZE) * PAGE_SIZE;
+  // Side-vindue er den låste side
+  const pageStart = pageStartLocked;
   const windowItems = items.slice(pageStart, pageStart + PAGE_SIZE);
 
   // Del i kolonner
@@ -223,7 +295,7 @@ function slideEmpties_makeSlides(s, settings){
     return h('table',{},[
       h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
       h('tbody',{},group.map((p,idx)=>{
-        const d=new Date(p._date); d.setFullYear(today.getFullYear());
+        const d=new Date(p._date); d.setFullYear(ref.getFullYear());
         const globalIdx = pageStart + gIdx*ROWS_PER_COL + idx;
         const isCurrent = (globalIdx === hi);
         return h('tr',{class:isCurrent?'current':'row'},[
@@ -243,26 +315,35 @@ function slideEmpties_makeSlides(s, settings){
   ]);
 
   node.dataset.duration = Math.max(3, Number(s.duration||12));
-  return node; // Én slide – markeringen ændres kun når dagen skifter
+  return node;
 }
 
 /* --- Billede + tekst --- */
 function slideImage(s){
   const hasText=(s.sideText||'').trim().length>0;
   const align=(s.imageAlign==='left'?'left':'right');
+
+  const st = CURRENT_MODEL_SETTINGS?.style || {};
+  const baseImgVh = Number(st.imageMaxVh || 70);
+  const imgVh = Math.max(20, Math.min(100, baseImgVh * Number(s.imageScale || 1)));
+  const localTextScale = Number(s.textScale || 1);
+  const localTitleScale = Number(s.titleScale || 1);
+
+  const imgEl = h('img',{src:s.image,alt:s.title||'', style:`max-height:${imgVh}vh;`});
+
   if(!hasText){
-    return h('div',{class:'slide'},[
+    return h('div',{class:'slide', style:`--lt:${localTextScale};--lh:${localTitleScale};`},[
       h('div',{class:'imgsplit'},[
-        h('div',{class:'imgwrap'},[
-          h('img',{src:s.image,alt:s.title||'',style:'max-width:100%;max-height:70vh;border-radius:16px'})
-        ])
+        h('div',{class:'imgwrap'},[ imgEl ])
       ])
     ]);
   }
-  const imgEl=h('div',{class:'imgwrap'},[ h('img',{src:s.image,alt:s.title||''}) ]);
-  const txtEl=h('div',{class:'sidetext',text:s.sideText});
-  const order=align==='left'?[imgEl,txtEl]:[txtEl,imgEl];
-  return h('div',{class:'slide'},[ h('div',{class:'imgsplit two'},order) ]);
+  const blockImg=h('div',{class:'imgwrap'},[ imgEl ]);
+  const blockTxt=h('div',{class:'sidetext',text:s.sideText});
+  const order=align==='left'?[blockImg,blockTxt]:[blockTxt,blockImg];
+  return h('div',{class:'slide', style:`--lt:${localTextScale};--lh:${localTitleScale};`},[
+    h('div',{class:'imgsplit two'},order)
+  ]);
 }
 
 /* --- Tekst --- */
@@ -270,7 +351,21 @@ function slideText(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class
 
 /* --- Byg/carousel --- */
 function buildSlides(model){
-  const theme=model?.settings?.theme||{}; if(theme.bg1)document.documentElement.style.setProperty('--bg1',theme.bg1); if(theme.bg2)document.documentElement.style.setProperty('--bg2',theme.bg2); if(theme.accent)document.documentElement.style.setProperty('--accent',theme.accent);
+  window.CURRENT_MODEL_SETTINGS = model.settings || {};
+
+  const theme=model?.settings?.theme||{};
+  if(theme.bg1)document.documentElement.style.setProperty('--bg1',theme.bg1);
+  if(theme.bg2)document.documentElement.style.setProperty('--bg2',theme.bg2);
+  if(theme.accent)document.documentElement.style.setProperty('--accent',theme.accent);
+
+  // style-variabler
+  const st = model?.settings?.style || {};
+  if (st.textScale)  document.documentElement.style.setProperty('--t', String(st.textScale));
+  if (st.titleScale) document.documentElement.style.setProperty('--h', String(st.titleScale));
+  if (st.imageMaxVh) document.documentElement.style.setProperty('--imgvh', String(st.imageMaxVh));
+  if (st.birthdayImageMaxVh) document.documentElement.style.setProperty('--bdimgvh', String(st.birthdayImageMaxVh));
+  if (st.imageFit)   document.documentElement.style.setProperty('--imgfit', st.imageFit);
+
   elSlides.innerHTML=''; elBrand.textContent=model.brand||''; if(model.logoUrl) elLogo.src=model.logoUrl; else elLogo.remove();
 
   const makers={
@@ -282,7 +377,6 @@ function buildSlides(model){
   };
 
   const seq=[ ...birthdayAlertSlides(model.settings), ...(model.slides||[]) ];
-
   const nodes=[];
   seq.forEach(s=>{
     const make=makers[s.type]||slideText;
@@ -292,7 +386,6 @@ function buildSlides(model){
       nodes.push(n);
     });
   });
-
   nodes.forEach(n=>elSlides.appendChild(n));
   runCarousel(nodes);
 }
@@ -319,5 +412,3 @@ function runCarousel(nodes){
 </script>
 </body>
 </html>
-
-
