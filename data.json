@@ -40,14 +40,9 @@
     "birthdaysMessage": "Tillykke med fødselsdagen - Håber du har dig en god uge.",
     "birthdays": [
       {
-        "name": "per",
+        "name": "Per",
         "date": "07.05.1986",
-        "image": "/medarbejdere/per"
-      },
-      {
-        "name": "jens",
-        "date": "08.11.1986",
-        "image": "/medarbejdere/jens"
+        "image": ""
       }
     ]
   },
