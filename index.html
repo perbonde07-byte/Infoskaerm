@@ -6,18 +6,18 @@
 <title>Infoskærm</title>
 <style>
   :root{
-    /* Tema – kan overskrives via settings.theme */
+    /* Pb-desigen: Tema-variabler (overskrives af settings.theme) */
     --bg1:#0d4b59; --bg2:#134d60; --accent:#e8b15c;
     --panel:rgba(255,255,255,.06); --grid:#235a6b; --muted:#cfe2ff;
 
-    /* Globale skaleringer – kan sættes via settings.style */
+    /* Pb-desigen: Globale skaleringer (overskrives af settings.style) */
     --t:1;            /* textScale */
     --h:1;            /* titleScale */
     --imgvh:70;       /* image max-vh for image-slides */
     --bdimgvh:50;     /* image max-vh for birthday */
     --imgfit:contain; /* contain | cover */
 
-    /* Lokale (pr. slide) multiplikatorer */
+    /* Pb-desigen: Pr. slide multiplikatorer */
     --lt:1;           /* local text scale */
     --lh:1;           /* local title scale */
   }
@@ -33,11 +33,9 @@
   .brandbar{display:flex;align-items:center;gap:16px;padding:12px 20px;background:rgba(0,0,0,.35);border-top:1px solid rgba(255,255,255,.12);}
   .brandbar img{height:28px}
 
-  /* Tekst */
   .text{font-size:calc(3vh * var(--t) * var(--lt));line-height:1.35}
   .sidetext{font-size:calc(3.2vh * var(--t) * var(--lt));line-height:1.4}
 
-  /* Billede */
   .imgsplit{display:grid;gap:3vh;align-items:center;width:min(1400px,94vw)}
   .imgsplit.two{grid-template-columns:1fr 1fr}
   .imgwrap{display:flex;justify-content:center;align-items:center;min-height:60vh}
@@ -49,7 +47,6 @@
   }
   @media (max-width: 900px){ .imgsplit.two{grid-template-columns:1fr} }
 
-  /* Fødselsdag – vertikal centrering */
   .bd{display:grid;gap:2vh;place-items:center;min-height:70vh}
   .bd img{
     max-width:100%;
@@ -61,7 +58,6 @@
   .bd .msg{font-size:calc(4vh * var(--t) * var(--lt))}
   .bd .name{font-size:calc(6vh * var(--h) * var(--lh));font-weight:900}
 
-  /* Tømning */
   .empties{width:min(1200px,94vw)}
   .empties .cols{display:grid;gap:22px}
   .empties .cols.cols-1{grid-template-columns:1fr}
@@ -86,7 +82,7 @@
 </div>
 
 <script>
-/* --- Layout-ramme --- */
+/* Pb-desigen: ramme justeres efter brand-baren */
 function adjustFrame(){
   const frame=document.querySelector('.frame');
   const bar=document.querySelector('.brandbar');
@@ -96,17 +92,26 @@ function adjustFrame(){
   frame.style.left=frame.style.right=frame.style.top=inset+'px';
   frame.style.bottom=(barH+inset)+'px';
 }
-window.addEventListener('load',adjustFrame);
-window.addEventListener('resize',adjustFrame);
+addEventListener('load',adjustFrame);
+addEventListener('resize',adjustFrame);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(adjustFrame);
 
-/* --- Data --- */
+/* Pb-desigen: helper */
 async function loadData(){const r=await fetch('/api/data',{cache:'no-store'});if(!r.ok)throw new Error('Kunne ikke hente data');return await r.json();}
 function h(tag,attrs={},children=[]){const el=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==='class')el.className=v;else if(k==='text')el.textContent=v;else el.setAttribute(k,v);}children.forEach(c=>el.appendChild(c));return el;}
-const elSlides=document.getElementById('slides'),elBrand=document.getElementById('brand'),elLogo=document.getElementById('logo');
-window.CURRENT_MODEL_SETTINGS = {}; // fyldes i buildSlides
 
-/* ---- Billed-hjælpere (fødselsdag) ---- */
+const elSlides=document.getElementById('slides'),elBrand=document.getElementById('brand'),elLogo=document.getElementById('logo');
+window.CURRENT_MODEL_SETTINGS = {};
+
+/* Pb-desigen: 2-cifret datoformat dd.MM.yyyy */
+function fmtDMY(d){
+  const dd=String(d.getDate()).padStart(2,'0');
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const yyyy=d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}
+
+/* ----- Fødselsdag (uændrede hjælpefunktioner forkortet) ----- */
 function titleCaseHyphen(name){return String(name||'').trim().split(/\s+/).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join('-');}
 function buildImageCandidates(personName, imgValue){
   const cand = [];
@@ -125,21 +130,10 @@ function createImgWithFallback(personName, imgValue){
   let i = 0; img.src = candidates[i++]; img.onerror = ()=>{ if (i < candidates.length) img.src = candidates[i++]; };
   return img;
 }
-
-/* --- Datohjælpere --- */
 function parseDMY(s){if(!s)return null;const m=s.trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);if(!m)return null;const d=+m[1],mo=+m[2]-1,y=m[3]?+m[3]:new Date().getFullYear();const dt=new Date(y,mo,d,12,0,0);return isNaN(dt)?null:dt;}
-function parseBirthdayParts(s){
-  const m = String(s||'').trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?$/);
-  if(!m) return null;
-  const day = String(m[1]).padStart(2,'0');
-  const mon = String(m[2]).padStart(2,'0');
-  let year = m[3] ? String(m[3]) : '';
-  if (year && year.length===2) year = (year > '30' ? '19'+year : '20'+year);
-  return { day, mon, year };
-}
+function parseBirthdayParts(s){const m=String(s||'').trim().match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?$/);if(!m)return null;const day=String(m[1]).padStart(2,'0');const mon=String(m[2]).padStart(2,'0');let year=m[3]?String(m[3]):'';if(year&&year.length===2)year=(year>'30'?'19'+year:'20'+year);return{day:day,mon:mon,year:year};}
 const WD_MAP={mon:1,tue:2,wed:3,thu:4,fri:5,sat:6,sun:0};
 
-/* --- Fødselsdage --- */
 function slideBirthdayList(s,settings){
   const list=settings?.birthdays||[];
   return h('div',{class:'slide'},[h('div',{},[
@@ -164,14 +158,7 @@ function birthdayAlertSlides(settings){
       const isAlertWeek=(today>=monday && today<=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+6));
       const isToday = today.getTime()===when.getTime();
       if(isAlertWeek || isToday){
-        out.push({
-          type:'_bdalert',
-          title:'FØDSELSDAG',
-          name:b.name, image:b.image||'',
-          message: defaultMsg,
-          dayShort: `${parts.day}.${parts.mon}`,
-          birthYear: parts.year || ''
-        });
+        out.push({type:'_bdalert',title:'FØDSELSDAG',name:b.name,image:b.image||'',message:defaultMsg,dayShort:`${parts.day}.${parts.mon}`,birthYear:parts.year||''});
         break;
       }
     }
@@ -182,11 +169,9 @@ function renderBirthdayAlertSlide(s){
   const st = CURRENT_MODEL_SETTINGS?.style || {};
   const baseImgVh = Number(st.birthdayImageMaxVh || 50);
   const imgVh = Math.max(20, Math.min(100, baseImgVh * Number(s.imageScale || 1)));
-
   const holder=document.createElement('div');
   const imgEl=createImgWithFallback(s.name, s.image||'');
   if(imgEl){ imgEl.style.maxHeight = imgVh + 'vh'; holder.appendChild(imgEl); }
-
   const yearText = s.birthYear ? ` • ${s.birthYear}` : '';
   return h('div',{class:'slide', style:'--lt:1;--lh:1;'},[
     h('div',{class:'bd'},[
@@ -198,12 +183,12 @@ function renderBirthdayAlertSlide(s){
   ]);
 }
 
-/* --- Tømning: generér kommende plan --- */
+/* ----- Tømning: auto + side-lås (kun udsnit – samme logik som før) ----- */
 function buildAutoEmpties(settings){
   const auto=settings?.empties?.auto; if(!auto||!auto.enabled) return [];
   const names=(auto.names||[]).map(s=>String(s).trim()).filter(Boolean); if(!names.length) return [];
   const d0 = auto.startDate ? new Date(auto.startDate+'T12:00:00') : null; if(!d0||isNaN(d0)) return [];
-  const weekdays=(auto.weekdays||[]).map(w=>WD_MAP[w]).filter(v=>v!==undefined); if(!weekdays.length) return [];
+  const weekdays=(auto.weekdays||[]).map(w=>({mon:1,tue:2,wed:3,thu:4,fri:5,sat:6,sun:0}[w])).filter(v=>v!==undefined); if(!weekdays.length) return [];
   const exclSet=new Set((auto.exclude||[]).map(s=>{const p=parseDMY(String(s));return p?new Date(p.getFullYear(),p.getMonth(),p.getDate()).getTime():null;}).filter(Boolean));
   const horizon=Math.max(1, Number(auto.horizon||12));
   const today=new Date(); today.setHours(0,0,0,0);
@@ -213,10 +198,8 @@ function buildAutoEmpties(settings){
     if(isAllowed && !exclSet.has(key)){ if(cur>=today){items.push({name:names[rosterIdx%names.length],_date:new Date(cur)});} rosterIdx++; }
     cur.setDate(cur.getDate()+1);
   }
-  return items.map(p=>({name:p.name,_date:p._date}));
+  return items;
 }
-
-/* --- Tømning: fast markering + side-lås --- */
 function slideEmpties_makeSlides(s, settings){
   const items = buildAutoEmpties(settings);
   if (!items.length) {
@@ -227,33 +210,21 @@ function slideEmpties_makeSlides(s, settings){
       ])
     ]);
   }
-
-  // Reference-dato (previewDate for test, ellers dagsdato)
   const preview = settings?.empties?.previewDate ? parseDMY(String(settings.empties.previewDate)) : null;
-  const ref = preview || (()=>{
-    const d=new Date(); d.setHours(0,0,0,0); return d;
-  })();
+  const ref = preview || (()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
+  /* Pb-desigen: markerings-indeks (hi) */
+  let hi = items.findIndex(p=>{const d=new Date(p._date); d.setFullYear(ref.getFullYear()); return d >= ref;});
+  if (hi < 0) hi = 0;
 
-  // antal kolonner fra admin (1–3)
   const cols = Math.max(1, Math.min(3, Number(settings?.empties?.columns || 1)));
-
-  // hvor mange rækker pr. kolonne vises
   const ROWS_PER_COL = 6;
   const PAGE_SIZE = ROWS_PER_COL * cols;
 
-  // Find “næste dato” i forhold til ref-dato
-  let hi = items.findIndex(p=>{
-    const d=new Date(p._date); d.setFullYear(ref.getFullYear());
-    return d >= ref;
-  });
-  if (hi < 0) hi = 0;
-
-  // Daglig anker + side-lås (slås fra ved preview)
+  /* Pb-desigen: daglig anker + side-lås */
   const dayKey = ref.toISOString().slice(0,10);
   const anchorKeyName = 'emptiesAnchorKey';
   const anchorIdxName = 'emptiesAnchorIdx';
   const pageKeyName   = 'emptiesPageStart';
-
   if (!preview) {
     const savedKey = localStorage.getItem(anchorKeyName);
     const savedIdx = Number(localStorage.getItem(anchorIdxName));
@@ -266,8 +237,6 @@ function slideEmpties_makeSlides(s, settings){
       localStorage.removeItem(pageKeyName);
     }
   }
-
-  // Lås siden
   let pageStartLocked = Number(localStorage.getItem(pageKeyName));
   if (!Number.isInteger(pageStartLocked) || pageStartLocked < 0 || pageStartLocked >= items.length) {
     pageStartLocked = Math.floor(hi / PAGE_SIZE) * PAGE_SIZE;
@@ -279,32 +248,22 @@ function slideEmpties_makeSlides(s, settings){
     localStorage.setItem(pageKeyName, String(pageStartLocked));
   }
 
-  // Side-vindue er den låste side
   const pageStart = pageStartLocked;
   const windowItems = items.slice(pageStart, pageStart + PAGE_SIZE);
 
-  // Del i kolonner
-  const groups = cols === 1 ? [windowItems] : (()=>{
-    const out=[]; const size=ROWS_PER_COL;
-    for(let c=0;c<cols;c++){ out.push(windowItems.slice(c*size,(c+1)*size)); }
-    return out;
-  })();
-
-  // Byg tabeller
-  const tables = groups.map((group, gIdx)=>{
-    return h('table',{},[
-      h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
-      h('tbody',{},group.map((p,idx)=>{
-        const d=new Date(p._date); d.setFullYear(ref.getFullYear());
-        const globalIdx = pageStart + gIdx*ROWS_PER_COL + idx;
-        const isCurrent = (globalIdx === hi);
-        return h('tr',{class:isCurrent?'current':'row'},[
-          h('td',{text:p.name||''}),
-          h('td',{text:d.toLocaleDateString('da-DK')})
-        ]);
-      }))
-    ]);
-  });
+  const groups = cols===1 ? [windowItems] : (()=>{const out=[];const size=ROWS_PER_COL;for(let c=0;c<cols;c++){out.push(windowItems.slice(c*size,(c+1)*size));}return out;})();
+  const tables = groups.map((group,gIdx)=>h('table',{},[
+    h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
+    h('tbody',{},group.map((p,idx)=>{
+      const d=new Date(p._date); d.setFullYear(ref.getFullYear());
+      const globalIdx = pageStart + gIdx*ROWS_PER_COL + idx;
+      const isCurrent = (globalIdx === hi);
+      return h('tr',{class:isCurrent?'current':'row'},[
+        h('td',{text:p.name||''}),
+        h('td',{text:fmtDMY(d)}) /* Pb-desigen: altid dd.MM.yyyy */
+      ]);
+    }))
+  ]));
 
   const colsWrap = h('div',{class:'cols cols-'+cols}, tables);
   const node = h('div',{class:'slide'},[
@@ -313,12 +272,11 @@ function slideEmpties_makeSlides(s, settings){
       colsWrap
     ])
   ]);
-
   node.dataset.duration = Math.max(3, Number(s.duration||12));
   return node;
 }
 
-/* --- Billede + tekst --- */
+/* ----- Billede/tekst (uforkortet fra tidligere) ----- */
 function slideImage(s){
   const hasText=(s.sideText||'').trim().length>0;
   const align=(s.imageAlign==='left'?'left':'right');
@@ -345,20 +303,16 @@ function slideImage(s){
     h('div',{class:'imgsplit two'},order)
   ]);
 }
-
-/* --- Tekst --- */
 function slideText(s){return h('div',{class:'slide'},[h('div',{},[h('div',{class:'title',text:s.title||''}),h('div',{class:'text',text:s.text||''})])]);}
 
-/* --- Byg/carousel --- */
+/* ----- Byg/carousel ----- */
 function buildSlides(model){
   window.CURRENT_MODEL_SETTINGS = model.settings || {};
-
   const theme=model?.settings?.theme||{};
   if(theme.bg1)document.documentElement.style.setProperty('--bg1',theme.bg1);
   if(theme.bg2)document.documentElement.style.setProperty('--bg2',theme.bg2);
   if(theme.accent)document.documentElement.style.setProperty('--accent',theme.accent);
 
-  // style-variabler
   const st = model?.settings?.style || {};
   if (st.textScale)  document.documentElement.style.setProperty('--t', String(st.textScale));
   if (st.titleScale) document.documentElement.style.setProperty('--h', String(st.titleScale));
@@ -368,14 +322,7 @@ function buildSlides(model){
 
   elSlides.innerHTML=''; elBrand.textContent=model.brand||''; if(model.logoUrl) elLogo.src=model.logoUrl; else elLogo.remove();
 
-  const makers={
-    image:slideImage,
-    text:slideText,
-    empties:(s)=>slideEmpties_makeSlides(s,model.settings),
-    birthday:(s)=>slideBirthdayList(s,model.settings),
-    _bdalert:renderBirthdayAlertSlide
-  };
-
+  const makers={ image:slideImage, text:slideText, empties:(s)=>slideEmpties_makeSlides(s,model.settings), birthday:(s)=>slideBirthdayList(s,model.settings), _bdalert:renderBirthdayAlertSlide };
   const seq=[ ...birthdayAlertSlides(model.settings), ...(model.slides||[]) ];
   const nodes=[];
   seq.forEach(s=>{
@@ -400,7 +347,7 @@ function runCarousel(nodes){
   if(nodes.length) show(0);
 }
 
-/* --- Init --- */
+/* ----- Init / auto-refresh ----- */
 (async()=>{
   try{
     const { data } = await loadData();
