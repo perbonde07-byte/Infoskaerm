@@ -23,7 +23,7 @@
           "Max"
         ],
         "exclude": [],
-        "horizon": 12
+        "horizon": 8
       }
     },
     "birthdaysMessage": "Tillykke med fødselsdagen - Håber du har dig en god uge.",
