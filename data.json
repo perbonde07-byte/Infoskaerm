@@ -9,20 +9,22 @@
     },
     "refreshMs": 300000,
     "empties": {
-      "plan": [
-        {
-          "name": "Per",
-          "date": "03.11.2025"
-        },
-        {
-          "name": "Martin",
-          "date": "05.11.2025"
-        },
-        {
-          "name": "Kasper",
-          "date": "10.11.2025"
-        }
-      ]
+      "plan": [],
+      "auto": {
+        "enabled": false,
+        "startDate": "2025-11-03",
+        "weekdays": [
+          "mon",
+          "wed"
+        ],
+        "names": [
+          "Per",
+          "Louise",
+          "Max"
+        ],
+        "exclude": [],
+        "horizon": 12
+      }
     },
     "birthdaysMessage": "Tillykke med fødselsdagen - Håber du har dig en god uge.",
     "birthdays": [
