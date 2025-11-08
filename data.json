@@ -42,12 +42,6 @@
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 12
-    },
-    {
-      "type": "text",
-      "title": "Info",
-      "text": "Så er vi ved at være klar med Info skærmen :D så langt så godt.",
-      "duration": 8
     }
   ]
 }
