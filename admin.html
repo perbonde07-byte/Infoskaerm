@@ -21,21 +21,21 @@
   .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;border:1px solid #222;background:#161616;color:#fff;cursor:pointer}
   .btn.primary{background:var(--accent);border-color:transparent;color:#000;font-weight:700}
   .btn.danger{background:transparent;border-color:#333;color:#ff9a9a}
+  .btn.small{padding:8px 10px;border-radius:10px;font-size:12px}
   .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:14px 0}
   .muted{color:var(--muted);font-size:12px}
   .hr{height:1px;background:#222;margin:16px -16px}
   .list{display:flex;gap:8px;flex-wrap:wrap}
   .bd-list{display:grid;gap:10px}
-  .bd-item{display:grid;grid-template-columns:1.2fr 1fr 1.4fr auto;gap:8px;align-items:center}
+  .bd-item{display:grid;grid-template-columns:1.2fr 1fr 1.2fr auto auto;gap:8px;align-items:center}
   .bd-item .remove{height:40px}
   .weekdays{display:flex;gap:8px;flex-wrap:wrap}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #333;border-radius:10px;background:#0e0e0e}
   .chip input{margin:0}
-
-  /* Auto-tømning: 2-kolonne layout i admin */
   .auto-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .auto-grid .col{display:flex;flex-direction:column;gap:6px}
   .auto-grid .col.full{grid-column:1 / -1}
+  input[type="file"]{display:none}
 </style>
 </head>
 <body>
@@ -124,7 +124,7 @@
       <h3>Fødselsdage</h3>
       <label>Standard-besked (bruges i alarm-slides)</label>
       <input id="birthdays-msg" placeholder="Tillykke!"/>
-      <div class="muted" style="margin:8px 0 12px">Tilføj personer herunder (Navn, Dato, Billede). Dato kan være dd.mm eller dd.mm.yyyy.</div>
+      <div class="muted" style="margin:8px 0 12px">Tilføj personer (Navn, Dato, Billede). Dato kan være dd.mm eller dd.mm.yyyy.</div>
       <div id="bd-list" class="bd-list"></div>
       <button class="btn" id="bd-add">+ Tilføj person</button>
     </div>
@@ -168,17 +168,55 @@
   <div class="bd-item">
     <input class="bd-name"  placeholder="Navn"/>
     <input class="bd-date"  placeholder="dd.mm eller dd.mm.yyyy"/>
-    <!-- OPDATERET placeholder: -->
     <input class="bd-image" placeholder="(valgfrit) Per-Bonde  •  eller fuld URL/sti"/>
+    <button class="btn small" data-action="bd-upload">Upload</button>
     <button class="btn danger remove">Fjern</button>
   </div>
 </template>
+
+<input type="file" id="file-picker" accept="image/*"/>
 
 <script>
 const $=(s,e=document)=>e.querySelector(s);
 const $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
 const state={sha:null,data:null};
 
+function slugBase(s){
+  return String(s||'')
+    .trim()
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')   // fjern diakritik
+    .replace(/[^A-Za-z0-9\s\-_.]/g,'')                  // whitelist
+    .replace(/\s+/g,'-')                                // mellemrum -> -
+    .replace(/-+/g,'-')
+    .replace(/^-|-$/g,'');
+}
+
+/* ---------- Upload helper ---------- */
+async function uploadImage(file, baseName, folder){
+  if(!file) throw new Error('Ingen fil valgt');
+  const ext = (file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)||['','.jpg'])[0].toLowerCase();
+  const safeBase = slugBase(baseName || file.name.replace(/\.[^.]+$/,'') || 'billede');
+  const filename = safeBase + ext;
+
+  const b64 = await new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(String(r.result));
+    r.onerror=()=>reject(new Error('Kunne ikke læse fil'));
+    r.readAsDataURL(file); // data:*;base64,...
+  });
+
+  const pin=$('#pin').value.trim();
+  const headers={'Content-Type':'application/json'}; if(pin) headers['x-admin-pin']=pin;
+  const res = await fetch('/api/save',{
+    method:'POST', headers,
+    body:JSON.stringify({ upload:{ folder, filename, dataUrl:b64 } })
+  });
+  const out = await res.json();
+  if(!res.ok) throw new Error(out?.message||'Upload fejlede');
+  return out.path; // den endelige sti i repoet
+}
+
+/* ---------- Slides UI ---------- */
 function renderSlides(container, slides){
   container.innerHTML='';
   slides.forEach((s,idx)=>container.appendChild(makeSlide(s,idx)));
@@ -190,25 +228,41 @@ function makeSlide(s, idx){
   node.querySelector('.duration').value=s.duration??8;
   node.querySelector('.title').value=s.title||'';
   node.querySelector('.muted').textContent=`type: ${s.type||'text'}`;
-  const cf=node.querySelector('.content-fields'); fillContentFields(cf,s);
+  const cf=node.querySelector('.content-fields'); fillContentFields(cf,s,node);
 
-  node.querySelector('.type').addEventListener('change',e=>{ s.type=e.target.value; node.querySelector('.muted').textContent=`type: ${s.type}`; fillContentFields(cf,s); });
+  node.querySelector('.type').addEventListener('change',e=>{ s.type=e.target.value; node.querySelector('.muted').textContent=`type: ${s.type}`; fillContentFields(cf,s,node); });
   node.querySelector('.duration').addEventListener('input',e=>s.duration=Number(e.target.value));
   node.querySelector('.title').addEventListener('input',e=>s.title=e.target.value);
   node.querySelector('.remove').addEventListener('click',()=>{ const i=state.data.slides.indexOf(s); if(i>=0){ state.data.slides.splice(i,1); renderSlides($('#slides'),state.data.slides);} });
   return node;
 }
-function fillContentFields(cf,s){
+function fillContentFields(cf,s,node){
   cf.innerHTML='';
   if(s.type==='image'){
     const i=document.createElement('input'); 
-    i.placeholder="Per-Bonde  •  eller /medarbejdere/Per-Bonde.jpg  •  eller fuld URL";
+    i.placeholder="Per-Bonde  •  eller /media/fil.jpg  •  eller fuld URL";
     i.value=s.image||''; 
     i.addEventListener('input',e=>s.image=e.target.value);
 
+    const upBtn=document.createElement('button'); upBtn.className='btn small'; upBtn.textContent='Upload';
+    upBtn.addEventListener('click', async ()=>{
+      const picker=$('#file-picker'); picker.value='';
+      picker.onchange=async()=>{
+        try{
+          const path = await uploadImage(picker.files[0], slugBase(s.title||'billede'), 'media');
+          i.value = s.image = path;
+        }catch(err){ alert(err.message); }
+      };
+      picker.click();
+    });
+
     const a=document.createElement('textarea'); a.placeholder='(valgfri) tekst ved siden af billedet'; a.value=s.sideText||''; a.addEventListener('input',e=>s.sideText=e.target.value);
     const sel=document.createElement('select'); sel.innerHTML=`<option value="right">Billede til højre</option><option value="left">Billede til venstre</option>`; sel.value=s.imageAlign||'right'; sel.addEventListener('change',e=>s.imageAlign=e.target.value);
-    cf.appendChild(label('Billede (navn/sti/URL)')); cf.appendChild(i);
+
+    cf.appendChild(label('Billede (navn/sti/URL)')); 
+    const row=document.createElement('div'); row.style.display='grid'; row.style.gridTemplateColumns='1fr auto'; row.style.gap='8px';
+    row.appendChild(i); row.appendChild(upBtn); cf.appendChild(row);
+
     cf.appendChild(label('Sidetekst (valgfri)')); cf.appendChild(a);
     cf.appendChild(label('Placering når der er tekst')); cf.appendChild(sel);
   }else if(s.type==='text'){
@@ -221,7 +275,7 @@ function fillContentFields(cf,s){
 function label(t){ const l=document.createElement('label'); l.textContent=t; return l; }
 function spanMuted(t){ const s=document.createElement('div'); s.className='muted'; s.textContent=t; return s; }
 
-/* --- Fødselsdage UI --- */
+/* ---------- Fødselsdage UI ---------- */
 function renderBirthdaysList(items){
   const listEl = $('#bd-list'); listEl.innerHTML='';
   (items||[]).forEach((b)=> listEl.appendChild(makeBdItem(b)));
@@ -231,10 +285,24 @@ function makeBdItem(b){
   const nameEl = node.querySelector('.bd-name');
   const dateEl = node.querySelector('.bd-date');
   const imgEl  = node.querySelector('.bd-image');
+  const upBtn  = node.querySelector('[data-action="bd-upload"]');
+
   nameEl.value = b.name || ''; dateEl.value = b.date || ''; imgEl.value  = b.image || '';
   nameEl.addEventListener('input',e=>b.name=e.target.value);
   dateEl.addEventListener('input',e=>b.date=e.target.value);
   imgEl.addEventListener('input',e=>b.image=e.target.value);
+
+  upBtn.addEventListener('click', ()=>{
+    const picker=$('#file-picker'); picker.value='';
+    picker.onchange=async()=>{
+      try{
+        const path = await uploadImage(picker.files[0], slugBase(nameEl.value||'person'), 'medarbejdere');
+        imgEl.value = b.image = path; // gem stien i feltet
+      }catch(err){ alert(err.message); }
+    };
+    picker.click();
+  });
+
   node.querySelector('.remove').addEventListener('click',()=>{
     const arr = state.data.settings.birthdays || [];
     const i = arr.indexOf(b);
@@ -250,7 +318,7 @@ $('#bd-add').addEventListener('click', ()=>{
   renderBirthdaysList(state.data.settings.birthdays);
 });
 
-/* --- LOAD --- */
+/* ---------- LOAD / COLLECT / SAVE ---------- */
 async function load(){
   $('#status').textContent='Indlæser…';
   const r=await fetch('/api/data',{cache:'no-store'});
@@ -258,7 +326,6 @@ async function load(){
   const { sha, data } = await r.json();
   state.sha=sha; state.data=data;
 
-  // settings
   $('#brand').value   = data.brand||'';
   $('#logoUrl').value = data.logoUrl||'';
   $('#theme-bg1').value = data.settings?.theme?.bg1 || '';
@@ -266,7 +333,6 @@ async function load(){
   $('#theme-accent').value = data.settings?.theme?.accent || '';
   $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
 
-  // Auto tømning
   const empties = data.settings?.empties || {};
   const auto = empties.auto || {};
   $('#auto-enabled').checked = !!auto.enabled;
@@ -278,21 +344,16 @@ async function load(){
   $('#auto-horizon').value = auto.horizon ?? 12;
   $('#empties-columns').value = String(empties.columns || 1);
 
-  // Fødselsdage
   $('#birthdays-msg').value = data.settings?.birthdaysMessage || 'Tillykke!';
   renderBirthdaysList(data.settings?.birthdays || []);
 
-  // slides
   data.slides = Array.isArray(data.slides) ? data.slides : [];
   renderSlides($('#slides'), data.slides);
 
-  // valgfri PIN
   $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
-
   $('#status').textContent='Klar';
 }
 
-/* --- COLLECT --- */
 function collect(){
   const data=structuredClone(state.data||{});
   data.brand   = $('#brand').value.trim();
@@ -305,20 +366,18 @@ function collect(){
   data.settings.theme = theme;
   data.settings.refreshMs = refreshMs;
 
-  // Auto tømning
   const auto = {
     enabled: $('#auto-enabled').checked,
-    startDate: $('#auto-start').value.trim(),           // yyyy-mm-dd
+    startDate: $('#auto-start').value.trim(),
     weekdays: $$('.weekdays input:checked').map(cb=>cb.value),
     names: $('#auto-names').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
-    exclude: $('#auto-exclude').value.split(/\n+/).map(s=>s.trim()).filter(Boolean), // dd.mm.yyyy
+    exclude: $('#auto-exclude').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
     horizon: Math.max(1, Number($('#auto-horizon').value || 12))
   };
   data.settings.empties = data.settings.empties || {};
   data.settings.empties.auto = auto;
   data.settings.empties.columns = Math.max(1, Math.min(3, Number($('#empties-columns').value||1)));
 
-  // Fødselsdage
   const list = [];
   document.querySelectorAll('#bd-list .bd-item').forEach(row=>{
     const name=row.querySelector('.bd-name').value.trim();
@@ -332,18 +391,17 @@ function collect(){
   return data;
 }
 
-/* --- SAVE --- */
 async function save(){
   $('#status').textContent='Gemmer…';
   const pin=$('#pin').value.trim(); localStorage.setItem('ADMIN_PIN', pin);
-  const headers={'Content-Type':'application/json'}; if(pin) headers['x-admin-pin']=pin; // valgfri PIN
+  const headers={'Content-Type':'application/json'}; if(pin) headers['x-admin-pin']=pin;
   const r=await fetch('/api/save',{method:'POST',headers,body:JSON.stringify({data:collect(),sha:state.sha})});
   const jr=await r.json();
   if(!r.ok){ if(r.status===409){ $('#status').textContent='Konflikt – genindlæser…'; await load(); return; } $('#status').textContent='Fejl: '+(jr?.message||jr?.error||r.status); return; }
   $('#status').textContent='Gemt!'; await load();
 }
 
-/* --- Slide-knapper --- */
+/* ---------- Init ---------- */
 $('#add-image').addEventListener('click',()=>{ state.data.slides.push({type:'image',title:'Kampagne',image:'/media/Slide1.jpg',sideText:'',imageAlign:'right',duration:8}); renderSlides($('#slides'),state.data.slides); });
 $('#add-text').addEventListener('click',()=>{ state.data.slides.push({type:'text',title:'Info',text:'',duration:8}); renderSlides($('#slides'),state.data.slides); });
 $('#add-empties').addEventListener('click',()=>{ state.data.slides.push({type:'empties',title:'TØMNINGS DAGE',duration:12}); renderSlides($('#slides'),state.data.slides); });
@@ -354,4 +412,3 @@ load().catch(e=>$('#status').textContent='Fejl: '+e.message);
 </script>
 </body>
 </html>
-
