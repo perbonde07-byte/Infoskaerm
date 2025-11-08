@@ -114,6 +114,7 @@
             <select id="empties-columns">
               <option value="1">1 kolonne</option>
               <option value="2">2 kolonner</option>
+              <option value="3">3 kolonner</option>
             </select>
           </div>
         </div>
@@ -260,7 +261,7 @@ async function load(){
   $('#theme-accent').value = data.settings?.theme?.accent || '';
   $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
 
-  // Auto tømning (kun auto, ingen manuel fallback)
+  // Auto tømning
   const empties = data.settings?.empties || {};
   const auto = empties.auto || {};
   $('#auto-enabled').checked = !!auto.enabled;
@@ -280,7 +281,7 @@ async function load(){
   data.slides = Array.isArray(data.slides) ? data.slides : [];
   renderSlides($('#slides'), data.slides);
 
-  // PIN fra localStorage (valgfri – off som standard)
+  // valgfri PIN
   $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
 
   $('#status').textContent='Klar';
@@ -310,7 +311,7 @@ function collect(){
   };
   data.settings.empties = data.settings.empties || {};
   data.settings.empties.auto = auto;
-  data.settings.empties.columns = Math.max(1, Math.min(2, Number($('#empties-columns').value||1)));
+  data.settings.empties.columns = Math.max(1, Math.min(3, Number($('#empties-columns').value||1)));
 
   // Fødselsdage
   const list = [];
