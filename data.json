@@ -29,11 +29,6 @@
     "birthdaysMessage": "Tillykke med fødselsdagen - Håber du har dig en god uge.",
     "birthdays": [
       {
-        "name": "Peter",
-        "date": "03.11.1986",
-        "image": "/media/medarbejdere/ Peter-.jpg"
-      },
-      {
         "name": "Per Bonde",
         "date": "07.05.1986",
         "image": "/media/medarbejdere/Per-Bonde.jpg"
