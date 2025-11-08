@@ -42,11 +42,6 @@
   },
   "slides": [
     {
-      "type": "empties",
-      "title": "TØMNINGS DAGE",
-      "duration": 12
-    },
-    {
       "type": "image",
       "title": "Nyt ansigt er kommet til",
       "image": "/media/Slide1.jpg",
