@@ -163,57 +163,87 @@ function buildAutoEmpties(settings){
   return items.map(p=>({name:p.name,_date:p._date}));
 }
 
-/* --- Tømning: virtuelle slides (markering rykker + paging) --- */
+/* --- Tømning: fast markering + én side, låst pr. dag via localStorage --- */
 function slideEmpties_makeSlides(s, settings){
   const items = buildAutoEmpties(settings);
-  if (!items.length) return [];
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  const cols = Math.max(1, Math.min(3, Number(settings?.empties?.columns || 1)));
-  const ROWS_PER_COL = 6;                         // <- justér hvis du vil
-  const PAGE_SIZE = ROWS_PER_COL * cols;
-
-  let startIdx = items.findIndex(p=>{const d=new Date(p._date); d.setFullYear(today.getFullYear()); return d>=today;});
-  if (startIdx < 0) startIdx = 0;
-
-  const slides = [];
-  for (let k = 0; k < items.length; k++){
-    const hi = (startIdx + k) % items.length;     // hvilket element er aktuelt
-    const pageStart = Math.floor(hi / PAGE_SIZE) * PAGE_SIZE;
-    const windowItems = items.slice(pageStart, pageStart + PAGE_SIZE);
-
-    const groups = cols === 1 ? [windowItems] : (()=>{
-      const out=[]; const size=ROWS_PER_COL;
-      for(let c=0;c<cols;c++){ out.push(windowItems.slice(c*size,(c+1)*size)); }
-      return out;
-    })();
-
-    const tables = groups.map(group=>{
-      return h('table',{},[
-        h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
-        h('tbody',{},group.map((p,idx)=>{
-          const d=new Date(p._date); d.setFullYear(today.getFullYear());
-          const globalIdx = pageStart + groups.slice(0,groups.indexOf(group)).reduce((a,g)=>a+g.length,0) + idx;
-          const isCurrent = (globalIdx === hi);
-          return h('tr',{class:isCurrent?'current':'row'},[
-            h('td',{text:p.name||''}),
-            h('td',{text:d.toLocaleDateString('da-DK')})
-          ]);
-        }))
-      ]);
-    });
-
-    const colsWrap = h('div',{class:'cols cols-'+cols}, tables);
-    const node = h('div',{class:'slide'},[
+  if (!items.length) {
+    return h('div',{class:'slide'},[
       h('div',{class:'empties'},[
         h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}),
-        colsWrap
+        h('div',{class:'text',text:'Ingen plan fundet.'})
       ])
     ]);
-    node.dataset.duration = Math.max(3, Number(s.duration||12));
-    slides.push(node);
   }
-  return slides;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dayKey = today.toISOString().slice(0,10); // YYYY-MM-DD
+  const anchorKeyName = 'emptiesAnchorKey';
+  const anchorIdxName = 'emptiesAnchorIdx';
+
+  // antal kolonner fra admin (1–3)
+  const cols = Math.max(1, Math.min(3, Number(settings?.empties?.columns || 1)));
+
+  // hvor mange rækker pr. kolonne vises
+  const ROWS_PER_COL = 6;
+  const PAGE_SIZE = ROWS_PER_COL * cols;
+
+  // Forsøg at genbruge dagens anker
+  let hi = null;
+  const savedKey = localStorage.getItem(anchorKeyName);
+  const savedIdx = Number(localStorage.getItem(anchorIdxName));
+  if (savedKey === dayKey && Number.isInteger(savedIdx) && savedIdx >= 0 && savedIdx < items.length) {
+    const sd = new Date(items[savedIdx]._date); sd.setFullYear(today.getFullYear());
+    if (sd >= today) hi = savedIdx;
+  }
+
+  // Ellers find ny "næste dato" og gem for resten af dagen
+  if (hi === null) {
+    hi = items.findIndex(p=>{
+      const d=new Date(p._date); d.setFullYear(today.getFullYear());
+      return d >= today;
+    });
+    if (hi < 0) hi = 0;
+    localStorage.setItem(anchorKeyName, dayKey);
+    localStorage.setItem(anchorIdxName, String(hi));
+  }
+
+  // Side-vindue der indeholder hi
+  const pageStart = Math.floor(hi / PAGE_SIZE) * PAGE_SIZE;
+  const windowItems = items.slice(pageStart, pageStart + PAGE_SIZE);
+
+  // Del i kolonner
+  const groups = cols === 1 ? [windowItems] : (()=>{
+    const out=[]; const size=ROWS_PER_COL;
+    for(let c=0;c<cols;c++){ out.push(windowItems.slice(c*size,(c+1)*size)); }
+    return out;
+  })();
+
+  // Byg tabeller
+  const tables = groups.map((group, gIdx)=>{
+    return h('table',{},[
+      h('thead',{},[h('tr',{},[h('th',{text:'Navn'}),h('th',{text:'Dato'})])]),
+      h('tbody',{},group.map((p,idx)=>{
+        const d=new Date(p._date); d.setFullYear(today.getFullYear());
+        const globalIdx = pageStart + gIdx*ROWS_PER_COL + idx;
+        const isCurrent = (globalIdx === hi);
+        return h('tr',{class:isCurrent?'current':'row'},[
+          h('td',{text:p.name||''}),
+          h('td',{text:d.toLocaleDateString('da-DK')})
+        ]);
+      }))
+    ]);
+  });
+
+  const colsWrap = h('div',{class:'cols cols-'+cols}, tables);
+  const node = h('div',{class:'slide'},[
+    h('div',{class:'empties'},[
+      h('div',{class:'title',text:s.title||'TØMNINGS DAGE'}),
+      colsWrap
+    ])
+  ]);
+
+  node.dataset.duration = Math.max(3, Number(s.duration||12));
+  return node; // Én slide – markeringen ændres kun når dagen skifter
 }
 
 /* --- Billede + tekst --- */
@@ -289,4 +319,5 @@ function runCarousel(nodes){
 </script>
 </body>
 </html>
+
 
