@@ -40,5 +40,11 @@
     "birthdaysMessage": "Tillykke med fødselsdagen - Håber du har dig en god uge.",
     "birthdays": []
   },
-  "slides": []
+  "slides": [
+    {
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 12
+    }
+  ]
 }
