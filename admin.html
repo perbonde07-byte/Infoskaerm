@@ -168,7 +168,8 @@
   <div class="bd-item">
     <input class="bd-name"  placeholder="Navn"/>
     <input class="bd-date"  placeholder="dd.mm eller dd.mm.yyyy"/>
-    <input class="bd-image" placeholder="/media/navn.jpg eller fuld URL"/>
+    <!-- OPDATERET placeholder: -->
+    <input class="bd-image" placeholder="(valgfrit) Per-Bonde  •  eller fuld URL/sti"/>
     <button class="btn danger remove">Fjern</button>
   </div>
 </template>
@@ -200,10 +201,14 @@ function makeSlide(s, idx){
 function fillContentFields(cf,s){
   cf.innerHTML='';
   if(s.type==='image'){
-    const i=document.createElement('input'); i.placeholder='/media/Slide1.jpg eller fuld URL'; i.value=s.image||''; i.addEventListener('input',e=>s.image=e.target.value);
+    const i=document.createElement('input'); 
+    i.placeholder="Per-Bonde  •  eller /medarbejdere/Per-Bonde.jpg  •  eller fuld URL";
+    i.value=s.image||''; 
+    i.addEventListener('input',e=>s.image=e.target.value);
+
     const a=document.createElement('textarea'); a.placeholder='(valgfri) tekst ved siden af billedet'; a.value=s.sideText||''; a.addEventListener('input',e=>s.sideText=e.target.value);
     const sel=document.createElement('select'); sel.innerHTML=`<option value="right">Billede til højre</option><option value="left">Billede til venstre</option>`; sel.value=s.imageAlign||'right'; sel.addEventListener('change',e=>s.imageAlign=e.target.value);
-    cf.appendChild(label('Billede-URL')); cf.appendChild(i);
+    cf.appendChild(label('Billede (navn/sti/URL)')); cf.appendChild(i);
     cf.appendChild(label('Sidetekst (valgfri)')); cf.appendChild(a);
     cf.appendChild(label('Placering når der er tekst')); cf.appendChild(sel);
   }else if(s.type==='text'){
@@ -349,3 +354,4 @@ load().catch(e=>$('#status').textContent='Fejl: '+e.message);
 </script>
 </body>
 </html>
+
