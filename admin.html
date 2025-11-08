@@ -31,6 +31,11 @@
   .weekdays{display:flex;gap:8px;flex-wrap:wrap}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #333;border-radius:10px;background:#0e0e0e}
   .chip input{margin:0}
+
+  /* Auto-tømning: 2-kolonne layout i admin */
+  .auto-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .auto-grid .col{display:flex;flex-direction:column;gap:6px}
+  .auto-grid .col.full{grid-column:1 / -1}
 </style>
 </head>
 <body>
@@ -59,54 +64,65 @@
       <div class="hr"></div>
       <h3>Tema</h3>
       <div class="row">
-        <div><label>Baggrund 1 (bg1)</label><input id="theme-bg1" placeholder="#0f2b8a"/></div>
-        <div><label>Baggrund 2 (bg2) – valgfri</label><input id="theme-bg2" placeholder="#0a1e66"/></div>
+        <div><label>Baggrund 1 (bg1)</label><input id="theme-bg1" placeholder="#0d4b59"/></div>
+        <div><label>Baggrund 2 (bg2) – valgfri</label><input id="theme-bg2" placeholder="#134d60"/></div>
       </div>
-      <label>Accentfarve</label><input id="theme-accent" placeholder="#2bb673"/>
+      <label>Accentfarve</label><input id="theme-accent" placeholder="#e8b15c"/>
       <label>Opdaterings-interval (ms) – min. 300000</label><input id="refreshMs" type="number" placeholder="300000" value="300000"/>
 
       <div class="hr"></div>
-      <h3>Affaldstømning</h3>
-
-      <label><input type="checkbox" id="auto-enabled"/> Brug automatisk plan</label>
+      <h3>Affaldstømning (automatisk plan)</h3>
+      <label><input type="checkbox" id="auto-enabled" checked/> Brug automatisk plan</label>
 
       <div id="auto-panel">
-        <label>Startdato</label>
-        <input id="auto-start" type="date"/>
+        <div class="auto-grid">
+          <div class="col">
+            <label>Startdato</label>
+            <input id="auto-start" type="date"/>
+          </div>
 
-        <label>Ugedage (vælg de dage hvor tømning kan ligge)</label>
-        <div class="weekdays">
-          <label class="chip"><input type="checkbox" value="mon"/> Man</label>
-          <label class="chip"><input type="checkbox" value="tue"/> Tir</label>
-          <label class="chip"><input type="checkbox" value="wed"/> Ons</label>
-          <label class="chip"><input type="checkbox" value="thu"/> Tor</label>
-          <label class="chip"><input type="checkbox" value="fri"/> Fre</label>
-          <label class="chip"><input type="checkbox" value="sat"/> Lør</label>
-          <label class="chip"><input type="checkbox" value="sun"/> Søn</label>
+          <div class="col">
+            <label>Horizon (antal kommende linjer der vises)</label>
+            <input id="auto-horizon" type="number" value="12"/>
+          </div>
+
+          <div class="col full">
+            <label>Ugedage (vælg de dage hvor tømning kan ligge)</label>
+            <div class="weekdays">
+              <label class="chip"><input type="checkbox" value="mon"/> Man</label>
+              <label class="chip"><input type="checkbox" value="tue"/> Tir</label>
+              <label class="chip"><input type="checkbox" value="wed"/> Ons</label>
+              <label class="chip"><input type="checkbox" value="thu"/> Tor</label>
+              <label class="chip"><input type="checkbox" value="fri"/> Fre</label>
+              <label class="chip"><input type="checkbox" value="sat"/> Lør</label>
+              <label class="chip"><input type="checkbox" value="sun"/> Søn</label>
+            </div>
+          </div>
+
+          <div class="col">
+            <label>Navne (rækkefølge — én pr. linje)</label>
+            <textarea id="auto-names" placeholder="Per&#10;Louise&#10;Max"></textarea>
+          </div>
+
+          <div class="col">
+            <label>Ekskluder datoer (én pr. linje — dd.mm.yyyy)</label>
+            <textarea id="auto-exclude" placeholder="25.12.2025&#10;01.01.2026"></textarea>
+          </div>
+
+          <div class="col">
+            <label>Antal kolonner i visning</label>
+            <select id="empties-columns">
+              <option value="1">1 kolonne</option>
+              <option value="2">2 kolonner</option>
+            </select>
+          </div>
         </div>
-
-        <label>Navne (rækkefølge — én pr. linje)</label>
-        <textarea id="auto-names" placeholder="Per&#10;Martin&#10;Kasper"></textarea>
-
-        <label>Ekskluder datoer (én pr. linje — dd.mm.yyyy)</label>
-        <textarea id="auto-exclude" placeholder="25.12.2025&#10;01.01.2026"></textarea>
-
-        <div class="row">
-          <div><label>Horizon (antal kommende linjer der vises)</label><input id="auto-horizon" type="number" value="12"/></div>
-        </div>
-
-        <div class="muted" style="margin-top:6px">Når automatisk plan er slået til, ignoreres den manuelle liste nedenfor.</div>
       </div>
-
-      <div class="hr"></div>
-      <h3>Affaldstømning – manuel plan (fallback)</h3>
-      <label>Liste (en pr. linje: Navn – dd.mm.åååå)</label>
-      <textarea id="empties-plan" placeholder="Per – 03.11.2025&#10;Martin – 05.11.2025"></textarea>
 
       <div class="hr"></div>
       <h3>Fødselsdage</h3>
       <label>Standard-besked (bruges i alarm-slides)</label>
-      <input id="birthdays-msg" placeholder="Tillykke med fødselsdagen!"/>
+      <input id="birthdays-msg" placeholder="Tillykke!"/>
       <div class="muted" style="margin:8px 0 12px">Tilføj personer herunder (Navn, Dato, Billede). Dato kan være dd.mm eller dd.mm.yyyy.</div>
       <div id="bd-list" class="bd-list"></div>
       <button class="btn" id="bd-add">+ Tilføj person</button>
@@ -161,15 +177,6 @@ const $=(s,e=document)=>e.querySelector(s);
 const $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
 const state={sha:null,data:null};
 
-function parseEmptiesPlan(text){
-  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{
-    let name=l, date='';
-    const m=l.split('–'); if(m.length>=2){name=m[0].trim(); date=m.slice(1).join('–').trim();}
-    else{ const p=l.split('-'); if(p.length>=2){name=p[0].trim(); date=p.slice(1).join('-').trim();} }
-    return { name, date };
-  });
-}
-
 function renderSlides(container, slides){
   container.innerHTML='';
   slides.forEach((s,idx)=>container.appendChild(makeSlide(s,idx)));
@@ -193,7 +200,11 @@ function fillContentFields(cf,s){
   cf.innerHTML='';
   if(s.type==='image'){
     const i=document.createElement('input'); i.placeholder='/media/Slide1.jpg eller fuld URL'; i.value=s.image||''; i.addEventListener('input',e=>s.image=e.target.value);
+    const a=document.createElement('textarea'); a.placeholder='(valgfri) tekst ved siden af billedet'; a.value=s.sideText||''; a.addEventListener('input',e=>s.sideText=e.target.value);
+    const sel=document.createElement('select'); sel.innerHTML=`<option value="right">Billede til højre</option><option value="left">Billede til venstre</option>`; sel.value=s.imageAlign||'right'; sel.addEventListener('change',e=>s.imageAlign=e.target.value);
     cf.appendChild(label('Billede-URL')); cf.appendChild(i);
+    cf.appendChild(label('Sidetekst (valgfri)')); cf.appendChild(a);
+    cf.appendChild(label('Placering når der er tekst')); cf.appendChild(sel);
   }else if(s.type==='text'){
     const a=document.createElement('textarea'); a.placeholder='Din tekst…'; a.value=s.text||''; a.addEventListener('input',e=>s.text=e.target.value);
     cf.appendChild(label('Tekst')); cf.appendChild(a);
@@ -249,19 +260,17 @@ async function load(){
   $('#theme-accent').value = data.settings?.theme?.accent || '';
   $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
 
-  // Auto tømning
-  const auto = data.settings?.empties?.auto || {};
+  // Auto tømning (kun auto, ingen manuel fallback)
+  const empties = data.settings?.empties || {};
+  const auto = empties.auto || {};
   $('#auto-enabled').checked = !!auto.enabled;
   $('#auto-start').value = auto.startDate || '';
-  // weekdays
   const set = new Set(auto.weekdays||[]);
   $$('.weekdays input').forEach(cb=> cb.checked = set.has(cb.value));
   $('#auto-names').value = (auto.names||[]).join('\n');
   $('#auto-exclude').value = (auto.exclude||[]).join('\n');
   $('#auto-horizon').value = auto.horizon ?? 12;
-
-  // Manuel fallback
-  $('#empties-plan').value = (data.settings?.empties?.plan||[]).map(p=>`${p.name} – ${p.date}`).join('\n');
+  $('#empties-columns').value = String(empties.columns || 1);
 
   // Fødselsdage
   $('#birthdays-msg').value = data.settings?.birthdaysMessage || 'Tillykke!';
@@ -271,7 +280,7 @@ async function load(){
   data.slides = Array.isArray(data.slides) ? data.slides : [];
   renderSlides($('#slides'), data.slides);
 
-  // PIN
+  // PIN fra localStorage (valgfri – off som standard)
   $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
 
   $('#status').textContent='Klar';
@@ -301,9 +310,7 @@ function collect(){
   };
   data.settings.empties = data.settings.empties || {};
   data.settings.empties.auto = auto;
-
-  // Manuel fallback
-  data.settings.empties.plan = parseEmptiesPlan($('#empties-plan').value);
+  data.settings.empties.columns = Math.max(1, Math.min(2, Number($('#empties-columns').value||1)));
 
   // Fødselsdage
   const list = [];
@@ -323,14 +330,15 @@ function collect(){
 async function save(){
   $('#status').textContent='Gemmer…';
   const pin=$('#pin').value.trim(); localStorage.setItem('ADMIN_PIN', pin);
-  const r=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json','x-admin-pin':pin},body:JSON.stringify({data:collect(),sha:state.sha})});
+  const headers={'Content-Type':'application/json'}; if(pin) headers['x-admin-pin']=pin; // valgfri PIN
+  const r=await fetch('/api/save',{method:'POST',headers,body:JSON.stringify({data:collect(),sha:state.sha})});
   const jr=await r.json();
   if(!r.ok){ if(r.status===409){ $('#status').textContent='Konflikt – genindlæser…'; await load(); return; } $('#status').textContent='Fejl: '+(jr?.message||jr?.error||r.status); return; }
   $('#status').textContent='Gemt!'; await load();
 }
 
 /* --- Slide-knapper --- */
-$('#add-image').addEventListener('click',()=>{ state.data.slides.push({type:'image',title:'Kampagne',image:'/media/Slide1.jpg',duration:8}); renderSlides($('#slides'),state.data.slides); });
+$('#add-image').addEventListener('click',()=>{ state.data.slides.push({type:'image',title:'Kampagne',image:'/media/Slide1.jpg',sideText:'',imageAlign:'right',duration:8}); renderSlides($('#slides'),state.data.slides); });
 $('#add-text').addEventListener('click',()=>{ state.data.slides.push({type:'text',title:'Info',text:'',duration:8}); renderSlides($('#slides'),state.data.slides); });
 $('#add-empties').addEventListener('click',()=>{ state.data.slides.push({type:'empties',title:'TØMNINGS DAGE',duration:12}); renderSlides($('#slides'),state.data.slides); });
 $('#add-birthday').addEventListener('click',()=>{ state.data.slides.push({type:'birthday',title:'Fødselsdage',duration:12}); renderSlides($('#slides'),state.data.slides); });
@@ -340,4 +348,5 @@ load().catch(e=>$('#status').textContent='Fejl: '+e.message);
 </script>
 </body>
 </html>
+
 
