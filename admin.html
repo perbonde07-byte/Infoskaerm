@@ -3,415 +3,341 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin · Infoskærm</title>
+<title>Admin – Infoskærm</title>
 <style>
-  :root{ --bg:#0b0b0b; --panel:#111; --muted:#aaa; --fg:#fff; --accent:#4caf50; --danger:#ff5555; }
-  html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg)}
-  .wrap{max-width:1100px;margin:0 auto;padding:20px}
-  h1{font-size:24px;margin:0 0 12px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .card{background:var(--panel);border:1px solid #222;border-radius:14px;padding:16px}
-  label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:10px 0 6px}
-  input,textarea,select{width:100%;box-sizing:border-box;padding:10px;background:#0e0e0e;border:1px solid #222;border-radius:10px;color:var(--fg)}
-  textarea{min-height:84px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  :root{ --bg:#0f0f12; --panel:#17181c; --muted:#aab; --border:#262832; --accent:#37c97b; }
+  html,body{margin:0;background:var(--bg);color:#e9eef6;font-family:system-ui,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+  h1{margin:0 0 18px 0}
+  h2{margin:32px 0 12px 0}
+  h3{margin:24px 0 10px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin:12px 0}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input,select,textarea{width:100%;box-sizing:border-box;background:#0e0f12;border:1px solid var(--border);border-radius:10px;padding:10px;color:#e9eef6}
+  textarea{min-height:100px;font-family:ui-monospace,monospace}
+  .row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px}
+  .btn{background:#13151a;border:1px solid var(--border);border-radius:10px;color:#fff;padding:10px 14px;cursor:pointer}
+  .btn.green{background:var(--accent);border-color:#28b268;color:#04150c;font-weight:700}
   .slides{display:grid;gap:10px}
-  .slide{background:#0e0e0e;border:1px solid #222;border-radius:12px;padding:12px;position:relative}
-  .slide h3{margin:0 0 10px;font-size:14px;letter-spacing:.02em}
-  .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;border:1px solid #222;background:#161616;color:#fff;cursor:pointer}
-  .btn.primary{background:var(--accent);border-color:transparent;color:#000;font-weight:700}
-  .btn.danger{background:transparent;border-color:#333;color:#ff9a9a}
-  .btn.small{padding:8px 10px;border-radius:10px;font-size:12px}
-  .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:14px 0}
+  .slidebox{border:1px solid var(--border);border-radius:12px;padding:12px}
+  .right{display:flex;gap:8px;justify-content:flex-end}
   .muted{color:var(--muted);font-size:12px}
-  .hr{height:1px;background:#222;margin:16px -16px}
-  .list{display:flex;gap:8px;flex-wrap:wrap}
-  .bd-list{display:grid;gap:10px}
-  .bd-item{display:grid;grid-template-columns:1.2fr 1fr 1.2fr auto auto;gap:8px;align-items:center}
-  .bd-item .remove{height:40px}
-  .weekdays{display:flex;gap:8px;flex-wrap:wrap}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #333;border-radius:10px;background:#0e0e0e}
-  .chip input{margin:0}
-  .auto-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .auto-grid .col{display:flex;flex-direction:column;gap:6px}
-  .auto-grid .col.full{grid-column:1 / -1}
-  input[type="file"]{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Admin · Infoskærm</h1>
-  <div class="toolbar">
-    <div class="muted" id="status">Indlæser…</div>
-    <div class="list">
-      <input id="pin" placeholder="PIN (ADMIN_PIN)" style="width:130px"/>
-      <button class="btn" id="add-image">+ Billede</button>
-      <button class="btn" id="add-text">+ Tekst</button>
-      <button class="btn" id="add-empties">+ Tømning</button>
-      <button class="btn" id="add-birthday">+ Fødselsdage</button>
-      <button class="btn primary" id="save">Gem ændringer</button>
+  <h1>Admin • Infoskærm</h1>
+  <div class="panel">
+    <div class="grid2">
+      <div>
+        <label>PIN (ADMIN_PIN)</label>
+        <input id="pin" type="password" placeholder="****"/>
+      </div>
+      <div>
+        <label>Opdaterings-interval (ms) – min. 300000</label>
+        <input data-bind="settings.refreshMs" type="number" min="300000" step="1000" placeholder="300000"/>
+      </div>
     </div>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <h2>Branding & faste indstillinger</h2>
-      <label>Brand</label>
-      <input id="brand" placeholder="Bredsgaard • Infoskærm"/>
-      <label>Logo URL</label>
-      <input id="logoUrl" placeholder="/media/logo.png"/>
-
-      <div class="hr"></div>
-      <h3>Tema</h3>
-      <div class="row">
-        <div><label>Baggrund 1 (bg1)</label><input id="theme-bg1" placeholder="#0d4b59"/></div>
-        <div><label>Baggrund 2 (bg2) – valgfri</label><input id="theme-bg2" placeholder="#134d60"/></div>
+  <div class="panel">
+    <h2>Brand</h2>
+    <div class="grid2">
+      <div>
+        <label>Brand</label>
+        <input data-bind="brand" placeholder="Bredsgaard • Infoskærm"/>
       </div>
-      <label>Accentfarve</label><input id="theme-accent" placeholder="#e8b15c"/>
-      <label>Opdaterings-interval (ms) – min. 300000</label><input id="refreshMs" type="number" placeholder="300000" value="300000"/>
-
-      <div class="hr"></div>
-      <h3>Affaldstømning (automatisk plan)</h3>
-      <label><input type="checkbox" id="auto-enabled" checked/> Brug automatisk plan</label>
-
-      <div id="auto-panel">
-        <div class="auto-grid">
-          <div class="col">
-            <label>Startdato</label>
-            <input id="auto-start" type="date"/>
-          </div>
-
-          <div class="col">
-            <label>Horizon (antal kommende linjer der vises)</label>
-            <input id="auto-horizon" type="number" value="12"/>
-          </div>
-
-          <div class="col full">
-            <label>Ugedage (vælg de dage hvor tømning kan ligge)</label>
-            <div class="weekdays">
-              <label class="chip"><input type="checkbox" value="mon"/> Man</label>
-              <label class="chip"><input type="checkbox" value="tue"/> Tir</label>
-              <label class="chip"><input type="checkbox" value="wed"/> Ons</label>
-              <label class="chip"><input type="checkbox" value="thu"/> Tor</label>
-              <label class="chip"><input type="checkbox" value="fri"/> Fre</label>
-              <label class="chip"><input type="checkbox" value="sat"/> Lør</label>
-              <label class="chip"><input type="checkbox" value="sun"/> Søn</label>
-            </div>
-          </div>
-
-          <div class="col">
-            <label>Navne (rækkefølge — én pr. linje)</label>
-            <textarea id="auto-names" placeholder="Per&#10;Louise&#10;Max"></textarea>
-          </div>
-
-          <div class="col">
-            <label>Ekskluder datoer (én pr. linje — dd.mm.yyyy)</label>
-            <textarea id="auto-exclude" placeholder="25.12.2025&#10;01.01.2026"></textarea>
-          </div>
-
-          <div class="col">
-            <label>Antal kolonner i visning</label>
-            <select id="empties-columns">
-              <option value="1">1 kolonne</option>
-              <option value="2">2 kolonner</option>
-              <option value="3">3 kolonner</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label>Logo URL</label>
+        <input data-bind="logoUrl" placeholder="/media/logo.png"/>
       </div>
+    </div>
+  </div>
 
-      <div class="hr"></div>
-      <h3>Fødselsdage</h3>
-      <label>Standard-besked (bruges i alarm-slides)</label>
-      <input id="birthdays-msg" placeholder="Tillykke!"/>
-      <div class="muted" style="margin:8px 0 12px">Tilføj personer (Navn, Dato, Billede). Dato kan være dd.mm eller dd.mm.yyyy.</div>
-      <div id="bd-list" class="bd-list"></div>
-      <button class="btn" id="bd-add">+ Tilføj person</button>
+  <div class="panel">
+    <h2>Tema</h2>
+    <div class="grid2">
+      <div>
+        <label>Baggrund 1 (BG1)</label>
+        <input data-bind="settings.theme.bg1" placeholder="#0d4b59"/>
+      </div>
+      <div>
+        <label>Baggrund 2 (BG2)</label>
+        <input data-bind="settings.theme.bg2" placeholder="#134d60"/>
+      </div>
+      <div>
+        <label>Accentfarve</label>
+        <input data-bind="settings.theme.accent" placeholder="#e8b15c"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Stil (global)</h2>
+    <div class="grid2">
+      <label>Tekst skalering
+        <input type="number" step="0.1" min="0.6" max="2" data-bind="settings.style.textScale" placeholder="1.0">
+      </label>
+      <label>Overskrift skalering
+        <input type="number" step="0.1" min="0.6" max="2" data-bind="settings.style.titleScale" placeholder="1.0">
+      </label>
+      <label>Max billedhøjde – Billede+Tekst (vh)
+        <input type="number" step="1" min="30" max="95" data-bind="settings.style.imageMaxVh" placeholder="80">
+      </label>
+      <label>Max billedhøjde – Fødselsdag (vh)
+        <input type="number" step="1" min="30" max="95" data-bind="settings.style.birthdayImageMaxVh" placeholder="65">
+      </label>
+      <label>Billede fit
+        <select data-bind="settings.style.imageFit">
+          <option value="contain">contain (hele billedet)</option>
+          <option value="cover">cover (fylder mere)</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Affaldstømning (automatisk plan)</h2>
+    <div class="grid2">
+      <label>Brug automatisk plan
+        <input type="checkbox" data-bind="settings.empties.auto.enabled">
+      </label>
+      <label>Horizon (antal kommende linjer der vises)
+        <input type="number" data-bind="settings.empties.auto.horizon" placeholder="12">
+      </label>
+      <label>Startdato
+        <input type="date" data-bind="settings.empties.auto.startDate" placeholder="2025-01-01">
+      </label>
+      <label>Preview-dato (test) dd.mm.åååå
+        <input type="text" data-bind="settings.empties.previewDate" placeholder="15.12.2025">
+      </label>
     </div>
 
-    <div class="card">
-      <h2>Slides (rækkefølge = visningsrækkefølge)</h2>
-      <div id="slides" class="slides"></div>
+    <h3>Ugedage (vælg de dage hvor tømning kan ligge)</h3>
+    <div class="grid2">
+      <label><input type="checkbox" data-array="settings.empties.auto.weekdays" value="mon"> Man</label>
+      <label><input type="checkbox" data-array="settings.empties.auto.weekdays" value="tue"> Tir</label>
+      <label><input type="checkbox" data-array="settings.empties.auto.weekdays" value="wed"> Ons</label>
+      <label><input type="checkbox" data-array="settings.empties.auto.weekdays" value="thu"> Tor</label>
+      <label><input type="checkbox" data-array="settings.empties.auto.weekdays" value="fri"> Fre</label>
+      <label><input type="checkbox" data-array="settings.empties.auto.weekdays" value="sat"> Lør</label>
+      <label><input type="checkbox" data-array="settings.empties.auto.weekdays" value="sun"> Søn</label>
     </div>
+
+    <h3>Navne (rækkefølge — én pr. linje)</h3>
+    <textarea data-list="settings.empties.auto.names" placeholder="Per&#10;Louise&#10;Max"></textarea>
+
+    <h3>Ekskluder datoer (én pr. linje — dd.mm.yyyy)</h3>
+    <textarea data-list="settings.empties.auto.exclude" placeholder="25.12.2025&#10;01.01.2026"></textarea>
+
+    <h3>Antal kolonner i visning</h3>
+    <select data-bind="settings.empties.columns">
+      <option value="1">1 kolonne</option>
+      <option value="2" selected>2 kolonner</option>
+      <option value="3">3 kolonner</option>
+    </select>
+    <div class="muted" style="margin-top:6px">Bemærk: Tabel-siden skifter først når markeringen har passeret sidste række.</div>
+  </div>
+
+  <div class="panel">
+    <h2>Fødselsdage</h2>
+    <label>Standard-besked (bruges i alarm-slides)</label>
+    <input data-bind="settings.birthdaysMessage" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
+
+    <div id="bds" class="panel" style="background:#111; margin-top:12px">
+      <div id="bdList"></div>
+      <div class="right"><button class="btn" id="addBd">+ Tilføj person</button></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Slides</h2>
+    <div id="slidesBox" class="slides"></div>
+    <div class="right">
+      <button class="btn" id="addImage">+ Billede</button>
+      <button class="btn" id="addText">+ Tekst</button>
+      <button class="btn" id="addEmpties">+ Tømning</button>
+    </div>
+  </div>
+
+  <div class="right" style="margin:18px 0 40px 0">
+    <button id="saveBtn" class="btn green">Gem ændringer</button>
   </div>
 </div>
 
-<template id="tpl-slide">
-  <div class="slide">
-    <h3></h3>
-    <div class="row">
-      <div>
-        <label>Type</label>
-        <select class="type">
-          <option value="image">image</option>
-          <option value="text">text</option>
-          <option value="empties">empties</option>
-          <option value="birthday">birthday</option>
-        </select>
-      </div>
-      <div>
-        <label>Varighed (sek.)</label>
-        <input class="duration" type="number" min="3" value="8"/>
-      </div>
-    </div>
-    <label>Titel</label>
-    <input class="title" placeholder="Titel"/>
-    <div class="content-fields"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-      <span class="muted"></span>
-      <button class="btn danger remove">Fjern</button>
-    </div>
-  </div>
-</template>
-
-<template id="tpl-bd-item">
-  <div class="bd-item">
-    <input class="bd-name"  placeholder="Navn"/>
-    <input class="bd-date"  placeholder="dd.mm eller dd.mm.yyyy"/>
-    <input class="bd-image" placeholder="(valgfrit) Per-Bonde  •  eller fuld URL/sti"/>
-    <button class="btn small" data-action="bd-upload">Upload</button>
-    <button class="btn danger remove">Fjern</button>
-  </div>
-</template>
-
-<input type="file" id="file-picker" accept="image/*"/>
-
 <script>
-const $=(s,e=document)=>e.querySelector(s);
-const $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
-const state={sha:null,data:null};
+let MODEL = null;
 
-function slugBase(s){
-  return String(s||'')
-    .trim()
-    .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^A-Za-z0-9\s\-_.]/g,'')
-    .replace(/\s+/g,'-')
-    .replace(/-+/g,'-')
-    .replace(/^-|-$/g,'');
-}
+/* --- simple helpers --- */
+function by(sel,root=document){return root.querySelector(sel)}
+function all(sel,root=document){return Array.from(root.querySelectorAll(sel))}
+function get(obj,path){return path.split('.').reduce((o,k)=>o&&o[k],obj)}
+function set(obj,path,value){const keys=path.split('.');let o=obj;keys.slice(0,-1).forEach(k=>{if(!o[k]) o[k]={};o=o[k]});o[keys.at(-1)]=value}
+function ensure(obj,path,def){if(get(obj,path)==null)set(obj,path,def)}
+function create(tag,attrs={},children=[]){const el=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>{if(k==='class')el.className=v;else if(k==='text')el.textContent=v;else el.setAttribute(k,v)});children.forEach(c=>el.appendChild(c));return el}
 
-/* ---------- Upload helper ---------- */
-async function uploadImage(file, baseName, folder){
-  if(!file) throw new Error('Ingen fil valgt');
-  const ext = (file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)||['','.jpg'])[0].toLowerCase();
-  const safeBase = slugBase(baseName || file.name.replace(/\.[^.]+$/,'') || 'billede');
-  const filename = safeBase + ext;
-
-  const b64 = await new Promise((resolve,reject)=>{
-    const r=new FileReader();
-    r.onload=()=>resolve(String(r.result));
-    r.onerror=()=>reject(new Error('Kunne ikke læse fil'));
-    r.readAsDataURL(file); // data:*;base64,...
-  });
-
-  const pin=$('#pin').value.trim();
-  const headers={'Content-Type':'application/json'}; if(pin) headers['x-admin-pin']=pin;
-  const res = await fetch('/api/save',{
-    method:'POST', headers,
-    body:JSON.stringify({ upload:{ folder, filename, dataUrl:b64 } })
-  });
-  const out = await res.json();
-  if(!res.ok) throw new Error(out?.message||'Upload fejlede');
-  return out.path; // den endelige sti i repoet
-}
-
-/* ---------- Slides UI ---------- */
-function renderSlides(container, slides){
-  container.innerHTML='';
-  slides.forEach((s,idx)=>container.appendChild(makeSlide(s,idx)));
-}
-function makeSlide(s, idx){
-  const t=$('#tpl-slide'), node=t.content.firstElementChild.cloneNode(true);
-  node.querySelector('h3').textContent=`Slide #${idx+1}`;
-  node.querySelector('.type').value=s.type||'text';
-  node.querySelector('.duration').value=s.duration??8;
-  node.querySelector('.title').value=s.title||'';
-  node.querySelector('.muted').textContent=`type: ${s.type||'text'}`;
-  const cf=node.querySelector('.content-fields'); fillContentFields(cf,s,node);
-
-  node.querySelector('.type').addEventListener('change',e=>{ s.type=e.target.value; node.querySelector('.muted').textContent=`type: ${s.type}`; fillContentFields(cf,s,node); });
-  node.querySelector('.duration').addEventListener('input',e=>s.duration=Number(e.target.value));
-  node.querySelector('.title').addEventListener('input',e=>s.title=e.target.value);
-  node.querySelector('.remove').addEventListener('click',()=>{ const i=state.data.slides.indexOf(s); if(i>=0){ state.data.slides.splice(i,1); renderSlides($('#slides'),state.data.slides);} });
-  return node;
-}
-function fillContentFields(cf,s,node){
-  cf.innerHTML='';
-  if(s.type==='image'){
-    const i=document.createElement('input'); 
-    i.placeholder="Per-Bonde  •  eller /media/fil.jpg  •  eller fuld URL";
-    i.value=s.image||''; 
-    i.addEventListener('input',e=>s.image=e.target.value);
-
-    const upBtn=document.createElement('button'); upBtn.className='btn small'; upBtn.textContent='Upload';
-    upBtn.addEventListener('click', async ()=>{
-      const picker=$('#file-picker'); picker.value='';
-      picker.onchange=async()=>{
-        try{
-          const path = await uploadImage(picker.files[0], slugBase(s.title||'billede'), 'media');
-          i.value = s.image = path;
-        }catch(err){ alert(err.message); }
-      };
-      picker.click();
+/* --- bind/load/save --- */
+async function fetchData(){const r=await fetch('/api/data',{cache:'no-store'});const j=await r.json();return j.data}
+function applyBindings(){
+  all('[data-bind]').forEach(inp=>{
+    const path=inp.getAttribute('data-bind');
+    const val=get(MODEL,path);
+    if(inp.type==='checkbox') inp.checked=!!val; else inp.value = (val??'');
+    inp.addEventListener('input',()=>{
+      const v = (inp.type==='checkbox') ? inp.checked : (inp.type==='number'? Number(inp.value) : inp.value);
+      set(MODEL,path,v);
     });
-
-    const a=document.createElement('textarea'); a.placeholder='(valgfri) tekst ved siden af billedet'; a.value=s.sideText||''; a.addEventListener('input',e=>s.sideText=e.target.value);
-    const sel=document.createElement('select'); sel.innerHTML=`<option value="right">Billede til højre</option><option value="left">Billede til venstre</option>`; sel.value=s.imageAlign||'right'; sel.addEventListener('change',e=>s.imageAlign=e.target.value);
-
-    cf.appendChild(label('Billede (navn/sti/URL)')); 
-    const row=document.createElement('div'); row.style.display='grid'; row.style.gridTemplateColumns='1fr auto'; row.style.gap='8px';
-    row.appendChild(i); row.appendChild(upBtn); cf.appendChild(row);
-
-    cf.appendChild(label('Sidetekst (valgfri)')); cf.appendChild(a);
-    cf.appendChild(label('Placering når der er tekst')); cf.appendChild(sel);
-  }else if(s.type==='text'){
-    const a=document.createElement('textarea'); a.placeholder='Din tekst…'; a.value=s.text||''; a.addEventListener('input',e=>s.text=e.target.value);
-    cf.appendChild(label('Tekst')); cf.appendChild(a);
-  }else{
-    cf.appendChild(spanMuted('Denne slide bruger indstillinger fra venstre panel.'));
-  }
-}
-function label(t){ const l=document.createElement('label'); l.textContent=t; return l; }
-function spanMuted(t){ const s=document.createElement('div'); s.className='muted'; s.textContent=t; return s; }
-
-/* ---------- Fødselsdage UI ---------- */
-function renderBirthdaysList(items){
-  const listEl = $('#bd-list'); listEl.innerHTML='';
-  (items||[]).forEach((b)=> listEl.appendChild(makeBdItem(b)));
-}
-function makeBdItem(b){
-  const t=$('#tpl-bd-item'), node=t.content.firstElementChild.cloneNode(true);
-  const nameEl = node.querySelector('.bd-name');
-  const dateEl = node.querySelector('.bd-date');
-  const imgEl  = node.querySelector('.bd-image');
-  const upBtn  = node.querySelector('[data-action="bd-upload"]');
-
-  nameEl.value = b.name || ''; dateEl.value = b.date || ''; imgEl.value  = b.image || '';
-  nameEl.addEventListener('input',e=>b.name=e.target.value);
-  dateEl.addEventListener('input',e=>b.date=e.target.value);
-  imgEl.addEventListener('input',e=>b.image=e.target.value);
-
-  upBtn.addEventListener('click', ()=>{
-    const picker=$('#file-picker'); picker.value='';
-    picker.onchange=async()=>{
-      try{
-        const path = await uploadImage(picker.files[0], slugBase(nameEl.value||'person'), 'medarbejdere');
-        imgEl.value = b.image = path; // gem stien i feltet
-      }catch(err){ alert(err.message); }
-    };
-    picker.click();
   });
 
-  node.querySelector('.remove').addEventListener('click',()=>{
-    const arr = state.data.settings.birthdays || [];
-    const i = arr.indexOf(b);
-    if(i>=0){ arr.splice(i,1); renderBirthdaysList(arr); }
+  // checkboxes der skriver til array
+  all('[data-array]').forEach(inp=>{
+    const path=inp.getAttribute('data-array');
+    ensure(MODEL,path,[]);
+    const arr=get(MODEL,path);
+    inp.checked = arr.includes(inp.value);
+    inp.addEventListener('change',()=>{
+      const list=new Set(get(MODEL,path) || []);
+      if(inp.checked) list.add(inp.value); else list.delete(inp.value);
+      set(MODEL,path,[...list]);
+    });
   });
-  return node;
+
+  // multi-line tekst -> array
+  all('[data-list]').forEach(ta=>{
+    const path=ta.getAttribute('data-list');
+    const arr=get(MODEL,path) || [];
+    ta.value = arr.join('\n');
+    ta.addEventListener('input',()=>{
+      set(MODEL,path, ta.value.split(/\n+/).map(s=>s.trim()).filter(Boolean));
+    });
+  });
 }
-$('#bd-add').addEventListener('click', ()=>{
-  state.data.settings = state.data.settings || {};
-  state.data.settings.birthdays = state.data.settings.birthdays || [];
-  const obj = { name:'', date:'', image:'' };
-  state.data.settings.birthdays.push(obj);
-  renderBirthdaysList(state.data.settings.birthdays);
+
+/* --- fødselsdage UI --- */
+function renderBirthdays(){
+  const box=by('#bdList'); box.innerHTML='';
+  ensure(MODEL,'settings.birthdays',[]);
+  const list=MODEL.settings.birthdays;
+  list.forEach((p,idx)=>{
+    const row=create('div',{class:'row'},[
+      create('div',{},[create('label',{text:'Navn'}), create('input',{value:p.name||''})]),
+      create('div',{},[create('label',{text:'Dato (dd.mm.yyyy)'}), create('input',{value:p.date||''})]),
+      create('div',{},[create('label',{text:'Billede (valgfri)'}), create('input',{value:p.image||'',placeholder:'/medarbejdere/Per-Bonde.jpg'})]),
+      create('div',{},[create('button',{class:'btn',text:'Fjern'})])
+    ]);
+    const [iName,iDate,iImg,btn] = all('input,button',row);
+    iName.addEventListener('input',()=>{p.name=iName.value});
+    iDate.addEventListener('input',()=>{p.date=iDate.value});
+    iImg.addEventListener('input',()=>{p.image=iImg.value});
+    btn.addEventListener('click',()=>{list.splice(idx,1);renderBirthdays();});
+    box.appendChild(row);
+  });
+}
+by('#addBd').addEventListener('click',()=>{ensure(MODEL,'settings.birthdays',[]); MODEL.settings.birthdays.push({name:'',date:'',image:''}); renderBirthdays();});
+
+/* --- slides UI --- */
+function renderSlides(){
+  const box=by('#slidesBox'); box.innerHTML='';
+  ensure(MODEL,'slides',[]);
+  MODEL.slides.forEach((s,idx)=>{
+    const sb=create('div',{class:'slidebox'});
+    const head=create('div',{class:'grid2'},[
+      create('div',{},[
+        create('label',{text:'Type'}),
+        (()=>{const sel=create('select');['image','text','empties','birthday'].forEach(t=>{const o=create('option',{text:t});o.value=t; if(s.type===t) o.selected=true; sel.appendChild(o)}); sel.addEventListener('change',()=>{s.type=sel.value;renderSlides()}); return sel})()
+      ]),
+      create('div',{},[
+        create('label',{text:'Varighed (sek.)'}),
+        create('input',{type:'number',value:s.duration||8})
+      ])
+    ]);
+    const [selType,inpDur] = all('select,input',head);
+    inpDur.addEventListener('input',()=>{s.duration=Number(inpDur.value)});
+
+    const body=create('div');
+    if(s.type==='image'){
+      body.appendChild(create('div',{class:'grid2'},[
+        create('div',{},[create('label',{text:'Titel'}),create('input',{value:s.title||''})]),
+        create('div',{},[create('label',{text:'Billede URL'}),create('input',{value:s.image||'',placeholder:'/media/slide.jpg'})])
+      ]));
+      body.appendChild(create('div',{class:'grid2'},[
+        create('div',{},[create('label',{text:'Side-tekst (valgfri)'}),create('textarea',{text:s.sideText||''})]),
+        create('div',{},[
+          create('label',{text:'Billede til venstre/højre'}),
+          (()=>{const sel=create('select');[['right','Billede til højre'],['left','Billede til venstre']].forEach(([v,t])=>{const o=create('option',{text:t});o.value=v; if(s.imageAlign===v) o.selected=true; sel.appendChild(o)}); sel.addEventListener('change',()=>{s.imageAlign=sel.value}); return sel})()
+        ])
+      ]));
+      body.appendChild(create('div',{class:'grid2'},[
+        create('div',{},[create('label',{text:'Slide-billede skalering (×)'}),create('input',{type:'number',step:'0.1',min:'0.5',max:'2',value:s.imageScale||1})]),
+        create('div',{},[create('label',{text:'Slide-tekst skalering (×)'}),create('input',{type:'number',step:'0.1',min:'0.5',max:'2',value:s.textScale||1})])
+      ]));
+      const [iTitle,iImg] = all('input',body);
+      const iSide = body.querySelector('textarea');
+      const [iImageScale,iTextScale] = all('input',body).slice(-2);
+      iTitle.addEventListener('input',()=>{s.title=iTitle.value});
+      iImg.addEventListener('input',()=>{s.image=iImg.value});
+      iSide.addEventListener('input',()=>{s.sideText=iSide.value});
+      body.querySelector('select').addEventListener('change',e=>{s.imageAlign=e.target.value});
+      iImageScale.addEventListener('input',()=>{s.imageScale=Number(iImageScale.value)});
+      iTextScale.addEventListener('input',()=>{s.textScale=Number(iTextScale.value)});
+    }
+    else if(s.type==='text'){
+      body.appendChild(create('div',{class:'grid2'},[
+        create('div',{},[create('label',{text:'Titel'}),create('input',{value:s.title||''})]),
+        create('div',{},[create('label',{text:'(pr. slide) Tekst-skalering (×)'}),create('input',{type:'number',step:'0.1',min:'0.5',max:'2',value:s.textScale||1})])
+      ]));
+      body.appendChild(create('div',{},[create('label',{text:'Tekst'}),create('textarea',{text:s.text||''})]));
+      const [iTitle,iTxtScale]=all('input',body);
+      const ta=body.querySelector('textarea');
+      iTitle.addEventListener('input',()=>{s.title=iTitle.value});
+      iTxtScale.addEventListener('input',()=>{s.textScale=Number(iTxtScale.value)});
+      ta.addEventListener('input',()=>{s.text=ta.value});
+    }
+    else if(s.type==='empties'){
+      body.appendChild(create('div',{},[create('label',{text:'Titel'}),create('input',{value:s.title||'TØMNINGS DAGE'})]));
+      const inp=body.querySelector('input'); inp.addEventListener('input',()=>{s.title=inp.value});
+    }
+    else if(s.type==='birthday'){
+      body.appendChild(create('div',{},[create('label',{text:'Titel'}),create('input',{value:s.title||'Fødselsdage'})]));
+      const inp=body.querySelector('input'); inp.addEventListener('input',()=>{s.title=inp.value});
+    }
+
+    const foot=create('div',{class:'right'},[
+      create('button',{class:'btn',text:'Fjern slide'})
+    ]);
+    foot.querySelector('button').addEventListener('click',()=>{MODEL.slides.splice(idx,1);renderSlides()});
+
+    sb.append(head,body,foot);
+    box.appendChild(sb);
+  });
+}
+by('#addImage').addEventListener('click',()=>{ensure(MODEL,'slides',[]); MODEL.slides.push({type:'image',title:'',image:'',sideText:'',imageAlign:'right',duration:12}); renderSlides();});
+by('#addText').addEventListener('click',()=>{ensure(MODEL,'slides',[]); MODEL.slides.push({type:'text',title:'',text:'',duration:10}); renderSlides();});
+by('#addEmpties').addEventListener('click',()=>{ensure(MODEL,'slides',[]); MODEL.slides.push({type:'empties',title:'TØMNINGS DAGE',duration:12}); renderSlides();});
+
+/* --- load & init --- */
+(async()=>{
+  MODEL = await fetchData();
+  // defaults
+  ensure(MODEL,'settings.theme',{});
+  ensure(MODEL,'settings.style',{textScale:1,titleScale:1,imageMaxVh:80,birthdayImageMaxVh:65,imageFit:'contain'});
+  ensure(MODEL,'settings.empties.auto',{enabled:true,startDate:'2025-01-01',weekdays:['mon'],names:[],exclude:[],horizon:12});
+  ensure(MODEL,'settings.empties.columns',2);
+  ensure(MODEL,'settings.birthdaysMessage','Tillykke med fødselsdagen - Håber du har dig en god uge.');
+
+  applyBindings();
+  renderBirthdays();
+  renderSlides();
+})();
+
+/* --- gem --- */
+by('#saveBtn').addEventListener('click', async ()=>{
+  const pin=by('#pin').value.trim();
+  const r = await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin,data:MODEL})});
+  const j = await r.json().catch(()=>({}));
+  if(r.ok){ alert('Gemt ✅'); } else { alert('Fejl: '+(j?.error||r.statusText)); }
 });
-
-/* ---------- LOAD / COLLECT / SAVE ---------- */
-async function load(){
-  $('#status').textContent='Indlæser…';
-  const r=await fetch('/api/data',{cache:'no-store'});
-  if(!r.ok) throw new Error('Fejl ved hentning');
-  const { sha, data } = await r.json();
-  state.sha=sha; state.data=data;
-
-  $('#brand').value   = data.brand||'';
-  $('#logoUrl').value = data.logoUrl||'';
-  $('#theme-bg1').value = data.settings?.theme?.bg1 || '';
-  $('#theme-bg2').value = data.settings?.theme?.bg2 || '';
-  $('#theme-accent').value = data.settings?.theme?.accent || '';
-  $('#refreshMs').value = data.settings?.refreshMs ?? 300000;
-
-  const empties = data.settings?.empties || {};
-  const auto = empties.auto || {};
-  $('#auto-enabled').checked = !!auto.enabled;
-  $('#auto-start').value = auto.startDate || '';
-  const set = new Set(auto.weekdays||[]);
-  $$('.weekdays input').forEach(cb=> cb.checked = set.has(cb.value));
-  $('#auto-names').value = (auto.names||[]).join('\n');
-  $('#auto-exclude').value = (auto.exclude||[]).join('\n');
-  $('#auto-horizon').value = auto.horizon ?? 12;
-  $('#empties-columns').value = String(empties.columns || 1);
-
-  $('#birthdays-msg').value = data.settings?.birthdaysMessage || 'Tillykke!';
-  renderBirthdaysList(data.settings?.birthdays || []);
-
-  data.slides = Array.isArray(data.slides) ? data.slides : [];
-  renderSlides($('#slides'), data.slides);
-
-  $('#pin').value = localStorage.getItem('ADMIN_PIN') || '';
-  $('#status').textContent='Klar';
-}
-
-function collect(){
-  const data=structuredClone(state.data||{});
-  data.brand   = $('#brand').value.trim();
-  data.logoUrl = $('#logoUrl').value.trim();
-
-  const theme = { bg1: $('#theme-bg1').value.trim(), bg2: $('#theme-bg2').value.trim(), accent: $('#theme-accent').value.trim() };
-  const refreshMs = Math.max(300000, Number($('#refreshMs').value||0) || 300000);
-
-  data.settings = data.settings || {};
-  data.settings.theme = theme;
-  data.settings.refreshMs = refreshMs;
-
-  const auto = {
-    enabled: $('#auto-enabled').checked,
-    startDate: $('#auto-start').value.trim(),
-    weekdays: $$('.weekdays input:checked').map(cb=>cb.value),
-    names: $('#auto-names').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
-    exclude: $('#auto-exclude').value.split(/\n+/).map(s=>s.trim()).filter(Boolean),
-    horizon: Math.max(1, Number($('#auto-horizon').value || 12))
-  };
-  data.settings.empties = data.settings.empties || {};
-  data.settings.empties.auto = auto;
-  data.settings.empties.columns = Math.max(1, Math.min(3, Number($('#empties-columns').value||1)));
-
-  const list = [];
-  document.querySelectorAll('#bd-list .bd-item').forEach(row=>{
-    const name=row.querySelector('.bd-name').value.trim();
-    const date=row.querySelector('.bd-date').value.trim();
-    const image=row.querySelector('.bd-image').value.trim();
-    if(name && date) list.push({ name, date, image });
-  });
-  data.settings.birthdays = list;
-  data.settings.birthdaysMessage = $('#birthdays-msg').value.trim() || 'Tillykke!';
-
-  return data;
-}
-
-async function save(){
-  $('#status').textContent='Gemmer…';
-  const pin=$('#pin').value.trim(); localStorage.setItem('ADMIN_PIN', pin);
-  const headers={'Content-Type':'application/json'}; if(pin) headers['x-admin-pin']=pin;
-  const r=await fetch('/api/save',{method:'POST',headers,body:JSON.stringify({data:collect(),sha:state.sha})});
-  const jr=await r.json();
-  if(!r.ok){
-    if(r.status===409){ $('#status').textContent='Konflikt – genindlæser…'; await load(); return; }
-    $('#status').textContent='Fejl: '+(jr?.message||jr?.error||r.status); return;
-  }
-  $('#status').textContent='Gemt!'; await load();
-}
-
-/* ---------- Init ---------- */
-$('#add-image').addEventListener('click',()=>{ state.data.slides.push({type:'image',title:'Kampagne',image:'/media/Slide1.jpg',sideText:'',imageAlign:'right',duration:8}); renderSlides($('#slides'),state.data.slides); });
-$('#add-text').addEventListener('click',()=>{ state.data.slides.push({type:'text',title:'Info',text:'',duration:8}); renderSlides($('#slides'),state.data.slides); });
-$('#add-empties').addEventListener('click',()=>{ state.data.slides.push({type:'empties',title:'TØMNINGS DAGE',duration:12}); renderSlides($('#slides'),state.data.slides); });
-$('#add-birthday').addEventListener('click',()=>{ state.data.slides.push({type:'birthday',title:'Fødselsdage',duration:12}); renderSlides($('#slides'),state.data.slides); });
-
-$('#save').addEventListener('click',save);
-load().catch(e=>$('#status').textContent='Fejl: '+e.message);
 </script>
 </body>
 </html>
