@@ -40,19 +40,5 @@
     "birthdaysMessage": "Tillykke med fødselsdagen - Håber du har dig en god uge.",
     "birthdays": []
   },
-  "slides": [
-    {
-      "type": "image",
-      "title": "Nyt ansigt er kommet til",
-      "image": "/media/Slide1.jpg",
-      "sideText": "lad os se hvad dette er for en kugle formet starut",
-      "imageAlign": "right",
-      "duration": 8
-    },
-    {
-      "type": "empties",
-      "title": "TØMNINGS DAGE",
-      "duration": 8
-    }
-  ]
+  "slides": []
 }
