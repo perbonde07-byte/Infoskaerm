@@ -23,11 +23,17 @@
   .slidebox{border:1px solid var(--border);border-radius:12px;padding:12px}
   .right{display:flex;gap:8px;justify-content:flex-end}
   .muted{color:var(--muted);font-size:12px}
+  .filegrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+  .filecard{background:#101115;border:1px solid var(--border);border-radius:10px;padding:10px;display:grid;gap:6px}
+  .filecard img{width:100%;height:120px;object-fit:cover;border-radius:6px;background:#0b0b0d}
+  .filetop{display:flex;align-items:center;gap:8px}
+  .path{font-size:12px;color:#cbd3e1;word-break:break-all}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Admin • Infoskærm</h1>
+
   <div class="panel">
     <div class="grid2">
       <div>
@@ -137,7 +143,7 @@
       <option value="2" selected>2 kolonner</option>
       <option value="3">3 kolonner</option>
     </select>
-    <div class="muted" style="margin-top:6px">Bemærk: Tabel-siden skifter først når markeringen har passeret sidste række.</div>
+    <div class="muted" style="margin-top:6px">Tabel-siden skifter først når markeringen har passeret sidste række.</div>
   </div>
 
   <div class="panel">
@@ -161,15 +167,34 @@
     </div>
   </div>
 
+  <!-- Pb-desigen: Filhåndtering -->
+  <div class="panel">
+    <h2>Filer (medarbejdere / media)</h2>
+    <div class="grid2">
+      <div>
+        <label>Mappe</label>
+        <select id="dirSel">
+          <option value="medarbejdere">/medarbejdere</option>
+          <option value="media">/media</option>
+        </select>
+      </div>
+      <div class="right">
+        <button id="reloadFiles" class="btn">Genindlæs liste</button>
+        <button id="deleteSel" class="btn" style="background:#a53636;border-color:#8b2d2d">Slet valgte filer</button>
+      </div>
+    </div>
+    <div id="filesBox" class="filegrid"></div>
+    <div class="muted">Pb-desigen: Sletning committer direkte til GitHub på BRANCH. (Ingen upload her – kun slet.)</div>
+  </div>
+
   <div class="right" style="margin:18px 0 40px 0">
     <button id="saveBtn" class="btn green">Gem ændringer</button>
   </div>
 </div>
 
 <script>
+/* Pb-desigen: state + helpers */
 let MODEL = null;
-
-/* --- simple helpers --- */
 function by(sel,root=document){return root.querySelector(sel)}
 function all(sel,root=document){return Array.from(root.querySelectorAll(sel))}
 function get(obj,path){return path.split('.').reduce((o,k)=>o&&o[k],obj)}
@@ -177,7 +202,7 @@ function set(obj,path,value){const keys=path.split('.');let o=obj;keys.slice(0,-
 function ensure(obj,path,def){if(get(obj,path)==null)set(obj,path,def)}
 function create(tag,attrs={},children=[]){const el=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>{if(k==='class')el.className=v;else if(k==='text')el.textContent=v;else el.setAttribute(k,v)});children.forEach(c=>el.appendChild(c));return el}
 
-/* --- bind/load/save --- */
+/* Data ind/ud */
 async function fetchData(){const r=await fetch('/api/data',{cache:'no-store'});const j=await r.json();return j.data}
 function applyBindings(){
   all('[data-bind]').forEach(inp=>{
@@ -189,8 +214,6 @@ function applyBindings(){
       set(MODEL,path,v);
     });
   });
-
-  // checkboxes der skriver til array
   all('[data-array]').forEach(inp=>{
     const path=inp.getAttribute('data-array');
     ensure(MODEL,path,[]);
@@ -202,8 +225,6 @@ function applyBindings(){
       set(MODEL,path,[...list]);
     });
   });
-
-  // multi-line tekst -> array
   all('[data-list]').forEach(ta=>{
     const path=ta.getAttribute('data-list');
     const arr=get(MODEL,path) || [];
@@ -214,7 +235,7 @@ function applyBindings(){
   });
 }
 
-/* --- fødselsdage UI --- */
+/* Fødselsdage UI */
 function renderBirthdays(){
   const box=by('#bdList'); box.innerHTML='';
   ensure(MODEL,'settings.birthdays',[]);
@@ -236,7 +257,7 @@ function renderBirthdays(){
 }
 by('#addBd').addEventListener('click',()=>{ensure(MODEL,'settings.birthdays',[]); MODEL.settings.birthdays.push({name:'',date:'',image:''}); renderBirthdays();});
 
-/* --- slides UI --- */
+/* Slides UI */
 function renderSlides(){
   const box=by('#slidesBox'); box.innerHTML='';
   ensure(MODEL,'slides',[]);
@@ -316,28 +337,70 @@ by('#addImage').addEventListener('click',()=>{ensure(MODEL,'slides',[]); MODEL.s
 by('#addText').addEventListener('click',()=>{ensure(MODEL,'slides',[]); MODEL.slides.push({type:'text',title:'',text:'',duration:10}); renderSlides();});
 by('#addEmpties').addEventListener('click',()=>{ensure(MODEL,'slides',[]); MODEL.slides.push({type:'empties',title:'TØMNINGS DAGE',duration:12}); renderSlides();});
 
-/* --- load & init --- */
+/* Filhåndtering (liste + slet) */
+async function loadFiles(dir){
+  const r = await fetch(`/api/data?action=list&dir=${encodeURIComponent(dir)}`,{cache:'no-store'});
+  if(!r.ok){ alert('Kunne ikke hente fil-liste'); return []; }
+  const j = await r.json();
+  return j.files||[];
+}
+function renderFiles(dir, files){
+  const box = by('#filesBox'); box.innerHTML='';
+  files.forEach(f=>{
+    const card=create('div',{class:'filecard'});
+    const top=create('div',{class:'filetop'},[
+      create('input',{type:'checkbox','data-path':f.path}),
+      create('div',{class:'path',text:f.path})
+    ]);
+    let thumb;
+    if(/\.(png|jpe?g|gif|webp)$/i.test(f.path)){
+      thumb=create('img'); thumb.src=f.raw||'#';
+    }else{
+      thumb=create('div',{class:'muted',text:'(ingen preview)'});
+    }
+    card.append(thumb,top);
+    box.appendChild(card);
+  });
+}
+async function refreshFiles(){
+  const dir=by('#dirSel').value;
+  const files=await loadFiles(dir);
+  renderFiles(dir,files);
+}
+by('#reloadFiles').addEventListener('click',refreshFiles);
+
+by('#deleteSel').addEventListener('click',async ()=>{
+  const pin=by('#pin').value.trim();
+  const checks=all('#filesBox input[type="checkbox"]:checked');
+  if(!checks.length){ alert('Vælg mindst én fil'); return; }
+  if(!confirm('Slet valgte filer? Dette kan ikke fortrydes.')) return;
+  const deletePaths = checks.map(c=>c.getAttribute('data-path'));
+  const r = await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin,deletePaths})});
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok){ alert('Fejl ved sletning: '+(j?.error||r.statusText)); return; }
+  alert('Slettet ✔');
+  refreshFiles();
+});
+
+/* Load + defaults + knapper */
 (async()=>{
   MODEL = await fetchData();
-  // defaults
   ensure(MODEL,'settings.theme',{});
   ensure(MODEL,'settings.style',{textScale:1,titleScale:1,imageMaxVh:80,birthdayImageMaxVh:65,imageFit:'contain'});
   ensure(MODEL,'settings.empties.auto',{enabled:true,startDate:'2025-01-01',weekdays:['mon'],names:[],exclude:[],horizon:12});
   ensure(MODEL,'settings.empties.columns',2);
   ensure(MODEL,'settings.birthdaysMessage','Tillykke med fødselsdagen - Håber du har dig en god uge.');
-
-  applyBindings();
-  renderBirthdays();
-  renderSlides();
+  applyBindings(); renderBirthdays(); renderSlides(); refreshFiles();
 })();
 
-/* --- gem --- */
 by('#saveBtn').addEventListener('click', async ()=>{
   const pin=by('#pin').value.trim();
   const r = await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin,data:MODEL})});
   const j = await r.json().catch(()=>({}));
   if(r.ok){ alert('Gemt ✅'); } else { alert('Fejl: '+(j?.error||r.statusText)); }
 });
+by('#dirSel').addEventListener('change', refreshFiles);
 </script>
 </body>
 </html>
+
