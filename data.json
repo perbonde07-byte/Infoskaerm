@@ -21,7 +21,9 @@
           "Louise",
           "Max"
         ],
-        "exclude": [],
+        "exclude": [
+          "29.12.2025"
+        ],
         "horizon": 12
       },
       "columns": 2
