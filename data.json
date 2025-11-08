@@ -15,7 +15,12 @@
         "startDate": "2025-10-27",
         "weekdays": [
           "mon",
-          "thu"
+          "tue",
+          "wed",
+          "thu",
+          "fri",
+          "sat",
+          "sun"
         ],
         "names": [
           "Claus",
