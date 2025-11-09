@@ -1,206 +1,313 @@
 <!doctype html>
 <html lang="da">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Infoskærm</title>
 <style>
-  /* PB-DESIGN: tema */
-  :root{ --bg:#0d4952; --panel:#083d43; --accent:#a7d0c9; --ink:#e9fbff; --cardR:24px; }
+  :root{
+    --bg1:#0b6a74; --bg2:#0d4952; --accent:#a7d0c9; --ink:#e9fbff;
+    --panel:rgba(0,0,0,.08); --line:rgba(255,255,255,.10);
+  }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:20px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  .outer{min-height:100vh;padding:28px}
-  .frame{min-height:calc(100vh - 56px);border-radius:26px;border:1px solid #0a2b30;box-shadow:inset 0 0 0 2px #0a2b3040; padding:26px; display:flex;flex-direction:column}
-  .slide{flex:1;display:flex;align-items:center;justify-content:center}
-  .brand{position:fixed;left:20px;bottom:10px;opacity:.85;font-size:16px}
-  h1{margin:0 0 16px;font-size:56px;letter-spacing:.03em}
-  /* PB-DESIGN: affaldstabel */
-  .grid{width:100%;display:grid;gap:16px}
-  .t{width:100%;border-collapse:collapse}
-  .t th,.t td{padding:16px 18px;border-bottom:1px solid #0a2b30}
-  .t th{color:#bfe3e8;letter-spacing:.12em;font-size:22px}
-  .rowHL{background:#5a6a60aa;border-radius:14px}
-  .two{grid-template-columns:1fr 1fr}
-  .one{grid-template-columns:1fr}
-  .imgwrap{display:flex;align-items:center;justify-content:center}
-  .imgwrap img{max-width:90%;max-height:74vh;border-radius:18px;box-shadow:0 6px 40px #0006}
+  html,body{height:100%}
+  body{margin:0;background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+
+  /* PB-DESIGN: Scene */
+  .stage{position:fixed;inset:0;padding:18px}
+  .frame{position:relative;width:100%;height:100%;border-radius:20px;border:1px solid rgba(255,255,255,.12);}
+  .frame::before{content:"";position:absolute;inset:10px;border-radius:16px;border:1px solid rgba(255,255,255,.08)}
+  .content{position:absolute;inset:22px 22px 60px 22px;display:grid;place-items:center}
+
+  /* Footer brand */
+  .brand{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:10px;padding:0 22px;color:var(--ink)}
+  .brand .logo{height:28px}
+  .brand .dot{width:8px;height:8px;background:var(--accent);border-radius:50%}
+
+  /* === PB-DESIGN • Empties (tømningsdage) – 21" optimering === */
+  .slide-empties {
+    --base: clamp(12px, 1.2vw + 8px, 22px);
+    --title: clamp(28px, 3.2vw, 56px);
+    --head: clamp(12px, 0.9vw + 8px, 18px);
+    --row: clamp(14px, 1.1vw + 8px, 24px);
+    --row-h: clamp(46px, 4.6vh, 68px);
+    --radius: 16px;
+    width: 100%; height: 100%; display: grid; place-items: center; padding: min(4vh, 32px);
+  }
+  .slide-empties .card{
+    width:min(1200px,94vw);
+    border-radius:var(--radius);
+    background:var(--panel);
+    border:1px solid rgba(255,255,255,.06);
+    box-shadow:0 8px 30px rgba(0,0,0,.25) inset;
+    padding:clamp(16px,3.2vh,36px);
+  }
+  .slide-empties h1{
+    font-size:var(--title);line-height:1.1;letter-spacing:.04em;margin:0 0 clamp(16px,2.8vh,28px);text-align:center;font-weight:800;
+  }
+  .slide-empties .grid{display:grid;grid-template-columns:1fr minmax(280px,1fr);gap:clamp(16px,3vw,42px)}
+  .slide-empties .tbl{width:100%}
+  .slide-empties .thead,
+  .slide-empties .row{display:grid;grid-template-columns:1.2fr .9fr;align-items:center;column-gap:clamp(10px,2vw,24px)}
+  .slide-empties .thead{
+    font-size:var(--head);text-transform:uppercase;letter-spacing:.12em;color:rgba(233,251,255,.8);
+    border-bottom:1px solid rgba(255,255,255,.12);padding:0 6px 10px;margin-bottom:8px;
+  }
+  .slide-empties .row{font-size:var(--row);height:var(--row-h);border-bottom:1px dashed rgba(255,255,255,.10);padding:0 6px}
+  .slide-empties .row.is-now{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 18px rgba(0,0,0,.2);border-radius:12px;
+  }
+  .slide-empties .date{font-feature-settings:"tnum" 1,"ss01" 1;letter-spacing:.02em;justify-self:end}
+  @media (max-width:820px){ .slide-empties .grid{grid-template-columns:1fr} .slide-empties h1{text-align:left} }
+
+  /* === PB-DESIGN • Billede + valgfri sidetekst === */
+  .slide-image{display:grid;grid-template-columns:1fr;gap:22px;align-items:center;width:min(1200px,94vw)}
+  .slide-image.has-text{grid-template-columns:1.1fr .9fr}
+  .slide-image .box{display:flex;align-items:center;justify-content:center}
+  .slide-image img{max-width:100%;max-height:68vh;border-radius:14px;border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 40px rgba(0,0,0,.28)}
+  .slide-image .text{font-size:clamp(16px,1.5vw,26px);line-height:1.35}
+  .slide-image h2{margin:0 0 10px;font-size:clamp(20px,2vw,34px);letter-spacing:.04em}
+  .slide-image p{margin:.5em 0}
+
+  /* === PB-DESIGN • Tekst-slide === */
+  .slide-text{width:min(1100px,92vw)}
+  .slide-text h2{margin:0 0 .3em;font-size:clamp(22px,2.4vw,36px);letter-spacing:.04em}
+  .slide-text p{margin:.4em 0;font-size:clamp(16px,1.6vw,26px)}
+
+  /* === PB-DESIGN • Fødselsdag === */
+  .slide-birthday{width:min(1100px,92vw);text-align:center}
+  .slide-birthday h1{margin:0 0 .6em;font-size:clamp(26px,3vw,48px);letter-spacing:.05em}
+  .slide-birthday .photo{width:min(340px,38vw);height:min(340px,38vw);object-fit:cover;border-radius:18px;border:2px solid rgba(255,255,255,.18);box-shadow:0 10px 36px rgba(0,0,0,.25)}
+  .slide-birthday .name{margin:.6em 0;font-size:clamp(22px,2.6vw,40px);font-weight:800}
+  .slide-birthday .msg{font-size:clamp(16px,1.6vw,26px)}
 </style>
 </head>
 <body>
-<div class="outer">
+<div class="stage">
   <div class="frame">
-    <div id="slide" class="slide"></div>
-    <div class="brand" id="brand">• Infoskærm</div>
+    <div id="app" class="content"><!-- PB-DESIGN: slides renderes her --></div>
+    <div class="brand">
+      <img id="brandLogo" class="logo" alt="" />
+      <span class="dot"></span>
+      <span id="brandText"></span>
+    </div>
   </div>
 </div>
 
 <script>
-const $ = q => document.querySelector(q);
+/* ===== PB-DESIGN • helper ===== */
+const $ = (q,el=document)=>el.querySelector(q);
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]))}
+function pad2(n){return String(n).padStart(2,"0")}
+function fmtDMY(d){ return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}` }
+function asYMD(d){ return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}` }
 
-function applyTheme(cfg){
-  const theme = (cfg && cfg.theme) || {};
-  if (theme.bg1) document.documentElement.style.setProperty("--bg", theme.bg1);
-  if (theme.bg2) document.documentElement.style.setProperty("--panel", theme.bg2);
-  if (theme.accent) document.documentElement.style.setProperty("--accent", theme.accent);
-  if (cfg && cfg.brand) $("#brand").textContent = cfg.brand;
+/* ===== PB-DESIGN • load data ===== */
+let DATA=null, IDX=0, TIMER=null;
+async function loadData(){
+  const r = await fetch("/api/data"); const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Kunne ikke hente data.json");
+  return j.content;
+}
+function applyTheme(){
+  document.documentElement.style.setProperty("--bg1", DATA?.theme?.bg1 || "#0b6a74");
+  document.documentElement.style.setProperty("--bg2", DATA?.theme?.bg2 || "#0d4952");
+  document.documentElement.style.setProperty("--accent", DATA?.theme?.accent || "#a7d0c9");
+  $("#brandLogo").src = DATA?.logoUrl || "";
+  $("#brandLogo").style.display = DATA?.logoUrl ? "block":"none";
+  $("#brandText").textContent = DATA?.brand || "Infoskærm";
 }
 
-// PB-DESIGN: hjælpere
-const pad2 = n => String(n).padStart(2,"0");
-const fmt = d => `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`;
-const sameDay = (a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
-
-// generér affaldstømning
-function* genWorkdays(start, weekdays, skipSet){
-  // weekdays: [1..5] -> Mon..Fri (Date.getDay: 0=Sun..6=Sat)
-  // map til js-dage
-  const map = new Set(weekdays.map(n=> (n%7) ));
-  let d = new Date(start.getTime());
-  // backtrack til i dag hvis start i fortiden
-  while (true){
-    const wd = d.getDay(); // 0-6
-    const isWanted = map.has(wd);
-    const key = fmt(d);
-    if (isWanted && !skipSet.has(key)) yield new Date(d.getTime());
-    d.setDate(d.getDate()+1);
-  }
+/* ===== PB-DESIGN • slide engine ===== */
+function nextSlide(){
+  if(!DATA?.slides?.length) return;
+  IDX = (IDX + 1) % DATA.slides.length;
+  renderSlide();
+}
+function startTimer(sec){
+  clearTimeout(TIMER);
+  TIMER = setTimeout(nextSlide, (Number(sec)||12)*1000);
+}
+function renderSlide(){
+  const app = $("#app"); app.innerHTML = "";
+  const s = DATA.slides[IDX] || {};
+  if(s.type==="image")       renderImageSlide(app, s);
+  else if(s.type==="text")   renderTextSlide(app, s);
+  else if(s.type==="empties")renderEmptiesSlide(app, s);
+  else if(s.type==="birthday")renderBirthdaySlide(app, s);
+  else app.textContent = s.title || "Slide";
+  startTimer(s.duration ?? 12);
 }
 
-function buildEmpties(cfg){
-  const e = cfg.empties || {};
-  const names = (e.names||[]).filter(Boolean);
-  if (!names.length) return `<div>Ingen navne angivet.</div>`;
-
-  const start = e.startDate ? new Date(e.startDate) : new Date();
-  const weekdays = (e.weekdays && e.weekdays.length) ? e.weekdays : [1];
-  const skipSet = new Set((e.skipDates||[]).map(x=>x.trim()).filter(Boolean));
-  const horizon = Math.max(1, Number(e.horizon||8));
-  const cols = Math.max(1, Math.min(2, Number(e.columns||2)));
-
-  // find næste relevante datoer og tilknyt navne i rotation
-  const today = new Date(); today.setHours(0,0,0,0);
-  const iter = genWorkdays(start, weekdays, skipSet);
-  const rows = [];
-  let i=0, got=0;
-  while (got < horizon + 20) { // sikkerhedsbuffer
-    const d = iter.next().value;
-    if (!d) break;
-    // kun fremtid fra i dag
-    if (d < today) { i++; continue; }
-    rows.push({ name: names[i % names.length], date: d });
-    i++; got++;
-    if (rows.length >= horizon*cols) break;
-  }
-
-  // split i kolonner
-  const perCol = Math.ceil(rows.length / cols);
-  const colsArr = [];
-  for (let c=0;c<cols;c++) colsArr.push(rows.slice(c*perCol,(c+1)*perCol));
-
-  // find highlight (første dato >= i dag)
-  const hlIndex = rows.findIndex(r => r.date >= today);
-  const HL = hlIndex < 0 ? null : rows[hlIndex];
-
-  const th = `<tr><th>NAVN</th><th>DATO</th></tr>`;
-  const table = list=> list.map(r=>{
-    const isHL = HL && sameDay(r.date, HL.date) && r.name===HL.name;
-    return `<tr class="${isHL?'rowHL':''}"><td><b>${r.name}</b></td><td><b>${fmt(r.date)}</b></td></tr>`;
-  }).join("");
-
-  const gridCls = cols===2 ? "two" : "one";
-  return `
-    <div>
-      <h1>TØMNINGS DAGE</h1>
-      <div class="grid ${gridCls}">
-        ${colsArr.map(col=>`<table class="t">${th}${table(col)}</table>`).join("")}
+/* ===== PB-DESIGN • slides ===== */
+function renderImageSlide(root, s){
+  const hasText = Boolean((s.sideText||"").trim());
+  root.innerHTML = `
+    <section class="slide-image ${hasText?"has-text":""}">
+      <div class="box">
+        <img src="${escapeHtml(s.image||"")}" alt="">
       </div>
-    </div>`;
+      ${hasText?`
+      <div class="text">
+        <h2>${escapeHtml(s.title||"")}</h2>
+        ${s.sideText.split(/\n+/).map(p=>`<p>${escapeHtml(p)}</p>`).join("")}
+      </div>`:""}
+    </section>
+  `;
 }
+function renderTextSlide(root, s){
+  root.innerHTML = `
+    <section class="slide-text">
+      <h2>${escapeHtml(s.title||"")}</h2>
+      ${(s.content||"").split(/\n+/).map(p=>`<p>${escapeHtml(p)}</p>`).join("")}
+    </section>
+  `;
+}
+function renderBirthdaySlide(root, s){
+  // PB-DESIGN: find nærmeste fødselsdag i denne/kommende uge → hvis ingen, vis første i listen.
+  const msg = DATA?.birthdays?.message || "Tillykke med fødselsdagen!";
+  const people = DATA?.birthdays?.people || [];
+  if(!people.length){ root.innerHTML = `<div class="slide-text"><h2>Fødselsdag</h2><p>Ingen registreret.</p></div>`; return; }
 
-function birthdaySlide(cfg){
-  const msg = (cfg.birthdays?.message)||"";
-  const people = (cfg.birthdays?.people)||[];
-  const today = new Date(); today.setHours(0,0,0,0);
+  const today = new Date(); const y = today.getFullYear();
+  const weekStart = new Date(today); weekStart.setDate(today.getDate()-today.getDay()+1); // man
+  const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
 
-  // find hvis nogen har fødselsdag i dag (eller denne uge? -> vælg i dag for slide)
-  const match = people.find(p=>{
-    const [dd,mm,yyyy] = (p.date||"").split(".").map(x=>x.trim());
-    if (!dd || !mm) return false;
-    return (Number(dd)===today.getDate() && Number(mm)===today.getMonth()+1);
-  });
-
-  if (!match) return `<div class="imgwrap"><div><h1>FØDSELSDAG</h1><div>Ingen i dag.</div></div></div>`;
-
-  // udregn alder hvis år kendt
-  let ageTxt = "";
-  const parts = (match.date||"").split(".");
-  if (parts.length===3 && /^\d{4}$/.test(parts[2])) {
-    const born = new Date(Number(parts[2]), Number(parts[1])-1, Number(parts[0]));
-    const age = new Date().getFullYear() - born.getFullYear();
-    ageTxt = ` (${age} år)`;
+  function parsePerson(p){
+    // p.date: dd.mm eller dd.mm.yyyy
+    const m = String(p.date||"").match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);
+    if(!m) return null;
+    const dd=+m[1], mm=(+m[2])-1, yy=m[3]?+m[3]:y;
+    const thisYear = new Date(y,mm,dd);
+    const bornYear = m[3]? +m[3] : null;
+    return { name:p.name, image:p.image, bornYear, thisYear, dmy: fmtDMY(new Date(yy,mm,dd)) };
   }
-  const showDate = (()=>{
-    const d = new Date(); const dd=pad2(d.getDate()), mm=pad2(d.getMonth()+1);
-    const year = parts.length===3 ? parts[2] : "";
-    return year ? `${dd}.${mm}.${year}` : `${dd}.${mm}`;
-  })();
 
-  const img = (match.image||"").trim();
-  return `
-    <div style="text-align:center">
+  const parsed = people.map(parsePerson).filter(Boolean).sort((a,b)=>a.thisYear - b.thisYear);
+  // find første i denne uge, ellers næste
+  let person = parsed.find(p=>p.thisYear>=weekStart && p.thisYear<=weekEnd) || parsed.find(p=>p.thisYear>=today) || parsed[0];
+
+  const age = person.bornYear ? (y - person.bornYear) : null;
+  root.innerHTML = `
+    <section class="slide-birthday">
       <h1>FØDSELSDAG</h1>
-      <div class="imgwrap" style="margin-bottom:12px">
-        ${img ? `<img src="${img}" alt="" style="max-height:38vh">` : ``}
+      <img class="photo" src="${escapeHtml(person.image||"")}" alt="">
+      <div class="name">${escapeHtml(person.name||"")}</div>
+      <div class="msg">${escapeHtml(msg)} ${person.dmy ? `(${escapeHtml(person.dmy.slice(0,5))})` : ""} ${age?`– ${age} år`:``}</div>
+    </section>
+  `;
+}
+
+/* ===== PB-DESIGN • TØMNINGS DAGE (ny visning) ===== */
+function renderEmptiesSlide(root/*, s*/){
+  // 1) byg plan
+  const plan = buildEmptiesPlan();
+  // 2) del i kolonner (1/2)
+  const cols = Math.max(1, Math.min(2, Number(DATA?.empties?.columns||2)));
+  const mid = cols===2 ? Math.ceil(plan.length/2) : plan.length;
+  const left = plan.slice(0, mid);
+  const right = cols===2 ? plan.slice(mid) : [];
+
+  root.innerHTML = `
+    <section class="slide-empties">
+      <div class="card">
+        <h1>TØMNINGS DAGE</h1>
+        <div class="grid">
+          ${col(left)}
+          ${cols===2 ? col(right) : ""}
+        </div>
       </div>
-      <div style="font-size:48px;font-weight:800;margin-bottom:12px">${match.name}${ageTxt}</div>
-      <div style="font-size:28px">${msg ? `${msg} (${showDate})` : showDate}</div>
-    </div>`;
+    </section>
+  `;
+  function col(list){
+    return `
+      <div class="tbl">
+        <div class="thead"><div>NAVN</div><div class="date">DATO</div></div>
+        ${list.map(r=>`
+          <div class="row ${r.isNow?"is-now":""}">
+            <div>${escapeHtml(r.name)}</div>
+            <div class="date">${escapeHtml(r.dateStr)}</div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
 }
 
-function imageSlide(obj){
-  const src = obj.image || "";
-  const caption = obj.title || "";
-  return `<div class="imgwrap"><figure style="margin:0;text-align:center">
-    <img src="${src}" alt="">
-    ${caption?`<figcaption style="margin-top:12px;opacity:.9">${caption}</figcaption>`:""}
-  </figure></div>`;
+/* PB-DESIGN: Plan-generator der IKKE “skubber” på refresh */
+function buildEmptiesPlan(){
+  const E = DATA?.empties || {};
+  const start = E.startDate ? new Date(E.startDate) : new Date();
+  const weekdays = (E.weekdays||[1]).map(Number).filter(n=>n>=1 && n<=7); // 1=man .. 7=søn
+  const names = (E.names||[]).filter(Boolean);
+  const skip = new Set((E.skipDates||[]).map(s=>s.trim()));
+  const horizon = Math.max(4, Math.min(40, Number(E.horizon||8)));
+
+  // lav liste over alle gyldige ugedage fra start → frem, spring skip over
+  const out=[], todayYMD=asYMD(new Date());
+  // find indeks i navne, der matcher første dato efter/lig med start
+  let nameIdx=0; let d = new Date(start);
+  // rul d bagud til nærmeste mandag for deterministisk rotation
+  while (d.getDay()!==1) d.setDate(d.getDate()-1);
+
+  function isWantedDay(date){
+    const wd = date.getDay()||7; // søn=0 → 7
+    return weekdays.includes(wd);
+  }
+  function stepToNextWanted(date){
+    do { date.setDate(date.getDate()+1); } while (!isWantedDay(date));
+  }
+  // find første ønskedag >= start
+  while(!isWantedDay(d) || d < start) stepToNextWanted(d);
+
+  // rotation af navne er deterministisk fra start: tæller kun når vi fandt en faktisk dag
+  while(out.length < horizon){
+    const dmy = fmtDMY(d);
+    if(!skip.has(dmy)){
+      const ymd = asYMD(d);
+      const item = { name: (names[nameIdx % Math.max(1,names.length)])||"", dateStr: dmy, yyyymmdd: ymd };
+      out.push(item);
+      nameIdx++;
+    }
+    stepToNextWanted(d);
+  }
+  // markér "aktuel" som første dato >= i dag
+  let flagged=false;
+  for(const r of out){
+    if(!flagged && r.yyyymmdd>=todayYMD){ r.isNow=true; flagged=true; } else r.isNow=false;
+  }
+  if(!flagged && out.length) out[out.length-1].isNow = true;
+  return out;
 }
 
-function textSlide(obj){
-  return `<div style="max-width:68ch"><h1>${obj.title||""}</h1><div style="font-size:28px;opacity:.95">${(obj.text||"").replace(/\n/g,"<br>")}</div></div>`;
-}
+/* ===== PB-DESIGN • boot ===== */
+(async function start(){
+  DATA = await loadData();
 
-function renderSlide(cfg, s){
-  if (!s) return "";
-  if (s.type==="empties") return buildEmpties(cfg);
-  if (s.type==="birthday") return birthdaySlide(cfg);
-  if (s.type==="image") return imageSlide(s);
-  if (s.type==="text") return textSlide(s);
-  return `<div>Ukendt slide-type.</div>`;
-}
+  // defaults
+  DATA.theme ??={}; DATA.settings??={refreshMs:300000};
+  DATA.empties??={startDate:"",horizon:8,weekdays:[1],names:[],skipDates:[],columns:2};
+  DATA.slides ??=[];
+  applyTheme();
 
-(async function init(){
-  const r = await fetch("/api/data");
-  const j = await r.json();
-  const DATA = (j && j.ok && j.content) ? j.content : {};
-  applyTheme(DATA);
+  // footer brand
+  $("#brandText").textContent = DATA.brand || "Infoskærm";
 
-  // PB-DESIGN: autorefresh
-  const refreshMs = Number((DATA.settings && DATA.settings.refreshMs) || 300000);
-  setTimeout(()=>location.reload(), Math.max(60000, refreshMs));
+  // render første slide
+  IDX = 0; renderSlide();
 
-  // kør slides (eller fallback til empties)
-  const slides = (DATA.slides && DATA.slides.length) ? DATA.slides : [{type:"empties"}];
-  let i = 0;
-  const show = ()=>{
-    const s = slides[i % slides.length];
-    $("#slide").innerHTML = renderSlide(DATA, s);
-    const dur = Math.max(6, Number(s.duration || 12));
-    i++; setTimeout(show, dur*1000);
-  };
-  show();
+  // auto-refresh af data (skifter ikke slide/markering kunstigt)
+  const ms = Math.max(60000, Number(DATA.settings.refreshMs||300000));
+  setInterval(async ()=>{
+    try{
+      const fresh = await loadData();
+      DATA = fresh;
+      applyTheme();
+      // behold aktuel slide-index
+      renderSlide();
+    }catch(e){ /* ignorer net-fejl på TV */ }
+  }, ms);
 })();
 </script>
 </body>
 </html>
-
