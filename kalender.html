@@ -1,29 +1,118 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="da">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Kalender • Infoskærm</title>
-  <style>
-    html,body{height:100%;margin:0;background:#0b1220}
-    iframe{border:0;width:100%;height:100%}
-    .msg{color:#e8eefb;font-family:system-ui,Segoe UI,Roboto,Arial;display:flex;height:100%;align-items:center;justify-content:center}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalender</title>
+<style>
+  :root{ --bg:#0d4952; --panel:#083d43; --ink:#e9fbff; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:20px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .outer{min-height:100vh;padding:28px}
+  .frame{min-height:calc(100vh - 56px);border-radius:26px;border:1px solid #0a2b30;box-shadow:inset 0 0 0 2px #0a2b3040; padding:26px;}
+  h1{margin:0 0 18px;font-size:52px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:#092f36;border:1px solid #0a2b30;border-radius:18px;padding:16px}
+  .date{font-weight:800;font-size:24px;margin-bottom:6px}
+  .row{display:flex;gap:14px;align-items:baseline}
+  .title{font-weight:700}
+  .loc{opacity:.85}
+  .when{margin-left:auto;opacity:.9}
+  @media (max-width:1200px){ .grid{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
-  <div id="wrap" class="msg">Henter kalender…</div>
-  <script>
-    const DATA_URL = "https://perbonde07-byte.github.io/Infoskaerm/data.json";
-    (async ()=>{
-      try{
-        const j = await (await fetch(DATA_URL+'?v='+Date.now())).json();
-        const url = j?.settings?.calendarUrl || '';
-        document.getElementById('wrap').innerHTML = url ? `<iframe src="${url}" loading="lazy"></iframe>` : '<div class="msg">Ingen kalender-link sat i admin.</div>';
-      }catch(e){
-        document.getElementById('wrap').textContent='Kunne ikke hente data.';
-      }
-    })();
-  </script>
+<div class="outer">
+  <div class="frame">
+    <h1>KALENDER</h1>
+    <div id="grid" class="grid"></div>
+  </div>
+</div>
+
+<script>
+const $ = s=>document.querySelector(s);
+const pad2 = n => String(n).padStart(2,"0");
+const fmtDate = d => `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`;
+const fmtTime = d => d.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
+
+async function loadData(){
+  const r = await fetch("/api/data"); const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Fejl i data.json"); return j.content;
+}
+async function loadICS(url, days, max){
+  const u = `/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`;
+  const r = await fetch(u); const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Fejl i ICS"); return j.events||[];
+}
+function groupByDate(events){
+  const map=new Map();
+  for(const e of events){
+    const k=new Date(e.start).toDateString(); if(!map.has(k)) map.set(k,[]);
+    map.get(k).push(e);
+  }
+  return Array.from(map.entries()).sort((a,b)=>new Date(a[0])-new Date(b[0]));
+}
+function renderEvents(raw){
+  const g=$("#grid"); g.innerHTML="";
+  const groups=groupByDate(raw);
+  groups.forEach(([key,list])=>{
+    const d=new Date(key); const card=document.createElement("div"); card.className="card";
+    card.innerHTML=`<div class="date">${fmtDate(d)}</div>`;
+    list.forEach(e=>{
+      const row=document.createElement("div"); row.className="row";
+      row.innerHTML=`<div class="title">${escapeHtml(e.summary||"(Ingen titel)")}</div>
+                     <div class="loc">${escapeHtml(e.location||"")}</div>
+                     <div class="when">${fmtTime(new Date(e.start))}${e.end?`–${fmtTime(new Date(e.end))}`:""}</div>`;
+      card.appendChild(row);
+    });
+    g.appendChild(card);
+  });
+  if (!groups.length) g.innerHTML = `<div class="card">Ingen kommende begivenheder.</div>`;
+}
+function escapeHtml(s){ return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m])) }
+
+function buildBirthdayFallback(data){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const next30 = new Date(today.getTime()+30*86400000);
+  const list=(data.birthdays?.people||[]).map(p=>{
+    const [dd,mm,yyyy] = (p.date||"").split(".");
+    if (!dd||!mm) return null;
+    const year=today.getFullYear();
+    const dt=new Date(year,Number(mm)-1,Number(dd));
+    if (dt<today) dt.setFullYear(year+1);
+    return { name:p.name, date:dt, born:yyyy||"" };
+  }).filter(Boolean).filter(x=>x.date<=next30).sort((a,b)=>a.date-b.date);
+
+  const g=$("#grid"); g.innerHTML="";
+  list.forEach(x=>{
+    const card=document.createElement("div"); card.className="card";
+    const ageTxt = x.born? ` (${new Date().getFullYear()-Number(x.born)} år)`:"";
+    card.innerHTML=`<div class="date">${fmtDate(x.date)}</div>
+                    <div class="row"><div class="title">${escapeHtml(x.name)}${ageTxt}</div></div>`;
+    g.appendChild(card);
+  });
+  if (!list.length) g.innerHTML=`<div class="card">Ingen data – tilføj ICS-URL i admin, eller opret fødselsdage.</div>`;
+}
+
+(async function init(){
+  const cfg = await loadData();
+  if (cfg.theme?.bg1) document.documentElement.style.setProperty("--bg", cfg.theme.bg1);
+  if (cfg.theme?.bg2) document.documentElement.style.setProperty("--panel", cfg.theme.bg2);
+  const url = cfg.calendar?.url || "";
+  const days = Number(cfg.calendar?.daysAhead || 60);
+  const max  = Number(cfg.calendar?.maxEvents || 50);
+
+  if (url) {
+    const ev = await loadICS(url, days, max);
+    renderEvents(ev);
+  } else {
+    buildBirthdayFallback(cfg);
+  }
+  const refreshMs = Number(cfg.settings?.refreshMs || 300000);
+  setTimeout(()=>location.reload(), Math.max(60000, refreshMs));
+})();
+</script>
 </body>
 </html>
+
 
