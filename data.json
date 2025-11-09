@@ -56,17 +56,6 @@
       "duration": 10
     },
     {
-      "type": "text",
-      "title": "Tekst",
-      "content": "test",
-      "duration": 10
-    },
-    {
-      "type": "birthday",
-      "title": "FØDSELSDAG",
-      "duration": 10
-    },
-    {
       "type": "image",
       "title": "Kampagne",
       "image": "",
