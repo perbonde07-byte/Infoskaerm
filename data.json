@@ -20,7 +20,9 @@
       "max",
       "mads"
     ],
-    "skipDates": [],
+    "skipDates": [
+      "12.12.2025"
+    ],
     "columns": 2
   },
   "birthdays": {
@@ -55,6 +57,11 @@
       "title": "Kampagne",
       "image": "",
       "sideText": "billede test",
+      "duration": 12
+    },
+    {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
       "duration": 12
     }
   ]
