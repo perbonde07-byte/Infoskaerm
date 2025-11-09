@@ -12,14 +12,26 @@
   "empties": {
     "startDate": "",
     "horizon": 8,
-    "weekdays": [],
-    "names": [],
+    "weekdays": [
+      1
+    ],
+    "names": [
+      "per",
+      "max",
+      "mads"
+    ],
     "skipDates": [],
     "columns": 2
   },
   "birthdays": {
     "message": "",
-    "people": []
+    "people": [
+      {
+        "name": "Per",
+        "date": "09.11.2025",
+        "image": "/media/Bredsgaard-logo transprant.png"
+      }
+    ]
   },
   "calendar": {
     "url": "",
