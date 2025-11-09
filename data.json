@@ -51,6 +51,13 @@
   },
   "slides": [
     {
+      "type": "image",
+      "title": "Kampagne",
+      "image": "",
+      "sideText": "Billede test",
+      "duration": 12
+    },
+    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 10
@@ -59,13 +66,6 @@
       "type": "text",
       "title": "Det er søndag",
       "content": "Hip hurra vi skal på arbejde i morgen",
-      "duration": 12
-    },
-    {
-      "type": "image",
-      "title": "Kampagne",
-      "image": "",
-      "sideText": "Billede test",
       "duration": 12
     }
   ]
