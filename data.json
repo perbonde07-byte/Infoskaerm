@@ -53,15 +53,15 @@
       "duration": 12
     },
     {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
+      "duration": 12
+    },
+    {
       "type": "image",
       "title": "Kampagne",
       "image": "",
       "sideText": "billede test",
-      "duration": 12
-    },
-    {
-      "type": "birthday",
-      "title": "FØDSELSDAG",
       "duration": 12
     }
   ]
