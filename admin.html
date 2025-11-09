@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Admin • Infoscreen</title>
 <style>
-  /* PB-DESIGN: klassisk admin UI */
   :root{
     --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --dim:#a8d7de; --ok:#1f9d68; --bad:#d35a5a;
     --radius:14px;
@@ -92,7 +91,6 @@
 
       <label>Ugedage</label>
       <div class="row" id="wdWrap" style="gap:12px">
-        <!-- PB-DESIGN: rigtige checkboxe – ingen templates -->
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="1"> MAN</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="2"> TIR</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="3"> ONS</label>
@@ -137,7 +135,7 @@
   <section class="panel">
     <h2>Slides (rækkefølge)</h2>
     <div class="slides" id="slides"></div>
-    <small class="small">Træk- og slip er ikke nødvendigt – brug “Op/Ned”. “Tømning” og “Fødselsdage” bruger venstrepanelets indstillinger.</small>
+    <small class="small">Brug “Op/Ned” til at sortere. “Tømning”/“Fødselsdage” bruger venstrepanelets indstillinger.</small>
   </section>
 </div>
 
@@ -176,9 +174,7 @@
 </div>
 
 <script>
-/* ==========================
-   PB-DESIGN: hjælpefunktioner
-========================== */
+/* ===== PB-DESIGN: utils ===== */
 const $  = (q, el=document) => el.querySelector(q);
 const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 let DATA=null, ACTIVE_DIR="medarbejdere", FILE_TARGET=null;
@@ -191,9 +187,7 @@ async function loadData(){ const j = await (await fetch("/api/data")).json(); if
 function toLines(el){ return (el.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean) }
 function fromLines(arr){ return (arr||[]).join("\n") }
 
-/* ==========================
-   PB-DESIGN: fødselsdage UI
-========================== */
+/* ===== PB-DESIGN: fødselsdage UI ===== */
 function renderBdays(b){
   const host=$("#bdayList"); host.innerHTML="";
   (b||[]).forEach((p,i)=>{
@@ -213,9 +207,7 @@ function renderBdays(b){
   $("#addBday").onclick=()=>{ b.push({name:"",date:"",image:""}); renderBdays(b); };
 }
 
-/* ==========================
-   PB-DESIGN: slides UI
-========================== */
+/* ===== PB-DESIGN: slides UI ===== */
 function slideTitle(s){
   if(s.type==="image") return s.title||"Billede";
   if(s.type==="text")  return s.title||"Tekst";
@@ -224,11 +216,9 @@ function slideTitle(s){
   return s.type||"Slide";
 }
 function renderSlides(){
-  const box=$("#slides"); box.innerHTML="";
+  const box=$("#slides"); if(!box) return; box.innerHTML="";
   (DATA.slides||[]).forEach((s,idx)=>{
     const card=document.createElement("div"); card.className="slide-card";
-
-    // hoved
     const head=document.createElement("div"); head.className="slide-head";
     head.innerHTML=`
       <div><strong>${slideTitle(s)}</strong> <span class="slide-meta">(${s.type})</span></div>
@@ -239,7 +229,6 @@ function renderSlides(){
       </div>`;
     card.appendChild(head);
 
-    // body (felter pr. type)
     const body=document.createElement("div"); body.className="slide-body";
     body.innerHTML=`
       <div class="row">
@@ -264,7 +253,6 @@ function renderSlides(){
     `;
     card.appendChild(body);
 
-    // events
     card.addEventListener("input",(e)=>{
       const k=e.target.dataset.k; if(!k) return;
       let v=e.target.value;
@@ -279,19 +267,14 @@ function renderSlides(){
   });
 }
 function findInputSelector(scope, key){
-  // laver en midlertidig id så filvælger kan skrive til feltet
   const inp = scope.querySelector(`[data-k="${key}"]`);
   if(!inp.id) inp.id = `f_${key}_${Math.random().toString(36).slice(2,7)}`;
   return `#${inp.id}`;
 }
 
-/* ==========================
-   PB-DESIGN: init + save
-========================== */
+/* ===== PB-DESIGN: init + save ===== */
 (async function init(){
   DATA = await loadData();
-
-  // Standardstruktur hvis tom data.json
   DATA.brand   ??= "";
   DATA.logoUrl ??= "";
   DATA.theme   ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
@@ -301,7 +284,6 @@ function findInputSelector(scope, key){
   DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50 };
   DATA.slides    ??= [];
 
-  // brand/tema
   $("#brand").value  = DATA.brand;
   $("#logoUrl").value= DATA.logoUrl;
   $("#bg1").value    = DATA.theme.bg1;
@@ -309,7 +291,6 @@ function findInputSelector(scope, key){
   $("#accent").value = DATA.theme.accent;
   $("#refreshMs").value = DATA.settings.refreshMs;
 
-  // affald
   $("#emptiesStart").value   = DATA.empties.startDate||"";
   $("#emptiesHorizon").value = DATA.empties.horizon||8;
   const wd = (DATA.empties.weekdays||[]);
@@ -318,23 +299,20 @@ function findInputSelector(scope, key){
   $("#emptiesSkip").value  = fromLines(DATA.empties.skipDates||[]);
   $("#emptiesCols").value  = String(DATA.empties.columns||2);
 
-  // bdays
   $("#bdayMsg").value = DATA.birthdays.message||"";
   renderBdays(DATA.birthdays.people||[]);
 
-  // kalender
   $("#calUrl").value  = DATA.calendar.url||"";
   $("#calDays").value = DATA.calendar.daysAhead||60;
   $("#calMax").value  = DATA.calendar.maxEvents||50;
 
-  // slides + knapper
   renderSlides();
+
   $("#addImage").onclick   = ()=>{ DATA.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); };
   $("#addText").onclick    = ()=>{ DATA.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); };
   $("#addEmpties").onclick = ()=>{ DATA.slides.push({type:"empties", title:"TØMNINGS DAGE", duration:12}); renderSlides(); };
   $("#addBirth").onclick   = ()=>{ DATA.slides.push({type:"birthday", title:"FØDSELSDAG", duration:12}); renderSlides(); };
 
-  // knapper
   $("#saveBtn").onclick = onSave;
   $("#openFiles").onclick = ()=>openFileModal("medarbejdere");
   $$("[data-pick]").forEach(b=>b.addEventListener("click",(ev)=>openFileModal("media", ev.currentTarget.getAttribute("data-pick"))));
@@ -343,13 +321,11 @@ function findInputSelector(scope, key){
 })().catch(e=>alert(e.message||e));
 
 async function onSave(){
-  // brand/tema
   DATA.brand = $("#brand").value.trim();
   DATA.logoUrl = $("#logoUrl").value.trim();
   DATA.theme = { bg1: $("#bg1").value.trim(), bg2: $("#bg2").value.trim(), accent: $("#accent").value.trim() };
   DATA.settings = { refreshMs: Number($("#refreshMs").value||300000) };
 
-  // affald
   DATA.empties = {
     startDate: $("#emptiesStart").value,
     horizon: Number($("#emptiesHorizon").value||8),
@@ -359,7 +335,6 @@ async function onSave(){
     columns: Number($("#emptiesCols").value||2)
   };
 
-  // bdays
   const people=[];
   $$("#bdayList .row").forEach(r=>{
     people.push({
@@ -370,7 +345,6 @@ async function onSave(){
   });
   DATA.birthdays = { message: $("#bdayMsg").value.trim(), people: people.filter(p=>p.name) };
 
-  // kalender
   DATA.calendar = {
     url: $("#calUrl").value.trim(),
     daysAhead: Number($("#calDays").value||60),
@@ -382,9 +356,7 @@ async function onSave(){
   alert("Gemt ✔");
 }
 
-/* ==========================
-   PB-DESIGN: filer modal
-========================== */
+/* ===== PB-DESIGN: filer modal ===== */
 function openFileModal(dir="medarbejdere", targetInput=null){
   ACTIVE_DIR=dir; FILE_TARGET=targetInput; $("#fileModal").classList.add("open"); refreshDir();
 }
@@ -426,5 +398,6 @@ $("#btnUpload").onclick = async ()=>{
 </script>
 </body>
 </html>
+
 
 
