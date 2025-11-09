@@ -12,9 +12,13 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  header{max-width:1100px;margin:18px auto 10px;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
+  header{max-width:1200px;margin:18px auto 10px;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
   h1{margin:0;font-weight:800}
-  .wrap{max-width:1100px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{background:#173c43;border:1px solid #0a2328;color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
+  .btn.ok{background:var(--ok)}
+  .btn.bad{background:#5a1f1f;border-color:#411515}
+  .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
   .panel{background:var(--panel);border:1px solid #0a2328;border-radius:var(--radius);padding:18px}
   .panel h2{margin:0 0 10px}
   label{display:block;font-size:13px;color:var(--dim);margin:10px 0 6px}
@@ -22,12 +26,17 @@
   textarea{min-height:90px;resize:vertical}
   .row{display:flex;gap:10px;flex-wrap:wrap}
   .row>*{flex:1}
-  .btn{background:#173c43;border:1px solid #0a2328;color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
-  .btn.ok{background:var(--ok)}
-  .btn.bad{background:#5a1f1f;border-color:#411515}
   .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid #0a2328;padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
 
-  /* PB-DESIGN: modal filer */
+  /* Slides panel (højre) */
+  .slides{display:flex;flex-direction:column;gap:10px}
+  .slide-card{border:1px solid #0a2328;border-radius:12px;background:#092b30;padding:12px}
+  .slide-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .slide-meta{font-size:13px;color:#9fc3c9}
+  .slide-body{margin-top:8px;display:grid;gap:8px}
+  .small{font-size:12px;color:#9abec4}
+
+  /* Modal filer */
   .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px}
   .modal.open{display:flex}
   .sheet{max-width:1100px;width:100%;background:#092b30;border:1px solid #0a2328;border-radius:14px;padding:18px}
@@ -41,82 +50,94 @@
 <body>
 <header>
   <h1>Admin • Infoscreen</h1>
-  <div class="row" style="max-width:460px">
+  <div class="head-actions">
     <button class="btn" id="openFiles">Filer (medarb & media)</button>
+    <!-- PB-DESIGN: slide-knapper -->
+    <button class="btn" id="addImage">+ Billede</button>
+    <button class="btn" id="addText">+ Tekst</button>
+    <button class="btn" id="addEmpties">+ Tømning</button>
+    <button class="btn" id="addBirth">+ Fødselsdage</button>
   </div>
 </header>
 
 <div class="wrap">
-  <!-- Brand & Tema -->
+  <!-- VENSTRE KOLONNE -->
+  <div class="left-col" style="display:flex;flex-direction:column;gap:14px">
+    <section class="panel">
+      <h2>Brand</h2>
+      <label>Brand</label>
+      <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
+      <label>Logo URL</label>
+      <div class="row">
+        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
+        <button class="btn" data-pick="#logoUrl">Vælg fra filer</button>
+      </div>
+      <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
+      <h2>Tema</h2>
+      <div class="row">
+        <div><label>Baggrund 1</label><input id="bg1" type="text" placeholder="#0d4952"></div>
+        <div><label>Baggrund 2</label><input id="bg2" type="text" placeholder="#0b6a74"></div>
+        <div><label>Accent</label><input id="accent" type="text" placeholder="#a7d0c9"></div>
+      </div>
+      <label>Opdaterings-interval (ms)</label>
+      <input id="refreshMs" type="number" min="60000" step="1000" value="300000">
+    </section>
+
+    <section class="panel">
+      <h2>Affaldstømning (automatisk plan)</h2>
+      <div class="row">
+        <div><label>Startdato</label><input id="emptiesStart" type="date"></div>
+        <div><label>Horizon (antal kommende linjer)</label><input id="emptiesHorizon" type="number" min="2" max="20" value="8"></div>
+      </div>
+
+      <label>Ugedage</label>
+      <div class="row" id="wdWrap" style="gap:12px">
+        <!-- PB-DESIGN: rigtige checkboxe – ingen templates -->
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="1"> MAN</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="2"> TIR</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="3"> ONS</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="4"> TOR</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="5"> FRE</label>
+      </div>
+
+      <label>Navne (rækkefølge — en pr. linje)</label>
+      <textarea id="emptiesNames" placeholder="Per&#10;Louise&#10;Max"></textarea>
+
+      <label>Ekskluder datoer (en pr. linje — dd.mm.yyyy)</label>
+      <textarea id="emptiesSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
+
+      <label>Antal kolonner i visning</label>
+      <select id="emptiesCols"><option value="1">1 kolonne</option><option value="2" selected>2 kolonner</option></select>
+    </section>
+
+    <section class="panel">
+      <h2>Fødselsdage</h2>
+      <label>Standard-besked (bruges i alarm-slides)</label>
+      <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
+      <div id="bdayList"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="addBday">+ Tilføj person</button>
+      </div>
+      <small class="small">Dato kan være <b>dd.mm</b> eller <b>dd.mm.yyyy</b>. Visning viser fødselsdato og alder (PB-DESIGN).</small>
+    </section>
+
+    <section class="panel">
+      <h2>Kalender (ICS)</h2>
+      <label>Kalender ICS-URL</label>
+      <input id="calUrl" type="text" placeholder="https://.../calendar.ics">
+      <div class="row">
+        <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
+        <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
+      </div>
+      <small class="small">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden i stedet kommende fødselsdage.</small>
+    </section>
+  </div>
+
+  <!-- HØJRE KOLONNE: SLIDES -->
   <section class="panel">
-    <h2>Brand</h2>
-    <label>Brand</label>
-    <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
-    <label>Logo URL</label>
-    <div class="row">
-      <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
-      <button class="btn" data-pick="#logoUrl">Vælg fra filer</button>
-    </div>
-    <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
-    <h2>Tema</h2>
-    <div class="row">
-      <div><label>Baggrund 1</label><input id="bg1" type="text" placeholder="#0d4952"></div>
-      <div><label>Baggrund 2</label><input id="bg2" type="text" placeholder="#0b6a74"></div>
-      <div><label>Accent</label><input id="accent" type="text" placeholder="#a7d0c9"></div>
-    </div>
-    <label>Opdaterings-interval (ms)</label>
-    <input id="refreshMs" type="number" min="60000" step="1000" value="300000">
-  </section>
-
-  <!-- Affaldstømning -->
-  <section class="panel">
-    <h2>Affaldstømning (automatisk plan)</h2>
-    <div class="row">
-      <div><label>Startdato</label><input id="emptiesStart" type="date"></div>
-      <div><label>Horizon (antal kommende linjer)</label><input id="emptiesHorizon" type="number" min="2" max="20" value="8"></div>
-    </div>
-
-    <label>Ugedage</label>
-    <div class="row" id="wdWrap" style="gap:12px">
-      <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="1"> MAN</label>
-      <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="2"> TIR</label>
-      <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="3"> ONS</label>
-      <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="4"> TOR</label>
-      <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="5"> FRE</label>
-    </div>
-
-    <label>Navne (rækkefølge — en pr. linje)</label>
-    <textarea id="emptiesNames" placeholder="Per&#10;Louise&#10;Max"></textarea>
-
-    <label>Ekskluder datoer (en pr. linje — dd.mm.yyyy)</label>
-    <textarea id="emptiesSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
-
-    <label>Antal kolonner i visning</label>
-    <select id="emptiesCols"><option value="1">1 kolonne</option><option value="2" selected>2 kolonner</option></select>
-  </section>
-
-  <!-- Fødselsdage -->
-  <section class="panel" style="grid-column:1 / -1">
-    <h2>Fødselsdage</h2>
-    <label>Standard-besked (bruges i alarm-slides)</label>
-    <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
-    <div id="bdayList"></div>
-    <div class="row" style="margin-top:10px">
-      <button class="btn" id="addBday">+ Tilføj person</button>
-    </div>
-    <small style="opacity:.8;display:block;margin-top:6px">Dato kan være <b>dd.mm</b> eller <b>dd.mm.yyyy</b>. Visning viser fødselsdato og alder (PB-DESIGN).</small>
-  </section>
-
-  <!-- Kalender (ICS) -->
-  <section class="panel" style="grid-column:1 / -1">
-    <h2>Kalender (ICS)</h2>
-    <label>Kalender ICS-URL</label>
-    <input id="calUrl" type="text" placeholder="https://.../calendar.ics">
-    <div class="row">
-      <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
-      <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
-    </div>
-    <small style="opacity:.8">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden i stedet kommende fødselsdage.</small>
+    <h2>Slides (rækkefølge)</h2>
+    <div class="slides" id="slides"></div>
+    <small class="small">Træk- og slip er ikke nødvendigt – brug “Op/Ned”. “Tømning” og “Fødselsdage” bruger venstrepanelets indstillinger.</small>
   </section>
 </div>
 
@@ -155,11 +176,13 @@
 </div>
 
 <script>
+/* ==========================
+   PB-DESIGN: hjælpefunktioner
+========================== */
 const $  = (q, el=document) => el.querySelector(q);
 const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 let DATA=null, ACTIVE_DIR="medarbejdere", FILE_TARGET=null;
 
-// ---------- API helper ----------
 async function api(action, payload){
   const r = await fetch("/api/data", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ action, ...(payload||{}) }) });
   const j = await r.json(); if(!j.ok) throw new Error(j.error||"Fejl"); return j;
@@ -168,9 +191,12 @@ async function loadData(){ const j = await (await fetch("/api/data")).json(); if
 function toLines(el){ return (el.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean) }
 function fromLines(arr){ return (arr||[]).join("\n") }
 
-// ---------- Fødselsdage UI ----------
+/* ==========================
+   PB-DESIGN: fødselsdage UI
+========================== */
 function renderBdays(b){
-  const host=$("#bdayList"); host.innerHTML=""; (b||[]).forEach((p,i)=>{
+  const host=$("#bdayList"); host.innerHTML="";
+  (b||[]).forEach((p,i)=>{
     const id="img_"+i;
     const row=document.createElement("div"); row.className="row"; row.style.marginTop="8px";
     row.innerHTML=`
@@ -187,36 +213,128 @@ function renderBdays(b){
   $("#addBday").onclick=()=>{ b.push({name:"",date:"",image:""}); renderBdays(b); };
 }
 
-// ---------- init ----------
+/* ==========================
+   PB-DESIGN: slides UI
+========================== */
+function slideTitle(s){
+  if(s.type==="image") return s.title||"Billede";
+  if(s.type==="text")  return s.title||"Tekst";
+  if(s.type==="empties") return s.title||"Tømning";
+  if(s.type==="birthday") return s.title||"Fødselsdage";
+  return s.type||"Slide";
+}
+function renderSlides(){
+  const box=$("#slides"); box.innerHTML="";
+  (DATA.slides||[]).forEach((s,idx)=>{
+    const card=document.createElement("div"); card.className="slide-card";
+
+    // hoved
+    const head=document.createElement("div"); head.className="slide-head";
+    head.innerHTML=`
+      <div><strong>${slideTitle(s)}</strong> <span class="slide-meta">(${s.type})</span></div>
+      <div class="row" style="flex:0 0 auto">
+        <button class="btn" data-up>Op</button>
+        <button class="btn" data-down>Ned</button>
+        <button class="btn bad" data-del>Fjern</button>
+      </div>`;
+    card.appendChild(head);
+
+    // body (felter pr. type)
+    const body=document.createElement("div"); body.className="slide-body";
+    body.innerHTML=`
+      <div class="row">
+        <div><label>Titel</label><input data-k="title" value="${s.title||""}"></div>
+        <div style="flex:0 0 140px"><label>Varighed (sek.)</label><input type="number" min="3" max="120" data-k="duration" value="${s.duration??12}"></div>
+      </div>
+      ${s.type==="image" ? `
+        <div class="row">
+          <input data-k="image" placeholder="/media/billede.jpg" value="${s.image||""}">
+          <button class="btn" data-pick="image">Vælg fra filer</button>
+        </div>
+        <div class="row">
+          <textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet (så rykkes billedet til den ene side)">${s.sideText||""}</textarea>
+        </div>
+      `: s.type==="text" ? `
+        <div class="row"><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>
+      `: s.type==="empties" ? `
+        <div class="small">Bruger “Affaldstømning (automatisk plan)” fra venstre panel.</div>
+      `: s.type==="birthday" ? `
+        <div class="small">Bruger “Fødselsdage” fra venstre panel.</div>
+      `: ``}
+    `;
+    card.appendChild(body);
+
+    // events
+    card.addEventListener("input",(e)=>{
+      const k=e.target.dataset.k; if(!k) return;
+      let v=e.target.value;
+      if(k==="duration") v=Number(v||12);
+      s[k]=v;
+    });
+    $("[data-up]",card).onclick=()=>{ if(idx>0){ const t=DATA.slides[idx-1]; DATA.slides[idx-1]=DATA.slides[idx]; DATA.slides[idx]=t; renderSlides(); } };
+    $("[data-down]",card).onclick=()=>{ if(idx<DATA.slides.length-1){ const t=DATA.slides[idx+1]; DATA.slides[idx+1]=DATA.slides[idx]; DATA.slides[idx]=t; renderSlides(); } };
+    $("[data-del]",card).onclick=()=>{ DATA.slides.splice(idx,1); renderSlides(); };
+    $("[data-pick]",card)?.addEventListener("click",()=>openFileModal("media", findInputSelector(card,"image")));
+    box.appendChild(card);
+  });
+}
+function findInputSelector(scope, key){
+  // laver en midlertidig id så filvælger kan skrive til feltet
+  const inp = scope.querySelector(`[data-k="${key}"]`);
+  if(!inp.id) inp.id = `f_${key}_${Math.random().toString(36).slice(2,7)}`;
+  return `#${inp.id}`;
+}
+
+/* ==========================
+   PB-DESIGN: init + save
+========================== */
 (async function init(){
   DATA = await loadData();
+
+  // Standardstruktur hvis tom data.json
+  DATA.brand   ??= "";
+  DATA.logoUrl ??= "";
+  DATA.theme   ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
+  DATA.settings??= { refreshMs:300000 };
+  DATA.empties ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
+  DATA.birthdays ??= { message:"", people:[] };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50 };
+  DATA.slides    ??= [];
+
   // brand/tema
-  $("#brand").value  = DATA.brand||"";
-  $("#logoUrl").value= DATA.logoUrl||"";
-  $("#bg1").value    = DATA.theme?.bg1||"#0d4952";
-  $("#bg2").value    = DATA.theme?.bg2||"#0b6a74";
-  $("#accent").value = DATA.theme?.accent||"#a7d0c9";
-  $("#refreshMs").value = DATA.settings?.refreshMs ?? 300000;
+  $("#brand").value  = DATA.brand;
+  $("#logoUrl").value= DATA.logoUrl;
+  $("#bg1").value    = DATA.theme.bg1;
+  $("#bg2").value    = DATA.theme.bg2;
+  $("#accent").value = DATA.theme.accent;
+  $("#refreshMs").value = DATA.settings.refreshMs;
 
   // affald
-  $("#emptiesStart").value   = DATA.empties?.startDate||"";
-  $("#emptiesHorizon").value = DATA.empties?.horizon||8;
-  const wd = (DATA.empties?.weekdays||[1]);
+  $("#emptiesStart").value   = DATA.empties.startDate||"";
+  $("#emptiesHorizon").value = DATA.empties.horizon||8;
+  const wd = (DATA.empties.weekdays||[]);
   $$(".wd").forEach(cb=>{ cb.checked = wd.includes(Number(cb.value)); });
-  $("#emptiesNames").value = fromLines(DATA.empties?.names||[]);
-  $("#emptiesSkip").value  = fromLines(DATA.empties?.skipDates||[]);
-  $("#emptiesCols").value  = String(DATA.empties?.columns||2);
+  $("#emptiesNames").value = fromLines(DATA.empties.names||[]);
+  $("#emptiesSkip").value  = fromLines(DATA.empties.skipDates||[]);
+  $("#emptiesCols").value  = String(DATA.empties.columns||2);
 
   // bdays
-  $("#bdayMsg").value = DATA.birthdays?.message||"";
-  renderBdays(DATA.birthdays?.people||[]);
+  $("#bdayMsg").value = DATA.birthdays.message||"";
+  renderBdays(DATA.birthdays.people||[]);
 
   // kalender
-  $("#calUrl").value  = DATA.calendar?.url||"";
-  $("#calDays").value = DATA.calendar?.daysAhead||60;
-  $("#calMax").value  = DATA.calendar?.maxEvents||50;
+  $("#calUrl").value  = DATA.calendar.url||"";
+  $("#calDays").value = DATA.calendar.daysAhead||60;
+  $("#calMax").value  = DATA.calendar.maxEvents||50;
 
-  // events
+  // slides + knapper
+  renderSlides();
+  $("#addImage").onclick   = ()=>{ DATA.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); };
+  $("#addText").onclick    = ()=>{ DATA.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); };
+  $("#addEmpties").onclick = ()=>{ DATA.slides.push({type:"empties", title:"TØMNINGS DAGE", duration:12}); renderSlides(); };
+  $("#addBirth").onclick   = ()=>{ DATA.slides.push({type:"birthday", title:"FØDSELSDAG", duration:12}); renderSlides(); };
+
+  // knapper
   $("#saveBtn").onclick = onSave;
   $("#openFiles").onclick = ()=>openFileModal("medarbejdere");
   $$("[data-pick]").forEach(b=>b.addEventListener("click",(ev)=>openFileModal("media", ev.currentTarget.getAttribute("data-pick"))));
@@ -225,11 +343,13 @@ function renderBdays(b){
 })().catch(e=>alert(e.message||e));
 
 async function onSave(){
+  // brand/tema
   DATA.brand = $("#brand").value.trim();
   DATA.logoUrl = $("#logoUrl").value.trim();
   DATA.theme = { bg1: $("#bg1").value.trim(), bg2: $("#bg2").value.trim(), accent: $("#accent").value.trim() };
   DATA.settings = { refreshMs: Number($("#refreshMs").value||300000) };
 
+  // affald
   DATA.empties = {
     startDate: $("#emptiesStart").value,
     horizon: Number($("#emptiesHorizon").value||8),
@@ -239,6 +359,7 @@ async function onSave(){
     columns: Number($("#emptiesCols").value||2)
   };
 
+  // bdays
   const people=[];
   $$("#bdayList .row").forEach(r=>{
     people.push({
@@ -249,6 +370,7 @@ async function onSave(){
   });
   DATA.birthdays = { message: $("#bdayMsg").value.trim(), people: people.filter(p=>p.name) };
 
+  // kalender
   DATA.calendar = {
     url: $("#calUrl").value.trim(),
     daysAhead: Number($("#calDays").value||60),
@@ -256,11 +378,13 @@ async function onSave(){
   };
 
   const pin=$("#adminPin").value.trim(); if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
-  await api("saveDataJson", { data: DATA, message:`PB-DESIGN: admin gem (pin:${pin.slice(0,2)}**)` });
+  await api("saveDataJson", { data: DATA, message:`PB-DESIGN: admin gem` });
   alert("Gemt ✔");
 }
 
-// ---------- filer modal ----------
+/* ==========================
+   PB-DESIGN: filer modal
+========================== */
 function openFileModal(dir="medarbejdere", targetInput=null){
   ACTIVE_DIR=dir; FILE_TARGET=targetInput; $("#fileModal").classList.add("open"); refreshDir();
 }
@@ -291,7 +415,6 @@ async function refreshDir(){
   });
   $("#opStatus").textContent=`/${ACTIVE_DIR}: ${items?.length||0} filer`;
 }
-
 $("#btnUpload").onclick = async ()=>{
   const f=$("#upFile").files[0]; const name=($("#upName").value||"").trim();
   if(!f||!name){ $("#upHint").textContent="Vælg fil + navn"; return; }
@@ -303,4 +426,5 @@ $("#btnUpload").onclick = async ()=>{
 </script>
 </body>
 </html>
+
 
