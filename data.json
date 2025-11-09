@@ -10,7 +10,7 @@
     "refreshMs": 300000
   },
   "empties": {
-    "startDate": "",
+    "startDate": "2025-10-01",
     "horizon": 8,
     "weekdays": [
       1
@@ -42,14 +42,6 @@
     {
       "type": "empties",
       "title": "TØMNINGS DAGE",
-      "duration": 15
-    },
-    {
-      "type": "image",
-      "title": "Tester",
-      "image": "/media/Slide1.jpg",
-      "sideText": "Tester siden",
-      "imageAlign": "right",
       "duration": 15
     }
   ]
