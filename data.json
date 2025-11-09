@@ -11,7 +11,7 @@
   },
   "empties": {
     "startDate": "2025-10-01",
-    "horizon": 8,
+    "horizon": 12,
     "weekdays": [
       1
     ],
