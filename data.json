@@ -54,13 +54,6 @@
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 10
-    },
-    {
-      "type": "image",
-      "title": "Kampagne",
-      "image": "",
-      "sideText": "billede test",
-      "duration": 10
     }
   ]
 }
