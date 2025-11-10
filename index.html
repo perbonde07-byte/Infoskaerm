@@ -2,303 +2,463 @@
 <html lang="da">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Infoskærm</title>
 <style>
+  /* ========== PB-DESIGN: Tema & layout ========== */
   :root{
-    --bg1:#0b6a74; --bg2:#0d4952; --accent:#a7d0c9; --ink:#e9fbff;
-    --panel:rgba(0,0,0,.08); --line:rgba(255,255,255,.10);
+    --bg1:#0d4952;
+    --bg2:#0b6a74;
+    --accent:#a7d0c9;
+    --ink:#e9fbff;
+    --muted:rgba(233,251,255,.75);
+    --line:rgba(255,255,255,.12);
+    --card:rgba(0,0,0,.10);
+    --radius:18px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{margin:0;background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-
-  /* PB-DESIGN: Scene */
-  .stage{position:fixed;inset:0;padding:18px}
-  .frame{position:relative;width:100%;height:100%;border-radius:20px;border:1px solid rgba(255,255,255,.12);}
-  .frame::before{content:"";position:absolute;inset:10px;border-radius:16px;border:1px solid rgba(255,255,255,.08)}
-  .content{position:absolute;inset:22px 22px 60px 22px;display:grid;place-items:center}
-
-  /* Footer brand */
-  .brand{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:10px;padding:0 22px;color:var(--ink)}
-  .brand .logo{height:28px}
-  .brand .dot{width:8px;height:8px;background:var(--accent);border-radius:50%}
-
-  /* === PB-DESIGN • Empties (tømningsdage) – 21" optimering === */
-  .slide-empties {
-    --base: clamp(12px, 1.2vw + 8px, 22px);
-    --title: clamp(28px, 3.2vw, 56px);
-    --head: clamp(12px, 0.9vw + 8px, 18px);
-    --row: clamp(14px, 1.1vw + 8px, 24px);
-    --row-h: clamp(46px, 4.6vh, 68px);
-    --radius: 16px;
-    width: 100%; height: 100%; display: grid; place-items: center; padding: min(4vh, 32px);
+  body{
+    margin:0;
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    font:16px/1.5 system-ui, Segoe UI, Roboto, Helvetica, Arial;
   }
-  .slide-empties .card{
-    width:min(1200px,94vw);
+  .stage{
+    min-height:100%;
+    padding:24px;
+    display:grid;
+    place-items:center;
+  }
+  .card{
+    width:min(1280px,96vw);
+    min-height:70vh;
+    background:var(--card);
+    border:1px solid var(--line);
     border-radius:var(--radius);
-    background:var(--panel);
-    border:1px solid rgba(255,255,255,.06);
-    box-shadow:0 8px 30px rgba(0,0,0,.25) inset;
-    padding:clamp(16px,3.2vh,36px);
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
   }
-  .slide-empties h1{
-    font-size:var(--title);line-height:1.1;letter-spacing:.04em;margin:0 0 clamp(16px,2.8vh,28px);text-align:center;font-weight:800;
+  .brandbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
   }
-  .slide-empties .grid{display:grid;grid-template-columns:1fr minmax(280px,1fr);gap:clamp(16px,3vw,42px)}
-  .slide-empties .tbl{width:100%}
-  .slide-empties .thead,
-  .slide-empties .row{display:grid;grid-template-columns:1.2fr .9fr;align-items:center;column-gap:clamp(10px,2vw,24px)}
-  .slide-empties .thead{
-    font-size:var(--head);text-transform:uppercase;letter-spacing:.12em;color:rgba(233,251,255,.8);
-    border-bottom:1px solid rgba(255,255,255,.12);padding:0 6px 10px;margin-bottom:8px;
+  .brand-left{
+    display:flex; align-items:center; gap:12px;
   }
-  .slide-empties .row{font-size:var(--row);height:var(--row-h);border-bottom:1px dashed rgba(255,255,255,.10);padding:0 6px}
-  .slide-empties .row.is-now{
-    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 18px rgba(0,0,0,.2);border-radius:12px;
+  .brand-logo{
+    width:48px; height:48px; border-radius:12px; object-fit:contain;
+    border:1px solid var(--line); background:rgba(0,0,0,.15); padding:6px;
   }
-  .slide-empties .date{font-feature-settings:"tnum" 1,"ss01" 1;letter-spacing:.02em;justify-self:end}
-  @media (max-width:820px){ .slide-empties .grid{grid-template-columns:1fr} .slide-empties h1{text-align:left} }
+  .brand-name{ font-weight:800; letter-spacing:.02em }
+  .clock{ opacity:.9; font-variant-numeric:tabular-nums; }
 
-  /* === PB-DESIGN • Billede + valgfri sidetekst === */
-  .slide-image{display:grid;grid-template-columns:1fr;gap:22px;align-items:center;width:min(1200px,94vw)}
-  .slide-image.has-text{grid-template-columns:1.1fr .9fr}
-  .slide-image .box{display:flex;align-items:center;justify-content:center}
-  .slide-image img{max-width:100%;max-height:68vh;border-radius:14px;border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 40px rgba(0,0,0,.28)}
-  .slide-image .text{font-size:clamp(16px,1.5vw,26px);line-height:1.35}
-  .slide-image h2{margin:0 0 10px;font-size:clamp(20px,2vw,34px);letter-spacing:.04em}
-  .slide-image p{margin:.5em 0}
+  .slide{
+    flex:1;
+    display:grid;
+    place-items:center;
+    padding:10px;
+  }
+  .slide-inner{
+    width:100%;
+    background:rgba(0,0,0,.12);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+  }
+  h2.title{ margin:0 0 10px; letter-spacing:.02em; }
+  .muted{ color:var(--muted) }
 
-  /* === PB-DESIGN • Tekst-slide === */
-  .slide-text{width:min(1100px,92vw)}
-  .slide-text h2{margin:0 0 .3em;font-size:clamp(22px,2.4vw,36px);letter-spacing:.04em}
-  .slide-text p{margin:.4em 0;font-size:clamp(16px,1.6vw,26px)}
+  /* ========== PB-DESIGN: Billedeslide ========== */
+  .image-two-col{
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:16px;
+    align-items:center;
+  }
+  .image-centered{
+    display:grid; place-items:center;
+  }
+  .image{
+    width:100%; height:58vh; max-height:62vh; object-fit:contain;
+    border-radius:14px; background:rgba(0,0,0,.18); border:1px solid var(--line);
+  }
+  .side-text{
+    background:rgba(0,0,0,.10);
+    border:1px solid var(--line);
+    border-radius:14px; padding:16px; font-size:20px;
+  }
 
-  /* === PB-DESIGN • Fødselsdag === */
-  .slide-birthday{width:min(1100px,92vw);text-align:center}
-  .slide-birthday h1{margin:0 0 .6em;font-size:clamp(26px,3vw,48px);letter-spacing:.05em}
-  .slide-birthday .photo{width:min(340px,38vw);height:min(340px,38vw);object-fit:cover;border-radius:18px;border:2px solid rgba(255,255,255,.18);box-shadow:0 10px 36px rgba(0,0,0,.25)}
-  .slide-birthday .name{margin:.6em 0;font-size:clamp(22px,2.6vw,40px);font-weight:800}
-  .slide-birthday .msg{font-size:clamp(16px,1.6vw,26px)}
+  /* ========== PB-DESIGN: Tekstslide ========== */
+  .text-body{
+    font-size:22px;
+    line-height:1.6;
+    white-space:pre-wrap;
+  }
+
+  /* ========== PB-DESIGN: Tømningsplan ========== */
+  .empties-grid{
+    display:grid;
+    gap:10px;
+  }
+  .empties-row{
+    display:grid;
+    grid-template-columns:160px 1fr 220px;
+    align-items:center;
+    gap:12px;
+    background:rgba(0,0,0,.10);
+    border:1px solid var(--line);
+    border-radius:12px; padding:10px 12px;
+  }
+  .badge-date{
+    font-variant-numeric:tabular-nums;
+    background:rgba(255,255,255,.10); border:1px solid var(--line);
+    padding:8px 10px; border-radius:10px; text-align:center; min-width:140px;
+  }
+  .name{ font-weight:700 }
+  .who{ opacity:.9 }
+  .is-current{
+    outline:2px solid var(--accent);
+    box-shadow:0 0 0 4px rgba(167,208,201,.25) inset;
+  }
+
+  /* ========== PB-DESIGN: Fødselsdag ========== */
+  .bday{
+    display:grid; grid-template-columns:1fr .9fr; gap:18px; align-items:center;
+  }
+  .bday .photo{
+    width:100%; height:55vh; object-fit:contain; background:rgba(0,0,0,.2);
+    border-radius:16px; border:1px solid var(--line);
+  }
+  .bday .panel{
+    background:rgba(0,0,0,.12); border:1px solid var(--line);
+    border-radius:16px; padding:16px;
+  }
+  .bday .name{ font-size:42px; font-weight:900; letter-spacing:.02em }
+  .bday .meta{ margin-top:8px; font-size:18px; opacity:.9 }
+  .bday .msg{ margin-top:12px; font-size:20px; white-space:pre-wrap }
+
+  @media (max-width:900px){
+    .bday{ grid-template-columns:1fr; }
+    .image-two-col{ grid-template-columns:1fr; }
+    .image{ height:48vh; }
+  }
 </style>
 </head>
 <body>
 <div class="stage">
-  <div class="frame">
-    <div id="app" class="content"><!-- PB-DESIGN: slides renderes her --></div>
-    <div class="brand">
-      <img id="brandLogo" class="logo" alt="" />
-      <span class="dot"></span>
-      <span id="brandText"></span>
+  <div class="card">
+    <div class="brandbar">
+      <div class="brand-left">
+        <img id="logo" class="brand-logo" alt="">
+        <div class="brand-name" id="brand">Infoskærm</div>
+      </div>
+      <div class="clock" id="clock"></div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-inner" id="slideHost">
+        <div class="muted">Indlæser…</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-/* ===== PB-DESIGN • helper ===== */
-const $ = (q,el=document)=>el.querySelector(q);
-function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]))}
-function pad2(n){return String(n).padStart(2,"0")}
-function fmtDMY(d){ return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}` }
-function asYMD(d){ return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}` }
+/* =========================
+   PB-DESIGN: Hjælpefunktioner
+========================= */
+const $  = (q, el=document)=>el.querySelector(q);
+const pad2 = n => String(n).padStart(2,"0");
+const fmtDate = d => `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`;
+const fmtDateDM = d => `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}`;
 
-/* ===== PB-DESIGN • load data ===== */
-let DATA=null, IDX=0, TIMER=null;
-async function loadData(){
-  const r = await fetch("/api/data"); const j = await r.json();
-  if(!j.ok) throw new Error(j.error||"Kunne ikke hente data.json");
+/* Klokke */
+function tickClock(){
+  const now = new Date();
+  $("#clock").textContent = `${fmtDate(now)}  ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+}
+
+/* Hent data.json via API */
+async function getData(){
+  const r = await fetch("/api/data");
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Fejl fra /api/data");
   return j.content;
 }
-function applyTheme(){
-  document.documentElement.style.setProperty("--bg1", DATA?.theme?.bg1 || "#0b6a74");
-  document.documentElement.style.setProperty("--bg2", DATA?.theme?.bg2 || "#0d4952");
-  document.documentElement.style.setProperty("--accent", DATA?.theme?.accent || "#a7d0c9");
-  $("#brandLogo").src = DATA?.logoUrl || "";
-  $("#brandLogo").style.display = DATA?.logoUrl ? "block":"none";
-  $("#brandText").textContent = DATA?.brand || "Infoskærm";
-}
 
-/* ===== PB-DESIGN • slide engine ===== */
-function nextSlide(){
-  if(!DATA?.slides?.length) return;
-  IDX = (IDX + 1) % DATA.slides.length;
-  renderSlide();
-}
-function startTimer(sec){
-  clearTimeout(TIMER);
-  TIMER = setTimeout(nextSlide, (Number(sec)||12)*1000);
-}
-function renderSlide(){
-  const app = $("#app"); app.innerHTML = "";
-  const s = DATA.slides[IDX] || {};
-  if(s.type==="image")       renderImageSlide(app, s);
-  else if(s.type==="text")   renderTextSlide(app, s);
-  else if(s.type==="empties")renderEmptiesSlide(app, s);
-  else if(s.type==="birthday")renderBirthdaySlide(app, s);
-  else app.textContent = s.title || "Slide";
-  startTimer(s.duration ?? 12);
-}
-
-/* ===== PB-DESIGN • slides ===== */
-function renderImageSlide(root, s){
-  const hasText = Boolean((s.sideText||"").trim());
-  root.innerHTML = `
-    <section class="slide-image ${hasText?"has-text":""}">
-      <div class="box">
-        <img src="${escapeHtml(s.image||"")}" alt="">
-      </div>
-      ${hasText?`
-      <div class="text">
-        <h2>${escapeHtml(s.title||"")}</h2>
-        ${s.sideText.split(/\n+/).map(p=>`<p>${escapeHtml(p)}</p>`).join("")}
-      </div>`:""}
-    </section>
-  `;
-}
-function renderTextSlide(root, s){
-  root.innerHTML = `
-    <section class="slide-text">
-      <h2>${escapeHtml(s.title||"")}</h2>
-      ${(s.content||"").split(/\n+/).map(p=>`<p>${escapeHtml(p)}</p>`).join("")}
-    </section>
-  `;
-}
-function renderBirthdaySlide(root, s){
-  // PB-DESIGN: find nærmeste fødselsdag i denne/kommende uge → hvis ingen, vis første i listen.
-  const msg = DATA?.birthdays?.message || "Tillykke med fødselsdagen!";
-  const people = DATA?.birthdays?.people || [];
-  if(!people.length){ root.innerHTML = `<div class="slide-text"><h2>Fødselsdag</h2><p>Ingen registreret.</p></div>`; return; }
-
-  const today = new Date(); const y = today.getFullYear();
-  const weekStart = new Date(today); weekStart.setDate(today.getDate()-today.getDay()+1); // man
-  const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
-
-  function parsePerson(p){
-    // p.date: dd.mm eller dd.mm.yyyy
-    const m = String(p.date||"").match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);
+/* =========================
+   PB-DESIGN: Empties (automatisk plan)
+   - Generér kommende datoer på valgte ugedage
+   - Afstem rækkefølgen af navne
+   - Markér aktuel (første dato der er “i dag” eller frem)
+========================= */
+function parseSkip(list){
+  // dd.mm.yyyy -> Date(midnight)
+  return (list||[]).map(s=>{
+    const m = s.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
     if(!m) return null;
-    const dd=+m[1], mm=(+m[2])-1, yy=m[3]?+m[3]:y;
-    const thisYear = new Date(y,mm,dd);
-    const bornYear = m[3]? +m[3] : null;
-    return { name:p.name, image:p.image, bornYear, thisYear, dmy: fmtDMY(new Date(yy,mm,dd)) };
+    const [_,dd,mm,yyyy] = m;
+    return new Date(Number(yyyy), Number(mm)-1, Number(dd), 0,0,0,0);
+  }).filter(Boolean).map(d=>+d);
+}
+
+function buildEmpties(em, horizon){
+  const start = em.startDate ? new Date(em.startDate) : new Date();
+  start.setHours(0,0,0,0);
+  const weekdays = (em.weekdays||[]).slice().sort(); // 1=Mon..5=Fri
+  const names = (em.names||[]).slice();
+  const skipSet = new Set(parseSkip(em.skipDates||[]));
+  const res = [];
+  if(!weekdays.length || !names.length) return res;
+
+  // find første dato >= start på nærmeste valgte ugedag
+  let d = new Date(start);
+  function isChosenWeekday(date){
+    const wd = date.getDay(); // 0=Sun .. 6=Sat
+    const dk = wd===0?7:wd;   // 1..7
+    return weekdays.includes(dk);
   }
+  // Tril frem til første gyldige ugedag
+  while(!isChosenWeekday(d)) d.setDate(d.getDate()+1);
 
-  const parsed = people.map(parsePerson).filter(Boolean).sort((a,b)=>a.thisYear - b.thisYear);
-  // find første i denne uge, ellers næste
-  let person = parsed.find(p=>p.thisYear>=weekStart && p.thisYear<=weekEnd) || parsed.find(p=>p.thisYear>=today) || parsed[0];
+  // generér datoer til vi har horizon (spring eksklusioner over)
+  let nameIdx = 0;
+  while(res.length < horizon+4){ // lidt buffer
+    const dn = new Date(d);
+    dn.setHours(0,0,0,0);
+    const stamp = +dn;
+    if(!skipSet.has(stamp)){
+      res.push({
+        date: new Date(dn),
+        name: names[nameIdx % names.length]
+      });
+      nameIdx++;
+    }
+    // videre til næste valgte ugedag
+    d.setDate(d.getDate()+1);
+    while(!isChosenWeekday(d)) d.setDate(d.getDate()+1);
+  }
+  return res.slice(0,horizon);
+}
 
-  const age = person.bornYear ? (y - person.bornYear) : null;
-  root.innerHTML = `
-    <section class="slide-birthday">
-      <h1>FØDSELSDAG</h1>
-      <img class="photo" src="${escapeHtml(person.image||"")}" alt="">
-      <div class="name">${escapeHtml(person.name||"")}</div>
-      <div class="msg">${escapeHtml(msg)} ${person.dmy ? `(${escapeHtml(person.dmy.slice(0,5))})` : ""} ${age?`– ${age} år`:``}</div>
-    </section>
+function renderEmpties(host, DATA){
+  const em = DATA.empties || {};
+  const horizon = Number(em.horizon || 8);
+  const cols = Math.max(1, Math.min(4, Number(em.columns||2)));
+  const items = buildEmpties(em, horizon);
+  host.innerHTML = `
+    <h2 class="title">${(DATA.slides.find(s=>s.type==='empties')?.title)||'TØMNINGS DAGE'}</h2>
+    <div class="empties-grid" style="grid-template-columns: repeat(${cols}, 1fr)">
+    </div>
+  `;
+  const grid = host.querySelector(".empties-grid");
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  items.forEach((row,i)=>{
+    const tr = document.createElement("div");
+    tr.className = "empties-row";
+    const isCurrent = (+row.date) === +today;
+    tr.innerHTML = `
+      <div class="badge-date ${isCurrent?'is-current':''}">${fmtDate(row.date)}</div>
+      <div class="name">${row.name || '-'}</div>
+      <div class="who muted">Rækkefølge #${i+1}</div>
+    `;
+    grid.appendChild(tr);
+  });
+}
+
+/* =========================
+   PB-DESIGN: Fødselsdag (auto)
+   - Finder alle personer hvor dato matcher dd.mm i dag
+   - Viser hver person som sit eget slide (i rækkefølge)
+========================= */
+function peopleWithBirthdayToday(DATA){
+  const todayDM = fmtDateDM(new Date()); // "dd.mm"
+  const list = (DATA.birthdays?.people || []);
+  return list.filter(p=>{
+    const d = (p.date||"").trim();
+    // tillad "dd.mm" eller "dd.mm.yyyy"
+    return d.startsWith(todayDM);
+  });
+}
+
+function renderBdaySlide(host, DATA, person){
+  const msg = DATA.birthdays?.message || "Tillykke med fødselsdagen!";
+  host.innerHTML = `
+    <div class="bday">
+      <img class="photo" src="${person.image||''}" alt="">
+      <div class="panel">
+        <h2 class="title">FØDSELSDAG</h2>
+        <div class="name">${person.name||''}</div>
+        <div class="meta">
+          Født: ${(person.date||'')}
+        </div>
+        <div class="msg">${msg}</div>
+      </div>
+    </div>
   `;
 }
 
-/* ===== PB-DESIGN • TØMNINGS DAGE (ny visning) ===== */
-function renderEmptiesSlide(root/*, s*/){
-  // 1) byg plan
-  const plan = buildEmptiesPlan();
-  // 2) del i kolonner (1/2)
-  const cols = Math.max(1, Math.min(2, Number(DATA?.empties?.columns||2)));
-  const mid = cols===2 ? Math.ceil(plan.length/2) : plan.length;
-  const left = plan.slice(0, mid);
-  const right = cols===2 ? plan.slice(mid) : [];
-
-  root.innerHTML = `
-    <section class="slide-empties">
-      <div class="card">
-        <h1>TØMNINGS DAGE</h1>
-        <div class="grid">
-          ${col(left)}
-          ${cols===2 ? col(right) : ""}
-        </div>
+/* =========================
+   PB-DESIGN: Billedeslide & Tekstslide
+========================= */
+function renderImageSlide(host, slide){
+  if(slide.sideText && slide.sideText.trim()){
+    host.innerHTML = `
+      <h2 class="title">${slide.title||'Billede'}</h2>
+      <div class="image-two-col">
+        <div><img class="image" src="${slide.image||''}" alt=""></div>
+        <div class="side-text">${(slide.sideText||'').replace(/\n/g,'<br>')}</div>
       </div>
-    </section>
-  `;
-  function col(list){
-    return `
-      <div class="tbl">
-        <div class="thead"><div>NAVN</div><div class="date">DATO</div></div>
-        ${list.map(r=>`
-          <div class="row ${r.isNow?"is-now":""}">
-            <div>${escapeHtml(r.name)}</div>
-            <div class="date">${escapeHtml(r.dateStr)}</div>
-          </div>
-        `).join("")}
+    `;
+  } else {
+    host.innerHTML = `
+      <h2 class="title">${slide.title||'Billede'}</h2>
+      <div class="image-centered">
+        <img class="image" src="${slide.image||''}" alt="">
       </div>
     `;
   }
 }
 
-/* PB-DESIGN: Plan-generator der IKKE “skubber” på refresh */
-function buildEmptiesPlan(){
-  const E = DATA?.empties || {};
-  const start = E.startDate ? new Date(E.startDate) : new Date();
-  const weekdays = (E.weekdays||[1]).map(Number).filter(n=>n>=1 && n<=7); // 1=man .. 7=søn
-  const names = (E.names||[]).filter(Boolean);
-  const skip = new Set((E.skipDates||[]).map(s=>s.trim()));
-  const horizon = Math.max(4, Math.min(40, Number(E.horizon||8)));
+function renderTextSlide(host, slide){
+  host.innerHTML = `
+    <h2 class="title">${slide.title||'Info'}</h2>
+    <div class="text-body">${(slide.content||'').replace(/\n/g,'<br>')}</div>
+  `;
+}
 
-  const out=[], todayYMD=asYMD(new Date());
-  let nameIdx=0; let d = new Date(start);
-  while (d.getDay()!==1) d.setDate(d.getDate()-1);          // rul bagud til mandag for stabilitet
-  function isWantedDay(date){ const wd = date.getDay()||7; return weekdays.includes(wd); }
-  function stepToNextWanted(date){ do { date.setDate(date.getDate()+1); } while (!isWantedDay(date)); }
-  while(!isWantedDay(d) || d < start) stepToNextWanted(d);  // første ønskedag >= start
+/* =========================
+   PB-DESIGN: Slideshow
+   - Udvider 'birthday' til en sekvens af personspecifikke slides (kun for i dag)
+   - Respekterer slide.duration (sekunder)
+========================= */
+let DATA = null;
+let QUEUE = [];
+let idx = 0;
+let timer = null;
 
-  while(out.length < horizon){
-    const dmy = fmtDMY(d);
-    if(!skip.has(dmy)){
-      const ymd = asYMD(d);
-      const item = { name: (names[nameIdx % Math.max(1,names.length)])||"", dateStr: dmy, yyyymmdd: ymd };
-      out.push(item);
-      nameIdx++;
+function buildQueueFromSlides(slides){
+  const out = [];
+  for(const s of (slides||[])){
+    if(s.type === "birthday"){
+      const todays = peopleWithBirthdayToday(DATA);
+      if(todays.length){
+        // Push hver person som et "virtuel slide" med egen render
+        todays.forEach(p=>{
+          out.push({
+            _virtual:true,
+            type:"birthday:person",
+            duration: s.duration ?? 12,
+            render: (host)=>renderBdaySlide(host, DATA, p)
+          });
+        });
+      } else {
+        // Ingen fødselar i dag – vis en pæn besked (kort varighed)
+        out.push({
+          _virtual:true,
+          type:"birthday:none",
+          duration: Math.min(8, s.duration ?? 12),
+          render: (host)=>{
+            host.innerHTML = `
+              <h2 class="title">${s.title || 'FØDSELSDAG'}</h2>
+              <div class="muted">Ingen fødselsdag i dag.</div>
+            `;
+          }
+        });
+      }
+    } else if(s.type === "empties"){
+      out.push({
+        _virtual:true,
+        type:"empties",
+        duration: s.duration ?? 12,
+        render: (host)=>renderEmpties(host, DATA)
+      });
+    } else if(s.type === "image"){
+      out.push({
+        _virtual:true,
+        type:"image",
+        duration: s.duration ?? 12,
+        render: (host)=>renderImageSlide(host, s)
+      });
+    } else if(s.type === "text"){
+      out.push({
+        _virtual:true,
+        type:"text",
+        duration: s.duration ?? 12,
+        render: (host)=>renderTextSlide(host, s)
+      });
+    } else {
+      // Ukendt type -> inert slide
+      out.push({
+        _virtual:true,
+        type:"unknown",
+        duration: 6,
+        render: (host)=>{
+          host.innerHTML = `<div class="muted">Ukendt slide-type: ${s.type||'n/a'}</div>`;
+        }
+      });
     }
-    stepToNextWanted(d);
   }
-  // markér "aktuel" som første dato ≥ i dag
-  let flagged=false;
-  for(const r of out){
-    if(!flagged && r.yyyymmdd>=todayYMD){ r.isNow=true; flagged=true; } else r.isNow=false;
-  }
-  if(!flagged && out.length) out[out.length-1].isNow = true;
   return out;
 }
 
-/* ===== PB-DESIGN • boot ===== */
-(async function start(){
-  DATA = await loadData();
-
-  // defaults
-  DATA.theme ??={}; DATA.settings??={refreshMs:300000};
-  DATA.empties??={startDate:"",horizon:8,weekdays:[1],names:[],skipDates:[],columns:2};
-  DATA.slides ??=[];
-  applyTheme();
-
-  // footer brand
-  $("#brandText").textContent = DATA.brand || "Infoskærm";
-
-  // render første slide
-  IDX = 0; renderSlide();
-
-  // auto-refresh af data (skifter ikke slide/markering kunstigt)
-  const ms = Math.max(60000, Number(DATA.settings.refreshMs||300000));
-  setInterval(async ()=>{
-    try{
-      const fresh = await loadData();
-      DATA = fresh;
-      applyTheme();
-      // behold aktuel slide-index
-      renderSlide();
-    }catch(e){ /* ignorer net-fejl på TV */ }
+function showCurrent(){
+  const host = $("#slideHost");
+  if(!QUEUE.length){
+    host.innerHTML = `<div class="muted">Ingen slides konfigureret.</div>`;
+    return;
+  }
+  const item = QUEUE[idx % QUEUE.length];
+  try{
+    item.render(host);
+  } catch(err){
+    host.innerHTML = `<div class="muted">Fejl i slide: ${err?.message||err}</div>`;
+  }
+  clearTimeout(timer);
+  const ms = Math.max(1000, (item.duration||12)*1000);
+  timer = setTimeout(()=>{
+    idx = (idx+1) % QUEUE.length;
+    showCurrent();
   }, ms);
-})();
+}
+
+/* =========================
+   PB-DESIGN: Init + auto-refresh
+========================= */
+async function boot(){
+  try{
+    DATA = await getData();
+
+    // Tema/brand
+    $("#brand").textContent = DATA.brand || "Infoskærm";
+    if(DATA.logoUrl) $("#logo").src = DATA.logoUrl;
+    document.documentElement.style.setProperty('--bg1', DATA.theme?.bg1 || getComputedStyle(document.documentElement).getPropertyValue('--bg1'));
+    document.documentElement.style.setProperty('--bg2', DATA.theme?.bg2 || getComputedStyle(document.documentElement).getPropertyValue('--bg2'));
+    document.documentElement.style.setProperty('--accent', DATA.theme?.accent || getComputedStyle(document.documentElement).getPropertyValue('--accent'));
+
+    // Kø op
+    QUEUE = buildQueueFromSlides(DATA.slides||[]);
+    idx = 0;
+    showCurrent();
+
+    // Auto-refresh af hele DATA (ikke skift slide i utide)
+    const interval = Math.max(60000, Number(DATA.settings?.refreshMs||300000));
+    setTimeout(boot, interval);
+  }catch(e){
+    $("#slideHost").innerHTML = `<div class="muted">Fejl ved indlæsning: ${e?.message||e}</div>`;
+  }
+}
+
+/* Start */
+tickClock();
+setInterval(tickClock, 1000);
+boot();
 </script>
 </body>
 </html>
+
 
 
