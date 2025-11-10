@@ -1,64 +1,22 @@
-<div style="padding:18px">
-  <h2>Brand</h2>
-  <label>Brand</label>
-  <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm" />
+<h2>Brand</h2>
+<label>Brand</label>
+<input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
 
-  <label style="margin-top:10px">Logo URL</label>
-  <div style="display:flex;gap:10px">
-    <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo.png" style="flex:1" />
-    <button class="btn" id="pickLogo">Vælg fra filer</button>
-  </div>
-
-  <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
-  <h2>Tema</h2>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <div style="flex:1 1 160px">
-      <label>Baggrund 1</label>
-      <input id="bg1" type="text" placeholder="#0d4952" />
-    </div>
-    <div style="flex:1 1 160px">
-      <label>Baggrund 2</label>
-      <input id="bg2" type="text" placeholder="#0b6a74" />
-    </div>
-    <div style="flex:1 1 160px">
-      <label>Accent</label>
-      <input id="accent" type="text" placeholder="#a7d0c9" />
-    </div>
-  </div>
-
-  <label style="margin-top:10px">Opdaterings-interval (ms)</label>
-  <input id="refreshMs" type="number" min="60000" step="1000" value="300000" />
+<label>Logo URL</label>
+<div class="row">
+  <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
+  <button class="btn" data-pick="#logoUrl">Vælg fra filer</button>
 </div>
 
-<script>
-PB.onReady.push(() => {
-  const d = PB.data || {};
-  d.theme ||= {bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9"};
-  d.settings ||= {refreshMs:300000};
+<div style="height:1px;background:var(--line);margin:16px -16px"></div>
 
-  brand.value   = d.brand || "";
-  logoUrl.value = d.logoUrl || "";
-  bg1.value     = d.theme.bg1;
-  bg2.value     = d.theme.bg2;
-  accent.value  = d.theme.accent;
-  refreshMs.value = d.settings.refreshMs;
+<h2>Tema</h2>
+<div class="row">
+  <div><label>Baggrund 1</label><input id="bg1" type="text" placeholder="#0d4952"></div>
+  <div><label>Baggrund 2</label><input id="bg2" type="text" placeholder="#0b6a74"></div>
+  <div><label>Accent</label><input id="accent" type="text" placeholder="#a7d0c9"></div>
+</div>
+<label>Opdaterings-interval (ms)</label>
+<input id="refreshMs" type="number" min="60000" step="1000" value="300000">
 
-  document.getElementById('pickLogo').onclick = () => {
-    // åbner fil-modal fra hovedsiden og skriver sti ind i feltet
-    const elSel = '#brand_tema_logo_input';
-  };
-});
-
-PB.onSave.push(() => {
-  PB.data.brand   = brand.value.trim();
-  PB.data.logoUrl = logoUrl.value.trim();
-  PB.data.theme   = {
-    bg1: bg1.value.trim() || "#0d4952",
-    bg2: bg2.value.trim() || "#0b6a74",
-    accent: accent.value.trim() || "#a7d0c9"
-  };
-  PB.data.settings = { refreshMs: Number(refreshMs.value || 300000) };
-});
-</script>
 
