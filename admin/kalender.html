@@ -1,26 +1,54 @@
-<section class="panel">
+<div style="padding:18px">
   <h2>Kalender (ICS)</h2>
 
   <label>Kalender ICS-URL</label>
-  <input id="calUrl" type="text" placeholder="https://.../calendar.ics">
+  <input id="calUrl" type="text" placeholder="https://.../calendar.ics" />
 
-  <div class="row">
-    <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
-    <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+    <div style="flex:1 1 180px">
+      <label>Dage frem (visning)</label>
+      <input id="calDays" type="number" min="1" max="365" value="60" />
+    </div>
+    <div style="flex:1 1 180px">
+      <label>Maks. antal events</label>
+      <input id="calMax" type="number" min="1" max="500" value="50" />
+    </div>
+    <div style="flex:1 1 180px">
+      <label>Vis klokkeslæt</label>
+      <select id="calShowTime">
+        <option value="1">Ja</option>
+        <option value="0">Nej</option>
+      </select>
+    </div>
+    <div style="flex:1 1 180px">
+      <label>Visningsstil</label>
+      <select id="calStyle">
+        <option value="boks">Bokse</option>
+        <option value="liste">Liste</option>
+      </select>
+    </div>
   </div>
 
-  <label>Vis klokkeslæt</label>
-  <select id="calShowTime">
-    <option value="true" selected>Ja</option>
-    <option value="false">Nej</option>
-  </select>
-
-  <label>Visningsstil</label>
-  <select id="calStyle">
-    <option value="boxes" selected>Bokse</option>
-    <option value="list">Liste</option>
-    <option value="bullets">Punkter</option>
-  </select>
-
   <small class="small">Vises på <code>/kalender.html</code>. Hvis ICS-URL er tom, vises kommende fødselsdage i stedet.</small>
-</section>
+</div>
+
+<script>
+PB.onReady.push(() => {
+  const c = PB.data.calendar ||= { url:"", daysAhead:60, maxEvents:50, showTime:true, style:"boks" };
+  calUrl.value      = c.url || "";
+  calDays.value     = c.daysAhead ?? 60;
+  calMax.value      = c.maxEvents ?? 50;
+  calShowTime.value = c.showTime ? '1' : '0';
+  calStyle.value    = c.style || 'boks';
+});
+PB.onSave.push(() => {
+  PB.data.calendar = {
+    url: calUrl.value.trim(),
+    daysAhead: Number(calDays.value || 60),
+    maxEvents: Number(calMax.value || 50),
+    showTime: calShowTime.value === '1',
+    style: calStyle.value || 'boks'
+  };
+});
+</script>
+
