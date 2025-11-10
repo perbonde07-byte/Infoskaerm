@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Admin • Infoscreen</title>
 <style>
-  /* PB-DESIGN: klassisk admin UI */
   :root{
-    --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --dim:#a8d7de; --ok:#1f9d68; --bad:#d35a5a;
-    --radius:14px;
+    --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --dim:#a8d7de; --ok:#1f9d68; --bad:#d35a5a; --radius:14px;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
@@ -16,8 +14,7 @@
   h1{margin:0;font-weight:800}
   .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .btn{background:#173c43;border:1px solid #0a2328;color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
-  .btn.ok{background:var(--ok)}
-  .btn.bad{background:#5a1f1f;border-color:#411515}
+  .btn.ok{background:var(--ok)} .btn.bad{background:#5a1f1f;border-color:#411515}
   .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
   .panel{background:var(--panel);border:1px solid #0a2328;border-radius:var(--radius);padding:18px}
   .panel h2{margin:0 0 10px}
@@ -27,8 +24,6 @@
   .row{display:flex;gap:10px;flex-wrap:wrap}
   .row>*{flex:1}
   .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid #0a2328;padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
-
-  /* Slides panel (højre) */
   .slides{display:flex;flex-direction:column;gap:10px}
   .slide-card{border:1px solid #0a2328;border-radius:12px;background:#092b30;padding:12px}
   .slide-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -36,7 +31,7 @@
   .slide-body{margin-top:8px;display:grid;gap:8px}
   .small{font-size:12px;color:#9abec4}
 
-  /* Modal filer (scroll fast) */
+  /* Modal filer */
   .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px}
   .modal.open{display:flex}
   .sheet{max-width:1100px;width:100%;background:#092b30;border:1px solid #0a2328;border-radius:14px;padding:18px;max-height:90vh;overflow:auto}
@@ -52,7 +47,6 @@
   <h1>Admin • Infoscreen</h1>
   <div class="head-actions">
     <button class="btn" id="openFiles">Filer (medarb & media)</button>
-    <!-- PB-DESIGN: slide-knapper -->
     <button class="btn" id="addImage">+ Billede</button>
     <button class="btn" id="addText">+ Tekst</button>
     <button class="btn" id="addEmpties">+ Tømning</button>
@@ -61,7 +55,7 @@
 </header>
 
 <div class="wrap">
-  <!-- VENSTRE KOLONNE -->
+  <!-- VENSTRE -->
   <div class="left-col" style="display:flex;flex-direction:column;gap:14px">
     <section class="panel">
       <h2>Brand</h2>
@@ -69,7 +63,7 @@
       <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
       <label>Logo URL</label>
       <div class="row">
-        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
+        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo.png">
         <button class="btn" data-pick="#logoUrl">Vælg fra filer</button>
       </div>
       <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
@@ -89,29 +83,25 @@
         <div><label>Startdato</label><input id="emptiesStart" type="date"></div>
         <div><label>Horizon (antal kommende linjer)</label><input id="emptiesHorizon" type="number" min="2" max="20" value="8"></div>
       </div>
-
       <label>Ugedage</label>
-      <div class="row" id="wdWrap" style="gap:12px">
+      <div class="row" style="gap:12px">
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="1"> MAN</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="2"> TIR</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="3"> ONS</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="4"> TOR</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="5"> FRE</label>
       </div>
-
-      <label>Navne (rækkefølge — en pr. linje)</label>
+      <label>Navne (en pr. linje)</label>
       <textarea id="emptiesNames" placeholder="Per&#10;Louise&#10;Max"></textarea>
-
-      <label>Ekskluder datoer (en pr. linje — dd.mm.yyyy)</label>
+      <label>Ekskluder datoer (dd.mm.yyyy)</label>
       <textarea id="emptiesSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
-
       <label>Antal kolonner i visning</label>
       <select id="emptiesCols"><option value="1">1 kolonne</option><option value="2" selected>2 kolonner</option></select>
     </section>
 
     <section class="panel">
       <h2>Fødselsdage</h2>
-      <label>Standard-besked (bruges i alarm-slides)</label>
+      <label>Standard-besked</label>
       <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
       <div id="bdayList"></div>
       <div class="row" style="margin-top:10px">
@@ -128,10 +118,8 @@
         <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
         <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
       </div>
-      <!-- PB-DESIGN: kalender options -->
       <label style="display:flex;align-items:center;gap:8px">
-        <input id="calShowTimes" type="checkbox" checked>
-        Vis klokkeslæt i kalenderen
+        <input id="calShowTimes" type="checkbox" checked> Vis klokkeslæt i kalenderen
       </label>
       <label>Visningsstil</label>
       <select id="calStyle">
@@ -139,12 +127,11 @@
         <option value="arrows">Pile (→)</option>
         <option value="boxes">Bokse</option>
       </select>
-
       <small class="small">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden i stedet kommende fødselsdage.</small>
     </section>
   </div>
 
-  <!-- HØJRE KOLONNE: SLIDES -->
+  <!-- HØJRE: SLIDES -->
   <section class="panel">
     <h2>Slides (rækkefølge)</h2>
     <div class="slides" id="slides"></div>
@@ -187,9 +174,7 @@
 </div>
 
 <script>
-/* ==========================
-   PB-DESIGN: hjælpefunktioner
-========================== */
+/* ===== utils ===== */
 const $  = (q, el=document) => el.querySelector(q);
 const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 let DATA=null, ACTIVE_DIR="medarbejdere", FILE_TARGET=null;
@@ -202,9 +187,7 @@ async function loadData(){ const j = await (await fetch("/api/data")).json(); if
 function toLines(el){ return (el.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean) }
 function fromLines(arr){ return (arr||[]).join("\n") }
 
-/* ==========================
-   PB-DESIGN: fødselsdage UI
-========================== */
+/* ===== fødselsdage UI ===== */
 function renderBdays(b){
   const host=$("#bdayList"); host.innerHTML="";
   (b||[]).forEach((p,i)=>{
@@ -224,9 +207,7 @@ function renderBdays(b){
   $("#addBday").onclick=()=>{ b.push({name:"",date:"",image:""}); renderBdays(b); };
 }
 
-/* ==========================
-   PB-DESIGN: slides UI
-========================== */
+/* ===== slides UI ===== */
 function slideTitle(s){
   if(s.type==="image") return s.title||"Billede";
   if(s.type==="text")  return s.title||"Tekst";
@@ -291,23 +272,19 @@ function findInputSelector(scope, key){
   return `#${inp.id}`;
 }
 
-/* ==========================
-   PB-DESIGN: init + save
-========================== */
+/* ===== init + save ===== */
 (async function init(){
   DATA = await loadData();
 
-  // Standardstruktur
   DATA.brand   ??= "";
   DATA.logoUrl ??= "";
   DATA.theme   ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
   DATA.settings??= { refreshMs:300000 };
   DATA.empties ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
   DATA.birthdays ??= { message:"", people:[] };
-  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTimes:true, viewStyle:"points" };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTimes:true, style:"points" };
   DATA.slides    ??= [];
 
-  // brand/tema
   $("#brand").value  = DATA.brand;
   $("#logoUrl").value= DATA.logoUrl;
   $("#bg1").value    = DATA.theme.bg1;
@@ -315,7 +292,6 @@ function findInputSelector(scope, key){
   $("#accent").value = DATA.theme.accent;
   $("#refreshMs").value = DATA.settings.refreshMs;
 
-  // tømning
   $("#emptiesStart").value   = DATA.empties.startDate||"";
   $("#emptiesHorizon").value = DATA.empties.horizon||8;
   const wd = (DATA.empties.weekdays||[]);
@@ -324,27 +300,22 @@ function findInputSelector(scope, key){
   $("#emptiesSkip").value  = fromLines(DATA.empties.skipDates||[]);
   $("#emptiesCols").value  = String(DATA.empties.columns||2);
 
-  // fødselsdage
   $("#bdayMsg").value = DATA.birthdays.message||"";
   renderBdays(DATA.birthdays.people||[]);
 
-  // kalender
   $("#calUrl").value  = DATA.calendar.url||"";
   $("#calDays").value = DATA.calendar.daysAhead||60;
   $("#calMax").value  = DATA.calendar.maxEvents||50;
   $("#calShowTimes").checked = Boolean(DATA.calendar.showTimes ?? true);
-  $("#calStyle").value = DATA.calendar.viewStyle || "points";
+  $("#calStyle").value = DATA.calendar.style || "points";
 
-  // slides
   renderSlides();
 
-  // slide-knapper
   $("#addImage").onclick   = ()=>{ DATA.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); };
   $("#addText").onclick    = ()=>{ DATA.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); };
   $("#addEmpties").onclick = ()=>{ DATA.slides.push({type:"empties", title:"TØMNINGS DAGE", duration:12}); renderSlides(); };
   $("#addBirth").onclick   = ()=>{ DATA.slides.push({type:"birthday", title:"FØDSELSDAG", duration:12}); renderSlides(); };
 
-  // knapper + modal
   $("#saveBtn").onclick = onSave;
   $("#openFiles").onclick = ()=>openFileModal("medarbejdere");
   $$("[data-pick]").forEach(b=>b.addEventListener("click",(ev)=>openFileModal("media", ev.currentTarget.getAttribute("data-pick"))));
@@ -353,13 +324,11 @@ function findInputSelector(scope, key){
 })().catch(e=>alert(e.message||e));
 
 async function onSave(){
-  // brand/tema
   DATA.brand = $("#brand").value.trim();
   DATA.logoUrl = $("#logoUrl").value.trim();
   DATA.theme = { bg1: $("#bg1").value.trim(), bg2: $("#bg2").value.trim(), accent: $("#accent").value.trim() };
   DATA.settings = { refreshMs: Number($("#refreshMs").value||300000) };
 
-  // tømning
   DATA.empties = {
     startDate: $("#emptiesStart").value,
     horizon: Number($("#emptiesHorizon").value||8),
@@ -369,7 +338,6 @@ async function onSave(){
     columns: Number($("#emptiesCols").value||2)
   };
 
-  // fødselsdage
   const people=[];
   $$("#bdayList .row").forEach(r=>{
     people.push({
@@ -380,13 +348,12 @@ async function onSave(){
   });
   DATA.birthdays = { message: $("#bdayMsg").value.trim(), people: people.filter(p=>p.name) };
 
-  // kalender
   DATA.calendar = {
     url: $("#calUrl").value.trim(),
     daysAhead: Number($("#calDays").value||60),
     maxEvents: Number($("#calMax").value||50),
     showTimes: $("#calShowTimes").checked,
-    viewStyle: $("#calStyle").value || "points"
+    style: $("#calStyle").value || "points"
   };
 
   const pin=$("#adminPin").value.trim(); if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
@@ -394,9 +361,7 @@ async function onSave(){
   alert("Gemt ✔");
 }
 
-/* ==========================
-   PB-DESIGN: filer modal
-========================== */
+/* ===== filer modal ===== */
 function openFileModal(dir="medarbejdere", targetInput=null){
   ACTIVE_DIR=dir; FILE_TARGET=targetInput; $("#fileModal").classList.add("open"); refreshDir();
 }
@@ -438,4 +403,3 @@ $("#btnUpload").onclick = async ()=>{
 </script>
 </body>
 </html>
-
