@@ -53,7 +53,7 @@
     {
       "type": "image",
       "title": "Kampagne",
-      "image": "/media/treetech.jpg",
+      "image": "/media/treetech",
       "sideText": "Billede test",
       "duration": 12
     },
