@@ -176,7 +176,7 @@
   "calendar": {
     "url": "https://www.webexchange.nu/owa/calendar/94b7e1524ac7451da8cd87e70888f62d@bredsgaard.dk/2dc4675e170a454198db913452b1910216630151406527758683/calendar.html",
     "daysAhead": 30,
-    "maxEvents": 50
+    "maxEvents": 5000
   },
   "slides": [
     {
