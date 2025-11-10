@@ -1,62 +1,58 @@
 <!doctype html>
 <html lang="da">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Admin • Infoscreen</title>
-  <style>
-    /* ================================
-       PB-DESIGN: Klassisk admin UI
-       ================================ */
-    :root{
-      --bg:#0d4952;
-      --panel:#0c2d33;
-      --ink:#e9fbff;
-      --dim:#a8d7de;
-      --ok:#1f9d68;
-      --bad:#d35a5a;
-      --radius:14px;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-    header{max-width:1200px;margin:18px auto 10px;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
-    h1{margin:0;font-weight:800}
-    .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .btn{background:#173c43;border:1px solid #0a2328;color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
-    .btn.ok{background:var(--ok)}
-    .btn.bad{background:#5a1f1f;border-color:#411515}
-    .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
-    .panel{background:var(--panel);border:1px solid #0a2328;border-radius:var(--radius);padding:18px}
-    .panel h2{margin:0 0 10px}
-    label{display:block;font-size:13px;color:var(--dim);margin:10px 0 6px}
-    input,textarea,select{width:100%;border-radius:10px;border:1px solid #18424a;background:#0a2328;color:var(--ink);padding:10px 12px}
-    textarea{min-height:90px;resize:vertical}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row>*{flex:1}
-    .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid #0a2328;padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
-    /* Slides panel (højre) */
-    .slides{display:flex;flex-direction:column;gap:10px}
-    .slide-card{border:1px solid #0a2328;border-radius:12px;background:#092b30;padding:12px}
-    .slide-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .slide-meta{font-size:13px;color:#9fc3c9}
-    .slide-body{margin-top:8px;display:grid;gap:8px}
-    .small{font-size:12px;color:#9abec4}
-    /* Modal filer */
-    .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px;z-index:1000}
-    .modal.open{display:flex}
-    .sheet{max-width:1100px;width:100%;background:#092b30;border:1px solid #0a2328;border-radius:14px;padding:18px;max-height:90vh;overflow-y:auto}
-    .sheet .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:sticky;top:0;background:#092b30;padding:6px 0}
-    .list table{width:100%;border-collapse:collapse}
-    .list th,.list td{border-bottom:1px solid #0a2328;padding:10px 12px;text-align:left}
-    .list th{background:#0b2a30;color:#a6c6cb;font-weight:700;letter-spacing:.06em;font-size:12px}
-    .thumb{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #0a2328;background:#062026}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin • Infoscreen</title>
+<style>
+  /* PB-DESIGN: klassisk admin UI */
+  :root{
+    --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --dim:#a8d7de; --ok:#1f9d68; --bad:#d35a5a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  header{max-width:1200px;margin:18px auto 10px;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
+  h1{margin:0;font-weight:800}
+  .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{background:#173c43;border:1px solid #0a2328;color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
+  .btn.ok{background:var(--ok)}
+  .btn.bad{background:#5a1f1f;border-color:#411515}
+  .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
+  .panel{background:var(--panel);border:1px solid #0a2328;border-radius:var(--radius);padding:18px}
+  .panel h2{margin:0 0 10px}
+  label{display:block;font-size:13px;color:var(--dim);margin:10px 0 6px}
+  input,textarea,select{width:100%;border-radius:10px;border:1px solid #18424a;background:#0a2328;color:var(--ink);padding:10px 12px}
+  textarea{min-height:90px;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1}
+  .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid #0a2328;padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
+
+  /* Slides panel (højre) */
+  .slides{display:flex;flex-direction:column;gap:10px}
+  .slide-card{border:1px solid #0a2328;border-radius:12px;background:#092b30;padding:12px}
+  .slide-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .slide-meta{font-size:13px;color:#9fc3c9}
+  .slide-body{margin-top:8px;display:grid;gap:8px}
+  .small{font-size:12px;color:#9abec4}
+
+  /* Modal filer */
+  .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px}
+  .modal.open{display:flex}
+  .sheet{max-width:1100px;width:100%;background:#092b30;border:1px solid #0a2328;border-radius:14px;padding:18px}
+  .sheet .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .list table{width:100%;border-collapse:collapse}
+  .list th,.list td{border-bottom:1px solid #0a2328;padding:10px 12px;text-align:left}
+  .list th{background:#0b2a30;color:#a6c6cb;font-weight:700;letter-spacing:.06em;font-size:12px}
+  .thumb{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #0a2328;background:#062026}
+</style>
 </head>
 <body>
 <header>
   <h1>Admin • Infoscreen</h1>
   <div class="head-actions">
     <button class="btn" id="openFiles">Filer (medarb & media)</button>
+    <!-- PB-DESIGN: slide-knapper -->
     <button class="btn" id="addImage">+ Billede</button>
     <button class="btn" id="addText">+ Tekst</button>
     <button class="btn" id="addEmpties">+ Tømning</button>
@@ -65,7 +61,7 @@
 </header>
 
 <div class="wrap">
-  <!-- Venstre kolonne -->
+  <!-- VENSTRE KOLONNE -->
   <div class="left-col" style="display:flex;flex-direction:column;gap:14px">
     <section class="panel">
       <h2>Brand</h2>
@@ -73,7 +69,7 @@
       <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
       <label>Logo URL</label>
       <div class="row">
-        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo.png">
+        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
         <button class="btn" data-pick="#logoUrl">Vælg fra filer</button>
       </div>
       <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
@@ -93,6 +89,7 @@
         <div><label>Startdato</label><input id="emptiesStart" type="date"></div>
         <div><label>Horizon (antal kommende linjer)</label><input id="emptiesHorizon" type="number" min="2" max="20" value="8"></div>
       </div>
+
       <label>Ugedage</label>
       <div class="row" id="wdWrap" style="gap:12px">
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="1"> MAN</label>
@@ -101,21 +98,21 @@
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="4"> TOR</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="5"> FRE</label>
       </div>
+
       <label>Navne (rækkefølge — en pr. linje)</label>
       <textarea id="emptiesNames" placeholder="Per&#10;Louise&#10;Max"></textarea>
+
       <label>Ekskluder datoer (en pr. linje — dd.mm.yyyy)</label>
       <textarea id="emptiesSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
+
       <label>Antal kolonner i visning</label>
-      <select id="emptiesCols">
-        <option value="1">1 kolonne</option>
-        <option value="2" selected>2 kolonner</option>
-      </select>
+      <select id="emptiesCols"><option value="1">1 kolonne</option><option value="2" selected>2 kolonner</option></select>
     </section>
 
     <section class="panel">
       <h2>Fødselsdage</h2>
       <label>Standard-besked (bruges i alarm-slides)</label>
-      <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har en god dag.">
+      <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
       <div id="bdayList"></div>
       <div class="row" style="margin-top:10px">
         <button class="btn" id="addBday">+ Tilføj person</button>
@@ -131,26 +128,15 @@
         <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
         <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
       </div>
-      <label>Vis klokkeslæt</label>
-      <select id="calShowTime">
-        <option value="true" selected>Ja</option>
-        <option value="false">Nej</option>
-      </select>
-      <label>Visningsstil</label>
-      <select id="calStyle">
-        <option value="boxes" selected>Bokse</option>
-        <option value="list">Liste</option>
-        <option value="bullets">Punkter</option>
-      </select>
-      <small class="small">Vises på <code>/kalender.html</code>. Hvis ICS-URL er tom, vises kommende fødselsdage.</small>
+      <small class="small">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden i stedet kommende fødselsdage.</small>
     </section>
   </div>
 
-  <!-- Højre kolonne -->
+  <!-- HØJRE KOLONNE: SLIDES -->
   <section class="panel">
     <h2>Slides (rækkefølge)</h2>
     <div class="slides" id="slides"></div>
-    <small class="small">Brug “Op/Ned” for rækkefølge. “Tømning”/“Fødselsdage” bruger venstre indstillinger.</small>
+    <small class="small">Brug “Op/Ned” til at sortere. “Tømning”/“Fødselsdage” bruger venstrepanelets indstillinger.</small>
   </section>
 </div>
 
@@ -240,37 +226,44 @@ function renderSlides(){
   const box=$("#slides"); box.innerHTML="";
   (DATA.slides||[]).forEach((s,idx)=>{
     const card=document.createElement("div"); card.className="slide-card";
-    const bodyInner = (s.type==="image")
-      ? `<div class="row">
-           <input data-k="image" placeholder="/media/billede.jpg" value="${s.image||""}">
-           <button class="btn" data-pick="image">Vælg fra filer</button>
-         </div>
-         <div class="row">
-           <textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet">${s.sideText||""}</textarea>
-         </div>`
-      : (s.type==="text")
-      ? `<div class="row"><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>`
-      : (s.type==="empties")
-      ? `<div class="small">Bruger “Affaldstømning (automatisk plan)” fra venstre panel.</div>`
-      : `<div class="small">Bruger “Fødselsdage” fra venstre panel.</div>`;
 
-    card.innerHTML=`
-      <div class="slide-head">
-        <div><strong>${slideTitle(s)}</strong> <span class="slide-meta">(${s.type})</span></div>
-        <div class="row" style="flex:0 0 auto">
-          <button class="btn" data-up>Op</button>
-          <button class="btn" data-down>Ned</button>
-          <button class="btn bad" data-del>Fjern</button>
-        </div>
-      </div>
-      <div class="slide-body">
-        <div class="row">
-          <div><label>Titel</label><input data-k="title" value="${s.title||""}"></div>
-          <div style="flex:0 0 140px"><label>Varighed (sek.)</label><input type="number" min="3" max="120" data-k="duration" value="${s.duration??12}"></div>
-        </div>
-        ${bodyInner}
+    // hoved
+    const head=document.createElement("div"); head.className="slide-head";
+    head.innerHTML=`
+      <div><strong>${slideTitle(s)}</strong> <span class="slide-meta">(${s.type})</span></div>
+      <div class="row" style="flex:0 0 auto">
+        <button class="btn" data-up>Op</button>
+        <button class="btn" data-down>Ned</button>
+        <button class="btn bad" data-del>Fjern</button>
       </div>`;
+    card.appendChild(head);
 
+    // body (felter pr. type)
+    const body=document.createElement("div"); body.className="slide-body";
+    body.innerHTML=`
+      <div class="row">
+        <div><label>Titel</label><input data-k="title" value="${s.title||""}"></div>
+        <div style="flex:0 0 140px"><label>Varighed (sek.)</label><input type="number" min="3" max="120" data-k="duration" value="${s.duration??12}"></div>
+      </div>
+      ${s.type==="image" ? `
+        <div class="row">
+          <input data-k="image" placeholder="/media/billede.jpg" value="${s.image||""}">
+          <button class="btn" data-pick="image">Vælg fra filer</button>
+        </div>
+        <div class="row">
+          <textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet (så rykkes billedet til den ene side)">${s.sideText||""}</textarea>
+        </div>
+      `: s.type==="text" ? `
+        <div class="row"><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>
+      `: s.type==="empties" ? `
+        <div class="small">Bruger “Affaldstømning (automatisk plan)” fra venstre panel.</div>
+      `: s.type==="birthday" ? `
+        <div class="small">Bruger “Fødselsdage” fra venstre panel.</div>
+      `: ``}
+    `;
+    card.appendChild(body);
+
+    // events
     card.addEventListener("input",(e)=>{
       const k=e.target.dataset.k; if(!k) return;
       let v=e.target.value;
@@ -296,14 +289,14 @@ function findInputSelector(scope, key){
 (async function init(){
   DATA = await loadData();
 
-  // Standardstruktur (non-destructive defaults)
-  DATA.brand     ??= "";
-  DATA.logoUrl   ??= "";
-  DATA.theme     ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
-  DATA.settings  ??= { refreshMs:300000 };
-  DATA.empties   ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
+  // Standardstruktur hvis tom data.json
+  DATA.brand   ??= "";
+  DATA.logoUrl ??= "";
+  DATA.theme   ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
+  DATA.settings??= { refreshMs:300000 };
+  DATA.empties ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
   DATA.birthdays ??= { message:"", people:[] };
-  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTime:true, style:"boxes" };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50 };
   DATA.slides    ??= [];
 
   // brand/tema
@@ -328,11 +321,9 @@ function findInputSelector(scope, key){
   renderBdays(DATA.birthdays.people||[]);
 
   // kalender
-  $("#calUrl").value    = DATA.calendar.url||"";
-  $("#calDays").value   = DATA.calendar.daysAhead||60;
-  $("#calMax").value    = DATA.calendar.maxEvents||50;
-  $("#calShowTime").value = String(DATA.calendar.showTime);
-  $("#calStyle").value    = DATA.calendar.style||"boxes";
+  $("#calUrl").value  = DATA.calendar.url||"";
+  $("#calDays").value = DATA.calendar.daysAhead||60;
+  $("#calMax").value  = DATA.calendar.maxEvents||50;
 
   // slides + knapper
   renderSlides();
@@ -344,15 +335,9 @@ function findInputSelector(scope, key){
   // knapper
   $("#saveBtn").onclick = onSave;
   $("#openFiles").onclick = ()=>openFileModal("medarbejdere");
+  $$("[data-pick]").forEach(b=>b.addEventListener("click",(ev)=>openFileModal("media", ev.currentTarget.getAttribute("data-pick"))));
   $("#closeFiles").onclick = closeFileModal;
   $$(".sheet [data-tab]").forEach(b=> b.onclick = ()=>{ ACTIVE_DIR=b.getAttribute("data-tab"); refreshDir(); });
-
-  // Modal luk: ESC + klik udenfor
-  document.addEventListener("keydown", e => { if(e.key==="Escape") closeFileModal(); });
-  document.addEventListener("click", e => {
-    const modal = $("#fileModal");
-    if(modal.classList.contains("open") && e.target === modal) closeFileModal();
-  });
 })().catch(e=>alert(e.message||e));
 
 async function onSave(){
@@ -387,13 +372,11 @@ async function onSave(){
   DATA.calendar = {
     url: $("#calUrl").value.trim(),
     daysAhead: Number($("#calDays").value||60),
-    maxEvents: Number($("#calMax").value||50),
-    showTime: $("#calShowTime").value === "true",
-    style: $("#calStyle").value
+    maxEvents: Number($("#calMax").value||50)
   };
 
   const pin=$("#adminPin").value.trim(); if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
-  await api("saveDataJson", { data: DATA, message:"PB-DESIGN: admin gem" });
+  await api("saveDataJson", { data: DATA, message:`PB-DESIGN: admin gem` });
   alert("Gemt ✔");
 }
 
@@ -419,7 +402,7 @@ async function refreshDir(){
       <td><button class="btn" data-use>Brug</button></td>
       <td><button class="btn" data-rename>Omdøb</button></td>
       <td><button class="btn bad" data-del>Slet</button></td>`;
-    $("[data-use]",tr).onclick=()=>{ if(FILE_TARGET){ const el=document.querySelector(FILE_TARGET); if(el) el.value=\`/${it.path}\`; closeFileModal(); } };
+    $("[data-use]",tr).onclick=()=>{ if(FILE_TARGET){ const el=document.querySelector(FILE_TARGET); if(el) el.value=`/${it.path}`; closeFileModal(); } };
     $("[data-rename]",tr).onclick=async()=>{
       const nn=prompt("Nyt navn (inkl. .jpg/.png):", it.name); if(!nn) return;
       await api("renamePath", { oldPath: it.path, newPath: `${ACTIVE_DIR}/${nn}`, message:`PB-DESIGN: rename ${it.path}` });
