@@ -1,57 +1,10 @@
-<div style="padding:18px">
-  <h2>Fødselsdage</h2>
+<h2>Fødselsdage</h2>
+<label>Standard-besked (bruges i alarm-slides)</label>
+<input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
 
-  <label>Standard-besked (bruges i alarm-slides)</label>
-  <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge." />
-
-  <div id="bdayList" style="margin-top:10px"></div>
-
-  <div style="margin-top:10px">
-    <button class="btn" id="addBday">+ Tilføj person</button>
-  </div>
-
-  <small class="small">Dato kan være <b>dd.mm</b> eller <b>dd.mm.yyyy</b>. Visning viser fødselsdato og alder (PB-DESIGN).</small>
+<div id="bdayList"></div>
+<div class="row" style="margin-top:10px">
+  <button class="btn" id="addBdayRow">+ Tilføj person</button>
 </div>
+<p class="muted">Dato kan være <b>dd.mm</b> eller <b>dd.mm.yyyy</b>. Visning viser fødselsdato og alder (PB-DESIGN).</p>
 
-<script>
-function renderBdays(people){
-  const host = document.getElementById('bdayList');
-  host.innerHTML = '';
-  (people||[]).forEach((p,i)=>{
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:10px;margin-top:8px;flex-wrap:wrap';
-    row.innerHTML = `
-      <input data-k="name"  value="${p.name  || ''}" placeholder="Navn" style="flex:1 1 160px">
-      <input data-k="date"  value="${p.date  || ''}" placeholder="dd.mm eller dd.mm.yyyy" style="flex:0 0 220px">
-      <input data-k="image" value="${p.image || ''}" placeholder="/medarbejdere/Per.jpg" style="flex:1 1 240px">
-      <button class="btn bad" data-del>Fjern</button>
-    `;
-    row.addEventListener('input', e=>{
-      const k = e.target.dataset.k;
-      if (k) p[k] = e.target.value.trim();
-    });
-    row.querySelector('[data-del]').onclick = ()=>{ people.splice(i,1); renderBdays(people); };
-    host.appendChild(row);
-  });
-  document.getElementById('addBday').onclick = ()=>{ people.push({name:'',date:'',image:''}); renderBdays(people); };
-}
-
-PB.onReady.push(() => {
-  const b = PB.data.birthdays ||= { message:"", people:[] };
-  bdayMsg.value = b.message || '';
-  renderBdays(b.people);
-});
-
-PB.onSave.push(() => {
-  const people = [];
-  document.querySelectorAll('#bdayList > div').forEach(row=>{
-    const p = {
-      name:  row.querySelector('[data-k="name"]').value.trim(),
-      date:  row.querySelector('[data-k="date"]').value.trim(),
-      image: row.querySelector('[data-k="image"]').value.trim(),
-    };
-    if (p.name) people.push(p);
-  });
-  PB.data.birthdays = { message: bdayMsg.value.trim(), people };
-});
-</script>
