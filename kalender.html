@@ -5,36 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Kalender • Infoskærm</title>
 <style>
-  :root{
-    --bg:#0b6a74; --bg2:#0d4952; --ink:#e9fbff; --line:rgba(255,255,255,.12);
-    --box:rgba(0,0,0,.1);
-  }
+  :root{ --bg:#0b6a74; --bg2:#0d4952; --ink:#e9fbff; --line:rgba(255,255,255,.12); }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0;
-    background:linear-gradient(160deg,var(--bg),var(--bg2));
-    color:var(--ink);
-    font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial;
-  }
+  body{margin:0;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
   .wrap{min-height:100%;padding:24px;display:grid;place-items:center}
-  .card{
-    width:min(1200px,95vw);
-    background:rgba(0,0,0,.08);
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:16px;
-    padding:20px;
-  }
-  h1{margin:0 0 14px;font-weight:800;letter-spacing:.03em;text-align:center}
-  .muted{opacity:.8;text-align:center}
+  .card{width:min(1200px,95vw);background:rgba(0,0,0,.08);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:20px}
+  h1{margin:0 0 14px;font-weight:800;letter-spacing:.03em}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  th{opacity:.85;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+  .muted{opacity:.8}
+  .brand{margin-top:12px;opacity:.8;font-size:12px}
 
-  /* Event-liste */
-  .event{padding:12px 10px;margin-bottom:8px;border-bottom:1px solid var(--line)}
-  .event.box{border:1px solid var(--line);background:var(--box);border-radius:10px;margin-bottom:12px;border-bottom:none}
-  .event .date{font-weight:700;font-variant-numeric:tabular-nums}
-  .event .time{opacity:.85;margin-left:8px}
-  .event .summary{margin-top:4px;font-size:18px}
-  .event .location{opacity:.8;font-size:14px;margin-top:2px}
+  /* visningsstile */
+  .style-points td.title::before{content:"• ";opacity:.8;margin-right:.25em}
+  .style-arrows td.title::before{content:"→ ";opacity:.8;margin-right:.25em}
+  .box{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0}
 </style>
 </head>
 <body>
@@ -42,60 +29,78 @@
   <div class="card">
     <h1 id="title">Kalender</h1>
     <div id="msg" class="muted" style="margin-bottom:8px"></div>
-    <div id="list"></div>
+
+    <!-- tabel for points/arrows -->
+    <table id="tbl">
+      <thead><tr><th>Dato</th><th id="thTime">Tid</th><th>Event</th><th>Sted</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <!-- box-container (skjult som standard) -->
+    <div id="boxes" style="display:none"></div>
+
+    <div class="brand" id="brand"></div>
   </div>
 </div>
 
 <script>
 const $=(q,el=document)=>el.querySelector(q);
+
 function pad2(n){return String(n).padStart(2,"0")}
 function fmtDate(d){return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`}
 function fmtTime(d){return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`}
 
-/* PB-DESIGN: enkel ICS-parser (VEVENT) */
 function parseICS(text){
-  const events=[];
-  const chunks=text.split(/BEGIN:VEVENT/gi).slice(1);
+  const events=[]; const chunks=text.split(/BEGIN:VEVENT/gi).slice(1);
   for(const ch of chunks){
-    const block=ch.split(/END:VEVENT/i)[0]||"";
-    const get=re=>{const m=block.match(re);return m?m[1].trim():""};
-    const dtstart=get(/DTSTART(?:;[^:\n]*)?:(.+)\r?\n/i);
-    const dtend=get(/DTEND(?:;[^:\n]*)?:(.+)\r?\n/i);
-    const summary=get(/SUMMARY:(.+)\r?\n/i);
-    const location=get(/LOCATION:(.+)\r?\n/i);
-    function parseDT(s){
-      if(!s)return null;
+    const block = ch.split(/END:VEVENT/i)[0] || "";
+    const pick = re => (block.match(re)||[])[1]?.trim() || "";
+    const dtstart=pick(/DTSTART(?:;[^:\n]*)?:(.+)\r?\n/i);
+    const dtend  =pick(/DTEND(?:;[^:\n]*)?:(.+)\r?\n/i);
+    const summary=pick(/SUMMARY:(.+)\r?\n/i);
+    const location=pick(/LOCATION:(.+)\r?\n/i);
+    const description=pick(/DESCRIPTION:(.+)\r?\n/i);
+    const parseDT=s=>{
+      if(!s) return null;
       const m=s.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?$/);
-      if(!m)return null;
+      if(!m) return null;
       const [_,Y,Mo,D,H,Mi,S]=m;
-      return H?new Date(Y,Mo-1,D,H,Mi,S):new Date(Y,Mo-1,D);
-    }
-    const start=parseDT(dtstart);
-    const end=parseDT(dtend);
-    if(start)events.push({start,end,summary,location});
+      return new Date(Number(Y),Number(Mo)-1,Number(D), H?Number(H):0, H?Number(Mi):0, H?Number(S):0);
+    };
+    const ds=parseDT(dtstart), de=parseDT(dtend);
+    if(ds) events.push({start:ds,end:de,summary,location,description});
   }
   return events.sort((a,b)=>a.start-b.start);
 }
 
 async function loadData(){
-  const r=await fetch("/api/data");const j=await r.json();
-  if(!j.ok)throw new Error(j.error||"Ingen data");
-  return j.content;
+  const r=await fetch("/api/data"); const j=await r.json();
+  if(!j.ok) throw new Error(j.error||"Ingen data"); return j.content;
 }
 
-(async function(){
-  const DATA=await loadData();
-  const brand=DATA?.brand||"Infoskærm";
-  const cal=DATA?.calendar||{};
-  const showTimes = cal.showTimes ?? true;
-  const style     = cal.viewStyle || "points";
-  const url       = cal.url || "";
-  const ahead     = Number(cal.daysAhead||60);
-  const max       = Number(cal.maxEvents||50);
+(async function start(){
+  const DATA = await loadData();
+  const brand = DATA?.brand || "Infoskærm";
+  const cal   = DATA?.calendar || {};
+  const showTimes = cal.showTimes !== false; // default true
+  const style = cal.style || "points";       // points | arrows | boxes
+  const url   = cal.url || "";
+  const ahead = Number(cal.daysAhead || 60);
+  const max   = Number(cal.maxEvents || 50);
 
-  $("#title").textContent = brand ? `Kalender • ${brand}` : "Kalender";
+  $("#brand").textContent = brand;
+  $("#title").textContent = "Kalender";
 
-  if(!url){ $("#msg").textContent="Ingen kalender tilføjet."; return; }
+  // Vælg layout
+  if(style === "boxes"){
+    $("#tbl").style.display = "none";
+    $("#boxes").style.display = "";
+  }else{
+    $("#tbl").classList.add(style==="arrows" ? "style-arrows" : "style-points");
+  }
+  $("#thTime").style.display = showTimes ? "" : "none";
+
+  if(!url){ $("#msg").textContent="Ingen ICS-URL sat – viser ingen events."; return; }
 
   let txt="";
   try{
@@ -103,32 +108,45 @@ async function loadData(){
     if(!r.ok) throw new Error("Kunne ikke hente ICS (CORS eller URL?)");
     txt=await r.text();
   }catch(e){
-    $("#msg").textContent="Fejl ved hentning af ICS: "+(e.message||e);
+    $("#msg").textContent="Fejl ved hentning af ICS: " + (e.message||e);
     return;
   }
 
-  const events=parseICS(txt);
-  const now=new Date(); const lim=new Date(now); lim.setDate(lim.getDate()+ahead);
-  const list=events.filter(e=>e.start>=now && e.start<=lim).slice(0,max);
+  const all=parseICS(txt);
+  const now=new Date(); const lim=new Date(); lim.setDate(now.getDate()+ahead);
 
-  if(!list.length){ $("#msg").textContent="Ingen kommende begivenheder."; return; }
-  $("#msg").textContent = `${list.length} kommende event${list.length>1?"s":""}`;
+  const rows=all.filter(ev=>ev.start>=now && ev.start<=lim).slice(0,max);
+  $("#msg").textContent = rows.length ? `${rows.length} kommende event${rows.length>1?"s":""}` : "Ingen kommende events i perioden.";
 
-  const wrap=$("#list"); wrap.innerHTML="";
-  for(const ev of list){
-    const date=fmtDate(ev.start);
-    const time=fmtTime(ev.start);
-    const div=document.createElement("div");
-    div.className="event"+(style==="boxes"?" box":"");
-    const bullet = style==="arrows" ? "→" : style==="points" ? "•" : "";
-    div.innerHTML = `
-      <div><span class="date">${date}</span>${showTimes?`<span class="time">${time}</span>`:""}</div>
-      <div class="summary">${bullet} ${ev.summary||"(Ingen titel)"}</div>
-      ${ev.location?`<div class="location">${ev.location}</div>`:""}
-    `;
-    wrap.appendChild(div);
+  if(style === "boxes"){
+    const host=$("#boxes"); host.innerHTML="";
+    for(const ev of rows){
+      const div=document.createElement("div");
+      div.className="box";
+      div.innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div><strong>${fmtDate(ev.start)}</strong></div>
+          ${showTimes?`<div>${fmtTime(ev.start)}</div>`:""}
+          <div style="flex:1" class="title">${(ev.summary||"").replace(/\\n/g," ")}</div>
+          <div>${ev.location||""}</div>
+        </div>`;
+      host.appendChild(div);
+    }
+    return;
+  }
+
+  const tb=$("#rows"); tb.innerHTML="";
+  for(const ev of rows){
+    const tr=document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fmtDate(ev.start)}</td>
+      <td style="${showTimes?"":"display:none"}">${fmtTime(ev.start)}</td>
+      <td class="title">${(ev.summary||"").replace(/\\n/g," ")}</td>
+      <td>${ev.location||""}</td>`;
+    tb.appendChild(tr);
   }
 })();
 </script>
 </body>
 </html>
+
