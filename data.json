@@ -170,6 +170,11 @@
         "name": "Tanja",
         "date": "26.05.2007",
         "image": ""
+      },
+      {
+        "name": "test",
+        "date": "11.11.2025",
+        "image": "/medarbejdere/Erik"
       }
     ]
   },
