@@ -1,103 +1,227 @@
-<div style="padding:18px">
-  <h2>Slides (rækkefølge)</h2>
-  <div id="slidesBox" style="display:flex;flex-direction:column;gap:10px"></div>
-  <small class="small">Brug “Op/Ned” til at sortere. “Tømning”/“Fødselsdage” bruger venstre indstillinger.</small>
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin • Infoscreen</title>
+
+<style>
+  /* PB-DESIGN: klassisk admin UI */
+  :root{
+    --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --dim:#a8d7de;
+    --ok:#1f9d68; --bad:#d35a5a; --stroke:#0a2328; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  header{max-width:1200px;margin:18px auto 10px;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
+  h1{margin:0;font-weight:800}
+  .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{background:#173c43;border:1px solid var(--stroke);color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
+  .btn.ok{background:var(--ok)}
+  .btn.bad{background:#5a1f1f;border-color:#411515}
+
+  .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius)}
+  .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid var(--stroke);padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
+
+  /* Include placeholders */
+  section.block{border-radius:var(--radius);overflow:hidden}
+  section.block > .slot{min-height:60px}
+  [data-include].loading::before{
+    content:"Indlæser…"; display:block; padding:18px; color:var(--dim); font-size:14px;
+  }
+  [data-include].error{background:#3e1d1d}
+  [data-include].error .errbox{
+    margin:14px; padding:12px; background:#5a2424; border:1px solid #8a3a3a; border-radius:10px;
+    color:#ffe5e5; font-size:14px; white-space:pre-wrap;
+  }
+
+  /* Diagnose boks */
+  #diag{max-width:1200px;margin:0 auto 20px;padding:0 18px}
+  #diag ul{margin:8px 0 0 18px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Admin • Infoscreen</h1>
+  <div class="head-actions">
+    <button class="btn" id="openFiles">Filer (medarb & media)</button>
+    <button class="btn" id="addImage">+ Billede</button>
+    <button class="btn" id="addText">+ Tekst</button>
+    <button class="btn" id="addEmpties">+ Tømning</button>
+    <button class="btn" id="addBirth">+ Fødselsdage</button>
+  </div>
+</header>
+
+<div id="diag" class="panel" style="padding:12px;display:none">
+  <strong>Diagnose:</strong>
+  <ul id="diagList"></ul>
+</div>
+
+<div class="wrap">
+  <div class="left-col" style="display:flex;flex-direction:column;gap:14px">
+
+    <section class="panel block">
+      <div class="slot" data-include="/admin/brand_tema.html" data-name="brand_tema.html"></div>
+    </section>
+
+    <section class="panel block">
+      <div class="slot" data-include="/admin/tomme.html" data-name="tomme.html"></div>
+    </section>
+
+    <section class="panel block">
+      <div class="slot" data-include="/admin/foedselsdage.html" data-name="foedselsdage.html"></div>
+    </section>
+
+    <section class="panel block">
+      <div class="slot" data-include="/admin/kalender.html" data-name="kalender.html"></div>
+    </section>
+
+  </div>
+
+  <section class="panel block">
+    <div class="slot" data-include="/admin/slides.html" data-name="slides.html"></div>
+  </section>
+</div>
+
+<div class="footer">
+  <input id="adminPin" type="password" placeholder="PIN (ADMIN_PIN)" style="max-width:220px;border-radius:10px;border:1px solid var(--stroke);background:#0a2328;color:var(--ink);padding:10px 12px">
+  <button class="btn ok" id="saveBtn">Gem ændringer</button>
 </div>
 
 <script>
-function slideTitle(s){
-  if(s.type==="image") return s.title||"Billede";
-  if(s.type==="text")  return s.title||"Tekst";
-  if(s.type==="empties") return s.title||"Tømning";
-  if(s.type==="birthday") return s.title||"Fødselsdage";
-  return s.type||"Slide";
-}
-function findInputSelector(scope, key){
-  const inp = scope.querySelector(`[data-k="${key}"]`);
-  if(!inp.id) inp.id = `f_${key}_${Math.random().toString(36).slice(2,7)}`;
-  return `#${inp.id}`;
-}
+/* ===========================================================
+   PB-DESIGN • Admin kerne (med ekstra fejlsøgning)
+   =========================================================== */
+const Diag = {
+  box: document.getElementById('diag'),
+  list: document.getElementById('diagList'),
+  add(msg){ this.box.style.display='block'; const li=document.createElement('li'); li.textContent=msg; this.list.appendChild(li); console.log('[PB-DIAG]', msg); }
+};
 
-function renderSlides(){
-  const box = document.getElementById('slidesBox');
-  const arr = PB.data.slides ||= [];
-  box.innerHTML = '';
-  arr.forEach((s,idx)=>{
-    const card = document.createElement('div');
-    card.className = 'slide-card';
-    card.style.cssText = 'border:1px solid #0a2328;border-radius:12px;background:#092b30;padding:12px';
+/* Repo base (GitHub Pages vs Vercel) */
+const REPO_BASE = (function(){
+  const parts = location.pathname.split('/').filter(Boolean);
+  if (location.hostname.endsWith('github.io') && parts.length > 1) {
+    const base = '/' + parts[0];
+    Diag.add('REPO_BASE = ' + base);
+    return base;
+  }
+  Diag.add('REPO_BASE = "" (Vercel/egen host)');
+  return '';
+})();
 
-    const head = document.createElement('div');
-    head.className='slide-head';
-    head.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px';
-    head.innerHTML = `
-      <div><strong>${slideTitle(s)}</strong> <span style="font-size:13px;color:#9fc3c9">(${s.type})</span></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" data-up>Op</button>
-        <button class="btn" data-down>Ned</button>
-        <button class="btn bad" data-del>Fjern</button>
-      </div>`;
-    card.appendChild(head);
-
-    const body = document.createElement('div');
-    body.className='slide-body';
-    body.style.cssText='margin-top:8px;display:grid;gap:8px';
-    body.innerHTML = `
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <div style="flex:1 1 220px"><label>Titel</label><input data-k="title" value="${s.title||""}"></div>
-        <div style="flex:0 0 140px"><label>Varighed (sek.)</label><input type="number" min="3" max="120" data-k="duration" value="${s.duration??12}"></div>
-      </div>
-      ${s.type==="image" ? `
-        <div style="display:flex;gap:10px">
-          <input data-k="image" placeholder="/media/billede.jpg" value="${s.image||""}" style="flex:1">
-          <button class="btn" data-pick="image">Vælg fra filer</button>
-        </div>
-        <div><textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet">${s.sideText||""}</textarea></div>
-      `: s.type==="text" ? `
-        <div><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>
-      `: s.type==="empties" ? `
-        <div class="small">Bruger Tømning fra venstre panel.</div>
-      `: s.type==="birthday" ? `
-        <div class="small">Bruger Fødselsdage fra venstre panel.</div>
-      `: ``}
-    `;
-    card.appendChild(body);
-
-    card.addEventListener('input', e=>{
-      const k = e.target.dataset.k; if(!k) return;
-      s[k] = (k==='duration') ? Number(e.target.value||12) : e.target.value;
-    });
-    card.querySelector('[data-up]').onclick = ()=>{ if(idx>0){ const t=arr[idx-1]; arr[idx-1]=arr[idx]; arr[idx]=t; renderSlides(); } };
-    card.querySelector('[data-down]').onclick = ()=>{ if(idx<arr.length-1){ const t=arr[idx+1]; arr[idx+1]=arr[idx]; arr[idx]=t; renderSlides(); } };
-    card.querySelector('[data-del]').onclick = ()=>{ arr.splice(idx,1); renderSlides(); };
-    card.querySelector('[data-pick]')?.addEventListener('click',()=> {
-      // her kan du senere koble din fil-modal på; nu bare feltfokus
-      const sel = findInputSelector(card,'image');
-      document.querySelector(sel).focus();
-    });
-
-    box.appendChild(card);
+/* API */
+async function api(action, payload){
+  const r = await fetch(REPO_BASE + "/api/data", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ action, ...(payload||{}) })
   });
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Ukendt fejl");
+  return j;
+}
+async function loadData(){
+  const r = await fetch(REPO_BASE + "/api/data", {cache:"no-store"});
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Ukendt fejl");
+  return j.content;
 }
 
-PB.onReady.push(() => {
-  PB.data.slides ||= [];
-  renderSlides();
+/* Gør kerneobjekter tilgængelige for moduler */
+window.PB = {
+  REPO_BASE, api, loadData,
+  data: null,
+  onSave: [],
+  onReady: []
+};
 
-  // koble header-knapper
-  const k = {
-    addImage(){ PB.data.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); },
-    addText(){ PB.data.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); },
-    addEmpties(){ PB.data.slides.push({type:"empties", title:"TØMNINGS DAGE", duration:12}); renderSlides(); },
-    addBirth(){ PB.data.slides.push({type:"birthday", title:"FØDSELSDAG", duration:12}); renderSlides(); }
-  };
-  document.getElementById('addImage')  .onclick = k.addImage;
-  document.getElementById('addText')   .onclick = k.addText;
-  document.getElementById('addEmpties').onclick = k.addEmpties;
-  document.getElementById('addBirth')  .onclick = k.addBirth;
+/* Loader der prøver flere stier */
+async function fetchWithFallbacks(rawPath){
+  const tries = [];
+  // 1) som angivet (typisk starter den med /admin/…)
+  tries.push(rawPath);
+  // 2) med REPO_BASE forrest
+  if (!rawPath.startsWith(REPO_BASE)) tries.push(REPO_BASE + rawPath);
+  // 3) uden foranstillet slash (relative)
+  if (rawPath.startsWith('/')) tries.push(rawPath.slice(1));
+  // 4) REPO_BASE + uden slash
+  if (rawPath.startsWith('/')) tries.push(REPO_BASE + rawPath.slice(1));
+
+  const errors = [];
+  for (const url of tries) {
+    try {
+      const res = await fetch(url, {cache:'no-store'});
+      if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
+      const text = await res.text();
+      Diag.add(`OK: ${url}`);
+      return {url, text};
+    } catch (e) {
+      errors.push(`${url} -> ${e.message}`);
+    }
+  }
+  throw new Error(errors.join(' | '));
+}
+
+async function loadIncludes(){
+  const slots = Array.from(document.querySelectorAll('[data-include]'));
+  for (const el of slots) {
+    const src = el.getAttribute('data-include');
+    const name = el.getAttribute('data-name') || src;
+    el.classList.add('loading');
+
+    try {
+      const {url, text} = await fetchWithFallbacks(src);
+      el.innerHTML = text;
+      el.classList.remove('loading');
+
+      // Kør scripts i fragmentet
+      Array.from(el.querySelectorAll('script')).forEach(old => {
+        const s = document.createElement('script');
+        s.type = old.type || 'text/javascript';
+        s.defer = old.defer || false;
+        s.async = false;
+        s.text = old.textContent;
+        if (old.src) s.src = old.src.startsWith('/') ? (REPO_BASE + old.src) : old.src;
+        old.replaceWith(s);
+      });
+
+      Diag.add(`Indlæst: ${name}`);
+    } catch (err) {
+      el.classList.remove('loading');
+      el.classList.add('error');
+      const box = document.createElement('div');
+      box.className = 'errbox';
+      box.textContent = `Kunne ikke indlæse ${name}\n\nPrøvte:\n${err.message}`;
+      el.appendChild(box);
+      Diag.add(`FEJL i ${name}: ${err.message}`);
+    }
+  }
+}
+
+/* Gem-knap */
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const pin = document.getElementById('adminPin').value.trim();
+  if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return; }
+  for (const fn of PB.onSave) { try { await fn(PB.data); } catch(e){ console.error(e); } }
+  await api("saveDataJson", { data: PB.data, message:"PB-DESIGN: admin gem (includes)" });
+  alert("Gemt ✔");
 });
 
-// slides gemmes implicit fordi vi allerede har muteret PB.data.slides i UI’et
-PB.onSave.push(()=>{ /* no-op */ });
+/* Boot */
+(async function boot(){
+  try {
+    PB.data = await loadData();
+    Diag.add('data.json indlæst');
+  } catch(e) {
+    Diag.add('FEJL ved indlæsning af data.json: ' + e.message);
+  }
+  await loadIncludes();
+  for (const fn of PB.onReady) { try { await fn(PB.data); } catch(e){ console.error(e); } }
+})();
 </script>
 
+</body>
+</html>
