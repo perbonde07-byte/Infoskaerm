@@ -1,0 +1,23 @@
+<section class="panel">
+  <h2>Brand</h2>
+  <label>Brand</label>
+  <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
+
+  <label>Logo URL</label>
+  <div class="row">
+    <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo.png">
+    <button class="btn" data-pick="#logoUrl" onclick="openFileModal('media', '#logoUrl')">Vælg fra filer</button>
+  </div>
+
+  <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
+
+  <h2>Tema</h2>
+  <div class="row">
+    <div><label>Baggrund 1</label><input id="bg1" type="text" placeholder="#0d4952"></div>
+    <div><label>Baggrund 2</label><input id="bg2" type="text" placeholder="#0b6a74"></div>
+    <div><label>Accent</label><input id="accent" type="text" placeholder="#a7d0c9"></div>
+  </div>
+
+  <label>Opdaterings-interval (ms)</label>
+  <input id="refreshMs" type="number" min="60000" step="1000" value="300000">
+</section>
