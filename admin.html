@@ -4,45 +4,70 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Admin • Infoscreen</title>
-
 <style>
-  /* PB-DESIGN: klassisk admin UI */
+  /* =========================
+     PB-DESIGN • Tema & layout
+  ==========================*/
   :root{
     --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --dim:#a8d7de;
-    --ok:#1f9d68; --bad:#d35a5a; --stroke:#0a2328; --radius:14px;
+    --ok:#1f9d68; --bad:#d35a5a; --line:#0a2328; --accent:#a7d0c9;
+    --radius:14px;
   }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+
   header{max-width:1200px;margin:18px auto 10px;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
   h1{margin:0;font-weight:800}
   .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .btn{background:#173c43;border:1px solid var(--stroke);color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
+
+  .btn{background:#173c43;border:1px solid var(--line);color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
   .btn.ok{background:var(--ok)}
   .btn.bad{background:#5a1f1f;border-color:#411515}
+  .btn.small{padding:6px 10px;font-size:13px}
 
-  .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
-  .panel{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--radius)}
-  .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid var(--stroke);padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
+  .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 430px;gap:16px}
+  .left-col{display:flex;flex-direction:column;gap:16px}
 
-  /* Include placeholders */
-  section.block{border-radius:var(--radius);overflow:hidden}
-  section.block > .slot{min-height:60px}
-  [data-include].loading::before{
-    content:"Indlæser…"; display:block; padding:18px; color:var(--dim); font-size:14px;
-  }
-  [data-include].error{background:#3e1d1d}
-  [data-include].error .errbox{
-    margin:14px; padding:12px; background:#5a2424; border:1px solid #8a3a3a; border-radius:10px;
-    color:#ffe5e5; font-size:14px; white-space:pre-wrap;
-  }
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .panel h2{margin:0 0 10px}
+  label{display:block;font-size:13px;color:var(--dim);margin:10px 0 6px}
+  input,textarea,select{width:100%;border-radius:10px;border:1px solid #18424a;background:#0a2328;color:var(--ink);padding:10px 12px}
+  textarea{min-height:90px;resize:vertical}
+  input[type="date"], textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1}
 
-  /* Diagnose boks */
-  #diag{max-width:1200px;margin:0 auto 20px;padding:0 18px}
-  #diag ul{margin:8px 0 0 18px}
+  .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid var(--line);padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
+
+  /* Slides panel */
+  .slides{display:flex;flex-direction:column;gap:10px}
+  .slide-card{border:1px solid var(--line);border-radius:12px;background:#092b30;padding:12px}
+  .slide-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .slide-meta{font-size:13px;color:#9fc3c9}
+  .slide-body{margin-top:8px;display:grid;gap:8px}
+
+  .small{font-size:12px;color:#9abec4}
+
+  /* Ugedags-knapper: aktiv/inaktiv */
+  .wd-btn{display:inline-flex;align-items:center;gap:8px; padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#173c43;cursor:pointer}
+  .wd-btn.on{background:var(--ok);border-color:#176f4e}
+
+  /* Fødselsdagsliste scroll */
+  #bdayList{max-height:280px;overflow:auto;padding-right:6px;border:1px dashed #18424a;border-radius:8px}
+
+  /* Modal: filer */
+  .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px;z-index:50}
+  .modal.open{display:flex}
+  .sheet{max-width:1100px;width:100%;background:#092b30;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .sheet .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .list table{width:100%;border-collapse:collapse}
+  .list th,.list td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left}
+  .list th{background:#0b2a30;color:#a6c6cb;font-weight:700;letter-spacing:.06em;font-size:12px}
+  .thumb{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:#062026}
 </style>
 </head>
 <body>
-
 <header>
   <h1>Admin • Infoscreen</h1>
   <div class="head-actions">
@@ -54,174 +79,449 @@
   </div>
 </header>
 
-<div id="diag" class="panel" style="padding:12px;display:none">
-  <strong>Diagnose:</strong>
-  <ul id="diagList"></ul>
-</div>
-
 <div class="wrap">
-  <div class="left-col" style="display:flex;flex-direction:column;gap:14px">
+  <!-- VENSTRE KOLONNE -->
+  <div class="left-col">
+    <!-- Brand & Tema -->
+    <section class="panel">
+      <h2>Brand</h2>
+      <label>Brand</label>
+      <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
+      <label>Logo URL</label>
+      <div class="row">
+        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
+        <button class="btn" id="pickLogo">Vælg fra filer</button>
+      </div>
 
-    <section class="panel block">
-      <div class="slot" data-include="/admin/brand_tema.html" data-name="brand_tema.html"></div>
+      <div style="height:1px;background:var(--line);margin:16px -18px"></div>
+
+      <h2>Tema</h2>
+      <div class="row">
+        <div><label>Baggrund 1</label><input id="bg1" type="text" placeholder="#0d4952"></div>
+        <div><label>Baggrund 2</label><input id="bg2" type="text" placeholder="#0b6a74"></div>
+        <div><label>Accent</label><input id="accent" type="text" placeholder="#a7d0c9"></div>
+      </div>
+      <label>Opdaterings-interval (ms)</label>
+      <input id="refreshMs" type="number" min="60000" step="1000" value="300000">
     </section>
 
-    <section class="panel block">
-      <div class="slot" data-include="/admin/tomme.html" data-name="tomme.html"></div>
+    <!-- Tømning -->
+    <section class="panel">
+      <h2>Tømning (automatisk plan)</h2>
+      <div class="row">
+        <div><label>Startdato</label><input id="emptiesStart" type="date"></div>
+        <div><label>Horizon (antal kommende linjer)</label><input id="emptiesHorizon" type="number" min="2" max="20" value="8"></div>
+      </div>
+
+      <label>Ugedage</label>
+      <div class="row" style="gap:12px">
+        <label class="wd-btn"><input type="checkbox" class="wd" value="1"> MAN</label>
+        <label class="wd-btn"><input type="checkbox" class="wd" value="2"> TIR</label>
+        <label class="wd-btn"><input type="checkbox" class="wd" value="3"> ONS</label>
+        <label class="wd-btn"><input type="checkbox" class="wd" value="4"> TOR</label>
+        <label class="wd-btn"><input type="checkbox" class="wd" value="5"> FRE</label>
+      </div>
+
+      <label>Navne (rækkefølge — en pr. linje)</label>
+      <textarea id="emptiesNames" placeholder="Per&#10;Louise&#10;Max"></textarea>
+
+      <label>Ekskluder datoer (en pr. linje — dd.mm.yyyy)</label>
+      <textarea id="emptiesSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
+
+      <label>Antal kolonner i visning</label>
+      <select id="emptiesCols">
+        <option value="1">1 kolonne</option>
+        <option value="2" selected>2 kolonner</option>
+      </select>
     </section>
 
-    <section class="panel block">
-      <div class="slot" data-include="/admin/foedselsdage.html" data-name="foedselsdage.html"></div>
+    <!-- Fødselsdage -->
+    <section class="panel">
+      <h2>Fødselsdage</h2>
+      <label>Standard-besked (bruges i alarm-slides)</label>
+      <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
+
+      <div id="bdayList"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="addBday">+ Tilføj person</button>
+      </div>
+      <small class="small">Dato kan være <b>dd.mm</b> eller <b>dd.mm.yyyy</b>. Visningen viser fødselsdato og alder (PB-DESIGN).</small>
     </section>
 
-    <section class="panel block">
-      <div class="slot" data-include="/admin/kalender.html" data-name="kalender.html"></div>
+    <!-- Kalender -->
+    <section class="panel">
+      <h2>Kalender (ICS)</h2>
+      <label>Kalender ICS-URL</label>
+      <input id="calUrl" type="text" placeholder="https://.../calendar.ics">
+      <div class="row">
+        <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
+        <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
+      </div>
+      <div class="row">
+        <div style="flex:0 0 220px">
+          <label>Vis klokkeslæt</label>
+          <select id="calShowTime">
+            <option value="yes" selected>Ja</option>
+            <option value="no">Nej</option>
+          </select>
+        </div>
+        <div>
+          <label>Visningsstil</label>
+          <select id="calStyle">
+            <option value="bullets" selected>Punktliste</option>
+            <option value="boxes">Bokse</option>
+          </select>
+        </div>
+      </div>
+      <small class="small">Vises på <code>/kalender.html</code>. Hvis URL er tom, viser kalender-siden kommende fødselsdage i stedet.</small>
     </section>
-
   </div>
 
-  <section class="panel block">
-    <div class="slot" data-include="/admin/slides.html" data-name="slides.html"></div>
+  <!-- HØJRE KOLONNE: SLIDES -->
+  <section class="panel">
+    <h2>Slides (rækkefølge)</h2>
+    <div class="slides" id="slides"></div>
+    <small class="small">Brug “Op/Ned” til at sortere. “Tømning”/“Fødselsdage” bruger venstrepanelets indstillinger.</small>
   </section>
 </div>
 
 <div class="footer">
-  <input id="adminPin" type="password" placeholder="PIN (ADMIN_PIN)" style="max-width:220px;border-radius:10px;border:1px solid var(--stroke);background:#0a2328;color:var(--ink);padding:10px 12px">
+  <input id="adminPin" type="password" placeholder="PIN (ADMIN_PIN)" style="max-width:200px" autocomplete="off">
   <button class="btn ok" id="saveBtn">Gem ændringer</button>
 </div>
 
+<!-- Modal: Filer -->
+<div class="modal" id="fileModal" aria-hidden="true">
+  <div class="sheet">
+    <div class="bar">
+      <h3>Filer</h3>
+      <div>
+        <button class="btn small" data-tab="medarbejdere">/medarbejdere</button>
+        <button class="btn small" data-tab="media">/media</button>
+        <button class="btn bad small" id="closeFiles">Luk</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <input id="upName" type="text" placeholder="Navn.jpg" style="flex:0 0 220px">
+      <input id="upFile" type="file" accept="image/*" style="flex:1">
+      <button class="btn ok" id="btnUpload" style="flex:0 0 130px">Upload</button>
+      <span id="upHint" style="opacity:.8"></span>
+    </div>
+
+    <div class="list" style="margin-top:10px">
+      <table id="fileTable">
+        <thead><tr><th></th><th>Navn</th><th>Sti</th><th>Brug</th><th>Omdøb</th><th>Slet</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="opStatus" style="opacity:.8;margin-top:8px"></div>
+  </div>
+</div>
+
 <script>
-/* ===========================================================
-   PB-DESIGN • Admin kerne (med ekstra fejlsøgning)
-   =========================================================== */
-const Diag = {
-  box: document.getElementById('diag'),
-  list: document.getElementById('diagList'),
-  add(msg){ this.box.style.display='block'; const li=document.createElement('li'); li.textContent=msg; this.list.appendChild(li); console.log('[PB-DIAG]', msg); }
-};
+/* ===================================
+   PB-DESIGN • Utils & data plumbing
+=================================== */
+const PB = { onReady: [] };
+const $  = (q, el=document) => el.querySelector(q);
+const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+let DATA=null, ACTIVE_DIR="medarbejdere", FILE_TARGET=null;
 
-/* Repo base (GitHub Pages vs Vercel) */
-const REPO_BASE = (function(){
-  const parts = location.pathname.split('/').filter(Boolean);
-  if (location.hostname.endsWith('github.io') && parts.length > 1) {
-    const base = '/' + parts[0];
-    Diag.add('REPO_BASE = ' + base);
-    return base;
-  }
-  Diag.add('REPO_BASE = "" (Vercel/egen host)');
-  return '';
-})();
+function linesToArray(el){
+  return (typeof el === 'string' ? el : el.value||'')
+    .split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+}
+function arrayToLines(arr){ return (arr||[]).join("\n"); }
+function pad2(n){ return String(n).padStart(2,'0'); }
 
-/* API */
 async function api(action, payload){
-  const r = await fetch(REPO_BASE + "/api/data", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ action, ...(payload||{}) })
+  const r = await fetch("/api/data", {
+    method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ action, ...(payload||{}) })
   });
   const j = await r.json();
-  if(!j.ok) throw new Error(j.error||"Ukendt fejl");
+  if(!j.ok) throw new Error(j.error||"Fejl i API");
   return j;
 }
 async function loadData(){
-  const r = await fetch(REPO_BASE + "/api/data", {cache:"no-store"});
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error||"Ukendt fejl");
+  const j = await (await fetch("/api/data")).json();
+  if(!j.ok) throw new Error(j.error||"Fejl i /api/data");
   return j.content;
 }
 
-/* Gør kerneobjekter tilgængelige for moduler */
-window.PB = {
-  REPO_BASE, api, loadData,
-  data: null,
-  onSave: [],
-  onReady: []
+/* ===================================
+   PB-DESIGN • Fødselsdage UI
+=================================== */
+function renderBdays(list){
+  const host = $("#bdayList");
+  host.innerHTML = "";
+  (list||[]).forEach((p,i)=>{
+    const id = "img_"+i;
+    const row = document.createElement("div");
+    row.className = "row";
+    row.style.marginTop = "8px";
+    row.innerHTML = `
+      <input type="text" placeholder="Navn" value="${p.name||""}" data-k="name">
+      <input type="text" placeholder="dd.mm eller dd.mm.yyyy" value="${p.date||""}" data-k="date" style="max-width:220px">
+      <input id="${id}" type="text" placeholder="/medarbejdere/Per.jpg" value="${p.image||""}" data-k="image">
+      <button class="btn" data-pick="#${id}">Vælg fra filer</button>
+      <button class="btn bad" data-del>Fjern</button>
+    `;
+    row.addEventListener("input", e=>{
+      const k=e.target.dataset.k; if(k) p[k]=e.target.value.trim();
+    });
+    $("[data-del]",row).onclick = ()=>{ list.splice(i,1); renderBdays(list); };
+    $("[data-pick]",row).onclick = (ev)=>{ openFileModal("medarbejdere", ev.currentTarget.getAttribute("data-pick")); };
+    host.appendChild(row);
+  });
+  $("#addBday").onclick = ()=>{ list.push({name:"",date:"",image:""}); renderBdays(list); };
+}
+
+/* ===================================
+   PB-DESIGN • Slides UI
+=================================== */
+function slideTitle(s){
+  if(s.type==="image") return s.title||"Billede";
+  if(s.type==="text")  return s.title||"Tekst";
+  if(s.type==="empties") return s.title||"Tømning";
+  if(s.type==="birthday") return s.title||"Fødselsdage";
+  return s.type||"Slide";
+}
+function findInputSelector(scope, key){
+  const inp = scope.querySelector(`[data-k="${key}"]`);
+  if(!inp.id) inp.id = `f_${key}_${Math.random().toString(36).slice(2,7)}`;
+  return `#${inp.id}`;
+}
+function renderSlides(){
+  const box = $("#slides");
+  const arr = DATA.slides ||= [];
+  box.innerHTML = "";
+  if(!arr.length){
+    const empty = document.createElement("div");
+    empty.className = "small";
+    empty.style.cssText = "opacity:.8;padding:8px 0;";
+    empty.textContent = "Ingen slides endnu. Brug knapperne i toppen: “+ Billede”, “+ Tekst”, “+ Tømning”, “+ Fødselsdage”.";
+    box.appendChild(empty);
+    return;
+  }
+  arr.forEach((s,idx)=>{
+    const card=document.createElement("div"); card.className="slide-card";
+
+    const head=document.createElement("div"); head.className="slide-head";
+    head.innerHTML=`
+      <div><strong>${slideTitle(s)}</strong> <span class="slide-meta">(${s.type})</span></div>
+      <div class="row" style="flex:0 0 auto">
+        <button class="btn small" data-up>Op</button>
+        <button class="btn small" data-down>Ned</button>
+        <button class="btn bad small" data-del>Fjern</button>
+      </div>`;
+    card.appendChild(head);
+
+    const body=document.createElement("div"); body.className="slide-body";
+    body.innerHTML=`
+      <div class="row">
+        <div><label>Titel</label><input data-k="title" value="${s.title||""}"></div>
+        <div style="flex:0 0 140px"><label>Varighed (sek.)</label><input type="number" min="3" max="120" data-k="duration" value="${s.duration??12}"></div>
+      </div>
+      ${s.type==="image" ? `
+        <div class="row">
+          <input data-k="image" placeholder="/media/billede.jpg" value="${s.image||""}">
+          <button class="btn" data-pick="image">Vælg fra filer</button>
+        </div>
+        <div class="row">
+          <textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet (så rykkes billedet til den ene side)">${s.sideText||""}</textarea>
+        </div>` :
+      s.type==="text" ? `
+        <div class="row"><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>` :
+      s.type==="empties" ? `<div class="small">Bruger “Tømning (automatisk plan)” fra venstre panel.</div>` :
+      s.type==="birthday" ? `<div class="small">Bruger “Fødselsdage” fra venstre panel.</div>` : ``}
+    `;
+    card.appendChild(body);
+
+    card.addEventListener("input",(e)=>{
+      const k=e.target.dataset.k; if(!k) return;
+      let v=e.target.value; if(k==="duration") v=Number(v||12);
+      s[k]=v;
+    });
+    $("[data-up]",card).onclick=()=>{ if(idx>0){ const t=arr[idx-1]; arr[idx-1]=arr[idx]; arr[idx]=t; renderSlides(); } };
+    $("[data-down]",card).onclick=()=>{ if(idx<arr.length-1){ const t=arr[idx+1]; arr[idx+1]=arr[idx]; arr[idx]=t; renderSlides(); } };
+    $("[data-del]",card).onclick=()=>{ arr.splice(idx,1); renderSlides(); };
+    $("[data-pick]",card)?.addEventListener("click",()=>openFileModal("media", findInputSelector(card,"image")));
+    box.appendChild(card);
+  });
+}
+
+/* ===================================
+   PB-DESIGN • Modal: filer (CRUD)
+=================================== */
+function openFileModal(dir="medarbejdere", targetInput=null){
+  ACTIVE_DIR=dir; FILE_TARGET=targetInput;
+  $("#fileModal").classList.add("open");
+  refreshDir();
+}
+function closeFileModal(){ $("#fileModal").classList.remove("open"); FILE_TARGET=null; }
+
+async function refreshDir(){
+  $("#opStatus").textContent="Henter…";
+  const { items } = await api("listDir", { path: ACTIVE_DIR });
+  const tb=$("#fileTable tbody"); tb.innerHTML="";
+  (items||[]).filter(x=>x.type==="file")
+    .sort((a,b)=>a.name.localeCompare(b.name,"da",{numeric:true}))
+    .forEach(it=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td><img class="thumb" src="${it.raw}"></td>
+        <td>${it.name}</td>
+        <td>/${it.path}</td>
+        <td><button class="btn small" data-use>Brug</button></td>
+        <td><button class="btn small" data-rename>Omdøb</button></td>
+        <td><button class="btn bad small" data-del>Slet</button></td>`;
+      $("[data-use]",tr).onclick=()=>{
+        if(FILE_TARGET){ const el=document.querySelector(FILE_TARGET); if(el) el.value=`/${it.path}`; closeFileModal(); }
+      };
+      $("[data-rename]",tr).onclick=async()=>{
+        const nn=prompt("Nyt navn (inkl. .jpg/.png):", it.name); if(!nn) return;
+        await api("renamePath", { oldPath: it.path, newPath: `${ACTIVE_DIR}/${nn}`, message:`PB-DESIGN: rename ${it.path}` });
+        refreshDir();
+      };
+      $("[data-del]",tr).onclick=async()=>{
+        if(!confirm(`Slet /${it.path}?`))return;
+        await api("deletePath",{ path: it.path, message:`PB-DESIGN: delete ${it.path}` });
+        refreshDir();
+      };
+      tb.appendChild(tr);
+    });
+  $("#opStatus").textContent=`/${ACTIVE_DIR}: ${items?.length||0} filer`;
+}
+
+$("#btnUpload").onclick = async ()=>{
+  const f=$("#upFile").files[0]; const name=($("#upName").value||"").trim();
+  if(!f||!name){ $("#upHint").textContent="Vælg fil + navn"; return; }
+  const b64=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result||"")); r.onerror=rej; r.readAsDataURL(f); });
+  $("#upHint").textContent="Uploader…";
+  await api("uploadBase64", { path:`${ACTIVE_DIR}/${name}`, base64:b64, message:`PB-DESIGN: upload ${ACTIVE_DIR}/${name}` });
+  $("#upHint").textContent="Uploadet ✔"; $("#upFile").value=""; $("#upName").value=""; refreshDir();
 };
+$("#closeFiles").onclick = closeFileModal;
+$$(".sheet [data-tab]").forEach(b=> b.onclick = ()=>{ ACTIVE_DIR=b.getAttribute("data-tab"); refreshDir(); });
 
-/* Loader der prøver flere stier */
-async function fetchWithFallbacks(rawPath){
-  const tries = [];
-  // 1) som angivet (typisk starter den med /admin/…)
-  tries.push(rawPath);
-  // 2) med REPO_BASE forrest
-  if (!rawPath.startsWith(REPO_BASE)) tries.push(REPO_BASE + rawPath);
-  // 3) uden foranstillet slash (relative)
-  if (rawPath.startsWith('/')) tries.push(rawPath.slice(1));
-  // 4) REPO_BASE + uden slash
-  if (rawPath.startsWith('/')) tries.push(REPO_BASE + rawPath.slice(1));
+/* ===================================
+   PB-DESIGN • Init & Save
+=================================== */
+(async function init(){
+  DATA = await loadData();
 
-  const errors = [];
-  for (const url of tries) {
-    try {
-      const res = await fetch(url, {cache:'no-store'});
-      if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
-      const text = await res.text();
-      Diag.add(`OK: ${url}`);
-      return {url, text};
-    } catch (e) {
-      errors.push(`${url} -> ${e.message}`);
-    }
+  // Standardstruktur
+  DATA.brand   ??= "";
+  DATA.logoUrl ??= "";
+  DATA.theme   ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
+  DATA.settings??= { refreshMs:300000 };
+  DATA.empties ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
+  DATA.birthdays ??= { message:"", people:[] };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTime:"yes", style:"bullets" };
+  DATA.slides    ??= [];
+
+  // Brand/tema
+  $("#brand").value  = DATA.brand;
+  $("#logoUrl").value= DATA.logoUrl;
+  $("#bg1").value    = DATA.theme.bg1;
+  $("#bg2").value    = DATA.theme.bg2;
+  $("#accent").value = DATA.theme.accent;
+  $("#refreshMs").value = DATA.settings.refreshMs;
+
+  // Tømning
+  $("#emptiesStart").value   = DATA.empties.startDate||"";
+  $("#emptiesHorizon").value = DATA.empties.horizon||8;
+
+  document.querySelectorAll('.wd').forEach(cb=>{
+    const on = (DATA.empties.weekdays||[]).includes(Number(cb.value));
+    cb.checked = on;
+    cb.parentElement.classList.toggle('on', on);
+    cb.addEventListener('change', ()=> cb.parentElement.classList.toggle('on', cb.checked));
+  });
+
+  $("#emptiesNames").value = arrayToLines(DATA.empties.names||[]);
+  $("#emptiesSkip").value  = arrayToLines(DATA.empties.skipDates||[]);
+  $("#emptiesCols").value  = String(DATA.empties.columns||2);
+
+  // Fødselsdage
+  $("#bdayMsg").value = DATA.birthdays.message||"";
+  renderBdays(DATA.birthdays.people||[]);
+
+  // Kalender
+  $("#calUrl").value    = DATA.calendar.url||"";
+  $("#calDays").value   = DATA.calendar.daysAhead||60;
+  $("#calMax").value    = DATA.calendar.maxEvents||50;
+  $("#calShowTime").value = DATA.calendar.showTime||"yes";
+  $("#calStyle").value    = DATA.calendar.style||"bullets";
+
+  // Slides + knapper
+  renderSlides();
+  $("#addImage").onclick   = ()=>{ DATA.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); };
+  $("#addText").onclick    = ()=>{ DATA.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); };
+  $("#addEmpties").onclick = ()=>{ DATA.slides.push({type:"empties", title:"TØMNINGS DAGE", duration:12}); renderSlides(); };
+  $("#addBirth").onclick   = ()=>{ DATA.slides.push({type:"birthday", title:"FØDSELSDAG", duration:12}); renderSlides(); };
+
+  // Fil-modal åbner
+  $("#openFiles").onclick = ()=>openFileModal("medarbejdere");
+  $("#pickLogo").onclick  = ()=>openFileModal("media", "#logoUrl");
+
+  // Gem
+  $("#saveBtn").onclick = onSave;
+})().catch(e=>alert(e.message||e));
+
+async function onSave(){
+  // Brand/tema
+  DATA.brand   = $("#brand").value.trim();
+  DATA.logoUrl = $("#logoUrl").value.trim();
+  DATA.theme   = { bg1: $("#bg1").value.trim(), bg2: $("#bg2").value.trim(), accent: $("#accent").value.trim() };
+  DATA.settings= { refreshMs: Number($("#refreshMs").value||300000) };
+
+  // Tømning
+  DATA.empties = {
+    startDate: $("#emptiesStart").value,
+    horizon: Number($("#emptiesHorizon").value||8),
+    weekdays: $$(".wd").filter(cb=>cb.checked).map(cb=>Number(cb.value)),
+    names: linesToArray($("#emptiesNames")),
+    skipDates: linesToArray($("#emptiesSkip")),
+    columns: Number($("#emptiesCols").value||2)
+  };
+
+  // Simple validering
+  if(!DATA.empties.weekdays.length){ alert("Tømning: vælg mindst én ugedag."); return; }
+  if(!(DATA.empties.names||[]).length){ alert("Tømning: tilføj mindst ét navn (rækkefølge)."); return; }
+
+  // Fødselsdage
+  const people=[];
+  $$("#bdayList .row").forEach(r=>{
+    people.push({
+      name:$("[data-k=name]",r).value.trim(),
+      date:$("[data-k=date]",r).value.trim(),
+      image:$("[data-k=image]",r).value.trim()
+    });
+  });
+  DATA.birthdays = { message: $("#bdayMsg").value.trim(), people: people.filter(p=>p.name) };
+
+  // Kalender
+  DATA.calendar = {
+    url: $("#calUrl").value.trim(),
+    daysAhead: Number($("#calDays").value||60),
+    maxEvents: Number($("#calMax").value||50),
+    showTime: $("#calShowTime").value,
+    style: $("#calStyle").value
+  };
+  if (DATA.calendar.url && !/^https?:\/\//i.test(DATA.calendar.url)){
+    alert("Kalender: URL skal starte med http:// eller https://");
+    return;
   }
-  throw new Error(errors.join(' | '));
-}
 
-async function loadIncludes(){
-  const slots = Array.from(document.querySelectorAll('[data-include]'));
-  for (const el of slots) {
-    const src = el.getAttribute('data-include');
-    const name = el.getAttribute('data-name') || src;
-    el.classList.add('loading');
+  const pin = $("#adminPin").value.trim();
+  if(!pin){ alert("Indtast din 4-cifrede PIN (ADMIN_PIN) for at gemme."); return; }
 
-    try {
-      const {url, text} = await fetchWithFallbacks(src);
-      el.innerHTML = text;
-      el.classList.remove('loading');
-
-      // Kør scripts i fragmentet
-      Array.from(el.querySelectorAll('script')).forEach(old => {
-        const s = document.createElement('script');
-        s.type = old.type || 'text/javascript';
-        s.defer = old.defer || false;
-        s.async = false;
-        s.text = old.textContent;
-        if (old.src) s.src = old.src.startsWith('/') ? (REPO_BASE + old.src) : old.src;
-        old.replaceWith(s);
-      });
-
-      Diag.add(`Indlæst: ${name}`);
-    } catch (err) {
-      el.classList.remove('loading');
-      el.classList.add('error');
-      const box = document.createElement('div');
-      box.className = 'errbox';
-      box.textContent = `Kunne ikke indlæse ${name}\n\nPrøvte:\n${err.message}`;
-      el.appendChild(box);
-      Diag.add(`FEJL i ${name}: ${err.message}`);
-    }
-  }
-}
-
-/* Gem-knap */
-document.getElementById('saveBtn').addEventListener('click', async () => {
-  const pin = document.getElementById('adminPin').value.trim();
-  if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return; }
-  for (const fn of PB.onSave) { try { await fn(PB.data); } catch(e){ console.error(e); } }
-  await api("saveDataJson", { data: PB.data, message:"PB-DESIGN: admin gem (includes)" });
+  await api("saveDataJson", { data: DATA, message:"PB-DESIGN: admin gem" });
   alert("Gemt ✔");
-});
-
-/* Boot */
-(async function boot(){
-  try {
-    PB.data = await loadData();
-    Diag.add('data.json indlæst');
-  } catch(e) {
-    Diag.add('FEJL ved indlæsning af data.json: ' + e.message);
-  }
-  await loadIncludes();
-  for (const fn of PB.onReady) { try { await fn(PB.data); } catch(e){ console.error(e); } }
-})();
+}
 </script>
-
 </body>
 </html>
