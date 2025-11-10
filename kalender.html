@@ -7,6 +7,7 @@
 <style>
   :root{
     --bg:#0b6a74; --bg2:#0d4952; --ink:#e9fbff; --line:rgba(255,255,255,.12);
+    --accent:rgba(255,255,255,.25);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -14,11 +15,24 @@
   .wrap{min-height:100%;padding:24px;display:grid;place-items:center}
   .card{width:min(1200px,95vw);background:rgba(0,0,0,.08);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:20px}
   h1{margin:0 0 14px;font-weight:800;letter-spacing:.03em}
-  table{width:100%;border-collapse:collapse}
-  th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
-  th{opacity:.85;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
   .muted{opacity:.8}
   .brand{margin-top:12px;opacity:.8;font-size:12px}
+
+  /* Listevisning (tabel) */
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  .table th{opacity:.85;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+  .hide{display:none}
+
+  /* Boksevisning (grupperet pr. dato) */
+  .day{margin:18px 0 8px;padding-top:6px;border-top:1px solid var(--line)}
+  .day-title{font-weight:800;letter-spacing:.02em;margin:0 0 10px}
+  .event{display:flex;gap:12px;align-items:flex-start;background:rgba(0,0,0,.06);border:1px solid var(--line);padding:12px;border-radius:12px;margin:8px 0}
+  .dot{flex:0 0 26px;height:26px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--accent)}
+  .dot span{font-size:12px;opacity:.85}
+  .ev-main{flex:1}
+  .ev-title{margin:0 0 4px;font-weight:700}
+  .ev-meta{font-size:13px;opacity:.9}
 </style>
 </head>
 <body>
@@ -26,10 +40,23 @@
   <div class="card">
     <h1 id="title">Kalender</h1>
     <div id="msg" class="muted" style="margin-bottom:8px"></div>
-    <table>
-      <thead><tr><th>Dato</th><th id="thTime">Tid</th><th>Event</th><th>Sted</th></tr></thead>
+
+    <!-- Listevisning -->
+    <table id="tbl" class="table">
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th id="thTime">Tid</th>
+          <th>Event</th>
+          <th>Sted</th>
+        </tr>
+      </thead>
       <tbody id="rows"></tbody>
     </table>
+
+    <!-- Boksevisning -->
+    <div id="boxDays"></div>
+
     <div class="brand" id="brand"></div>
   </div>
 </div>
@@ -40,8 +67,10 @@ const $ = (q,el=document)=>el.querySelector(q);
 function pad2(n){return String(n).padStart(2,"0")}
 function fmtDate(d){return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`}
 function fmtTime(d){return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`}
+function ymdKey(d){return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`}
+
 function parseICS(text){
-  // Meget simpel iCal-parser for VEVENT
+  // Enkel iCal-parser for VEVENT (PB-DESIGN)
   const events=[];
   const chunks = text.split(/BEGIN:VEVENT/gi).slice(1);
   for(const ch of chunks){
@@ -54,13 +83,12 @@ function parseICS(text){
     const description= pick(/DESCRIPTION:(.+)\r?\n/i);
 
     function parseDT(s){
-      // håndter YYYYMMDD eller YYYYMMDDTHHMMSS(Z)
+      // Støtter YYYYMMDD og YYYYMMDDTHHMMSS(Z)
       if(!s) return null;
       const m = s.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?$/);
       if(!m) return null;
       const [_,Y,Mo,D,H,Mi,S]=m;
       if(H) {
-        // UTC antages kun hvis Z – men i praksis viser vi lokaltid
         return new Date(Number(Y),Number(Mo)-1,Number(D),Number(H),Number(Mi),Number(S));
       } else {
         return new Date(Number(Y),Number(Mo)-1,Number(D),0,0,0);
@@ -82,13 +110,16 @@ async function loadData(){
   const DATA = await loadData();
   const brand = DATA?.brand || "Infoskærm";
   const showTimes = (DATA?.calendar?.showTimes ?? true);
+  const viewStyle = (DATA?.calendar?.viewStyle || "list"); // "list" | "boxes"
   const url = DATA?.calendar?.url || "";
   const ahead = Number(DATA?.calendar?.daysAhead || 60);
   const max = Number(DATA?.calendar?.maxEvents || 50);
 
   $("#brand").textContent = brand;
   $("#title").textContent = "Kalender";
-  $("#thTime").style.display = showTimes ? "" : "none";
+
+  // Tænd/sluk tid-kolonne for listevisning
+  $("#thTime").classList.toggle("hide", !showTimes);
 
   if(!url){
     $("#msg").textContent = "Ingen ICS-URL sat – viser ingen events.";
@@ -109,29 +140,64 @@ async function loadData(){
   const now = new Date();
   const lim = new Date(); lim.setDate(now.getDate()+ahead);
 
-  const rows = all.filter(ev => ev.start >= now && ev.start <= lim).slice(0, max);
-  if(!rows.length){
-    $("#msg").textContent = "Ingen kommende events i perioden.";
-  } else {
-    $("#msg").textContent = `${rows.length} kommende event${rows.length>1?"s":""}`;
-  }
+  const items = all.filter(ev => ev.start >= now && ev.start <= lim).slice(0, max);
+  $("#msg").textContent = items.length ? `${items.length} kommende event${items.length>1?"s":""}` : "Ingen kommende events i perioden.";
 
-  const tb = $("#rows"); tb.innerHTML="";
-  for(const ev of rows){
-    const tr=document.createElement("tr");
-    const dateStr = fmtDate(ev.start);
-    const timeStr = fmtTime(ev.start);
-    tr.innerHTML = `
-      <td>${dateStr}</td>
-      <td style="${showTimes?"":"display:none"}">${timeStr}</td>
-      <td>${(ev.summary||"").replace(/\\n/g," ")}</td>
-      <td>${ev.location||""}</td>`;
-    tb.appendChild(tr);
+  // Visning
+  const tbl = $("#tbl");
+  const boxRoot = $("#boxDays");
+  if(viewStyle === "boxes"){
+    // Skjul tabel, vis bokse
+    tbl.style.display = "none";
+    boxRoot.innerHTML = "";
+    // Gruppér pr. dato
+    const byDay = {};
+    for(const ev of items){
+      const k = ymdKey(ev.start);
+      (byDay[k] ??= []).push(ev);
+    }
+    // Render hver dato
+    const days = Object.keys(byDay).sort();
+    for(const k of days){
+      const list = byDay[k];
+      const d = list[0].start;
+      const wrap = document.createElement("div");
+      wrap.className = "day";
+      wrap.innerHTML = `<h2 class="day-title">${fmtDate(d)}</h2>`;
+      list.forEach((ev, i)=>{
+        const el = document.createElement("div");
+        el.className = "event";
+        el.innerHTML = `
+          <div class="dot"><span>${i+1}</span></div>
+          <div class="ev-main">
+            <div class="ev-title">${(ev.summary||"").replace(/\\n/g," ").trim()}</div>
+            <div class="ev-meta">
+              ${showTimes ? `Kl. ${fmtTime(ev.start)}${ev.location? " · " : ""}` : ""}${ev.location||""}
+            </div>
+          </div>`;
+        wrap.appendChild(el);
+      });
+      boxRoot.appendChild(wrap);
+    }
+  } else {
+    // Liste (tabel)
+    boxRoot.innerHTML = "";
+    tbl.style.display = "";
+    const tb = $("#rows"); tb.innerHTML="";
+    for(const ev of items){
+      const tr=document.createElement("tr");
+      const dateStr = fmtDate(ev.start);
+      const timeStr = fmtTime(ev.start);
+      tr.innerHTML = `
+        <td>${dateStr}</td>
+        <td class="${showTimes ? "" : "hide"}">${timeStr}</td>
+        <td>${(ev.summary||"").replace(/\\n/g," ")}</td>
+        <td>${ev.location||""}</td>`;
+      tb.appendChild(tr);
+    }
   }
 })();
+
 </script>
 </body>
 </html>
-
-
-
