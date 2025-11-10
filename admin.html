@@ -35,7 +35,7 @@
   .slide-body{margin-top:8px;display:grid;gap:8px}
   .small{font-size:12px;color:#9abec4}
 
-  /* Modal filer */
+  /* Modal filer (med scroll) */
   .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px}
   .modal.open{display:flex}
   .sheet{max-width:1100px;width:100%;background:#092b30;border:1px solid #0a2328;border-radius:14px;padding:18px;max-height:90vh;overflow:auto}
@@ -127,11 +127,21 @@
         <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
         <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
       </div>
-      <!-- NYT: Vis klokkeslæt -->
-      <label style="display:flex;align-items:center;gap:8px">
-        <input id="calShowTimes" type="checkbox" checked>
-        Vis klokkeslæt i kalenderen
-      </label>
+      <div class="row">
+        <div style="flex:0 0 220px">
+          <label>Visningsstil</label>
+          <select id="calViewStyle">
+            <option value="list">Liste</option>
+            <option value="boxes">Bokse</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <label style="display:flex;align-items:center;gap:8px;margin:0 0 0 8px">
+            <input id="calShowTimes" type="checkbox" checked>
+            Vis klokkeslæt i kalenderen
+          </label>
+        </div>
+      </div>
       <small class="small">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden i stedet kommende fødselsdage.</small>
     </section>
   </div>
@@ -286,7 +296,7 @@ function findInputSelector(scope, key){
   DATA.settings??= { refreshMs:300000 };
   DATA.empties ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
   DATA.birthdays ??= { message:"", people:[] };
-  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTimes:true };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTimes:true, viewStyle:"list" };
   DATA.slides    ??= [];
 
   $("#brand").value  = DATA.brand;
@@ -311,6 +321,7 @@ function findInputSelector(scope, key){
   $("#calDays").value = DATA.calendar.daysAhead||60;
   $("#calMax").value  = DATA.calendar.maxEvents||50;
   $("#calShowTimes").checked = Boolean(DATA.calendar.showTimes ?? true);
+  $("#calViewStyle").value = DATA.calendar.viewStyle || "list";
 
   renderSlides();
 
@@ -355,7 +366,8 @@ async function onSave(){
     url: $("#calUrl").value.trim(),
     daysAhead: Number($("#calDays").value||60),
     maxEvents: Number($("#calMax").value||50),
-    showTimes: $("#calShowTimes").checked
+    showTimes: $("#calShowTimes").checked,
+    viewStyle: $("#calViewStyle").value || "list"
   };
 
   const pin=$("#adminPin").value.trim(); if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
@@ -389,7 +401,7 @@ async function refreshDir(){
       await api("renamePath", { oldPath: it.path, newPath: `${ACTIVE_DIR}/${nn}`, message:`PB-DESIGN: rename ${it.path}` });
       refreshDir();
     };
-    $("[data-del]",tr).onclick=async()=>{ if(!confirm(`Slet /${it.path}?`))return; await api("deletePath",{ path: it.path, message:`PB-DESIGN: delete ${it.path}` }); refreshDir(); };
+    $("[data-del]",tr).onclick=async()=>{ if(!confirm(\`Slet /${it.path}?\`))return; await api("deletePath",{ path: it.path, message:`PB-DESIGN: delete ${it.path}` }); refreshDir(); };
     tb.appendChild(tr);
   });
   $("#opStatus").textContent=`/${ACTIVE_DIR}: ${items?.length||0} filer`;
