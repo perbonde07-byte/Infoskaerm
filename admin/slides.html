@@ -1,81 +1,102 @@
-<section class="panel">
+<div style="padding:18px">
   <h2>Slides (rækkefølge)</h2>
-  <div class="slides" id="slidesList"></div>
-  <small class="small">Brug “Op/Ned” for rækkefølge. “Tømning”/“Fødselsdage” bruger venstre indstillinger.</small>
-</section>
+  <div id="slidesBox" style="display:flex;flex-direction:column;gap:10px"></div>
+  <small class="small">Brug “Op/Ned” til at sortere. “Tømning”/“Fødselsdage” bruger venstre indstillinger.</small>
+</div>
 
 <script>
-/* PB-DESIGN: Denne lille blok kører når include er indsat,
-   og binder slides-listen til global DATA og eksisterende helpers. */
-(function(){
-  if(!window.renderSlidesInclude){
-    window.renderSlidesInclude = function(){
-      const list = document.getElementById("slidesList");
-      if(!list || !window.DATA) return;
-      list.innerHTML="";
-      (DATA.slides||[]).forEach((s,idx)=>{
-        const item=document.createElement("div");
-        item.className="slide-card";
+function slideTitle(s){
+  if(s.type==="image") return s.title||"Billede";
+  if(s.type==="text")  return s.title||"Tekst";
+  if(s.type==="empties") return s.title||"Tømning";
+  if(s.type==="birthday") return s.title||"Fødselsdage";
+  return s.type||"Slide";
+}
+function findInputSelector(scope, key){
+  const inp = scope.querySelector(`[data-k="${key}"]`);
+  if(!inp.id) inp.id = `f_${key}_${Math.random().toString(36).slice(2,7)}`;
+  return `#${inp.id}`;
+}
 
-        function wrapBody(){
-          if(s.type==="image"){
-            return `<div class="row">
-                      <input data-k="image" placeholder="/media/billede.jpg" value="${s.image||""}">
-                      <button class="btn" data-pick="image">Vælg fra filer</button>
-                    </div>
-                    <div class="row">
-                      <textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet">${s.sideText||""}</textarea>
-                    </div>`;
-          } else if(s.type==="text"){
-            return `<div class="row"><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>`;
-          } else if(s.type==="tomme"){
-            return `<div class="small">Bruger “Tømning (automatisk plan)” fra venstre panel.</div>`;
-          } else {
-            return `<div class="small">Bruger “Fødselsdage” fra venstre panel.</div>`;
-          }
-        }
+function renderSlides(){
+  const box = document.getElementById('slidesBox');
+  const arr = PB.data.slides ||= [];
+  box.innerHTML = '';
+  arr.forEach((s,idx)=>{
+    const card = document.createElement('div');
+    card.className = 'slide-card';
+    card.style.cssText = 'border:1px solid #0a2328;border-radius:12px;background:#092b30;padding:12px';
 
-        item.innerHTML=`
-          <div class="slide-head">
-            <div><strong>${(window.slideTitle?sliceTitle=slideTitle:null, slideTitle?slideTitle(s): (s.title||s.type||"Slide"))}</strong> <span class="slide-meta">(${s.type})</span></div>
-            <div class="row" style="flex:0 0 auto">
-              <button class="btn" data-up>Op</button>
-              <button class="btn" data-down>Ned</button>
-              <button class="btn bad" data-del>Fjern</button>
-            </div>
-          </div>
-          <div class="slide-body">
-            <div class="row">
-              <div><label>Titel</label><input data-k="title" value="${s.title||""}"></div>
-              <div style="flex:0 0 140px"><label>Varighed (sek.)</label><input type="number" min="3" max="120" data-k="duration" value="${s.duration??12}"></div>
-            </div>
-            ${wrapBody()}
-          </div>
-        `;
-        item.addEventListener("input",(e)=>{
-          const k=e.target.dataset.k; if(!k) return;
-          let v=e.target.value; if(k==="duration") v=Number(v||12);
-          DATA.slides[idx][k]=v;
-        });
-        item.querySelector("[data-up]").onclick=()=>{ if(idx>0){ const t=DATA.slides[idx-1]; DATA.slides[idx-1]=DATA.slides[idx]; DATA.slides[idx]=t; renderSlidesInclude(); } };
-        item.querySelector("[data-down]").onclick=()=>{ if(idx<DATA.slides.length-1){ const t=DATA.slides[idx+1]; DATA.slides[idx+1]=DATA.slides[idx]; DATA.slides[idx]=t; renderSlidesInclude(); } };
-        item.querySelector("[data-del]").onclick=()=>{ DATA.slides.splice(idx,1); renderSlidesInclude(); };
-        item.querySelector("[data-pick]")?.addEventListener("click",()=>openFileModal("media", (function(){const inp=item.querySelector('[data-k="image"]'); if(!inp.id) inp.id='img_'+Math.random().toString(36).slice(2,7); return '#'+inp.id;})()));
-        list.appendChild(item);
-      });
-    };
-  }
-  // Bind top-knapper (findes i header)
-  const addImage = document.getElementById("addImage");
-  const addText  = document.getElementById("addText");
-  const addTom   = document.getElementById("addTomme");
-  const addBirth = document.getElementById("addBirth");
-  if(addImage) addImage.onclick = ()=>{ DATA.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlidesInclude(); };
-  if(addText)  addText.onclick  = ()=>{ DATA.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlidesInclude(); };
-  if(addTom)   addTom.onclick   = ()=>{ DATA.slides.push({type:"tomme", title:"TØMNINGS DAGE", duration:12}); renderSlidesInclude(); };
-  if(addBirth) addBirth.onclick = ()=>{ DATA.slides.push({type:"birthday", title:"FØDSELSDAG", duration:12}); renderSlidesInclude(); };
+    const head = document.createElement('div');
+    head.className='slide-head';
+    head.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px';
+    head.innerHTML = `
+      <div><strong>${slideTitle(s)}</strong> <span style="font-size:13px;color:#9fc3c9">(${s.type})</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" data-up>Op</button>
+        <button class="btn" data-down>Ned</button>
+        <button class="btn bad" data-del>Fjern</button>
+      </div>`;
+    card.appendChild(head);
 
-  // første render (hvis DATA allerede er sat)
-  if(window.DATA) renderSlidesInclude();
-})();
+    const body = document.createElement('div');
+    body.className='slide-body';
+    body.style.cssText='margin-top:8px;display:grid;gap:8px';
+    body.innerHTML = `
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="flex:1 1 220px"><label>Titel</label><input data-k="title" value="${s.title||""}"></div>
+        <div style="flex:0 0 140px"><label>Varighed (sek.)</label><input type="number" min="3" max="120" data-k="duration" value="${s.duration??12}"></div>
+      </div>
+      ${s.type==="image" ? `
+        <div style="display:flex;gap:10px">
+          <input data-k="image" placeholder="/media/billede.jpg" value="${s.image||""}" style="flex:1">
+          <button class="btn" data-pick="image">Vælg fra filer</button>
+        </div>
+        <div><textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet">${s.sideText||""}</textarea></div>
+      `: s.type==="text" ? `
+        <div><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>
+      `: s.type==="empties" ? `
+        <div class="small">Bruger Tømning fra venstre panel.</div>
+      `: s.type==="birthday" ? `
+        <div class="small">Bruger Fødselsdage fra venstre panel.</div>
+      `: ``}
+    `;
+    card.appendChild(body);
+
+    card.addEventListener('input', e=>{
+      const k = e.target.dataset.k; if(!k) return;
+      s[k] = (k==='duration') ? Number(e.target.value||12) : e.target.value;
+    });
+    card.querySelector('[data-up]').onclick = ()=>{ if(idx>0){ const t=arr[idx-1]; arr[idx-1]=arr[idx]; arr[idx]=t; renderSlides(); } };
+    card.querySelector('[data-down]').onclick = ()=>{ if(idx<arr.length-1){ const t=arr[idx+1]; arr[idx+1]=arr[idx]; arr[idx]=t; renderSlides(); } };
+    card.querySelector('[data-del]').onclick = ()=>{ arr.splice(idx,1); renderSlides(); };
+    card.querySelector('[data-pick]')?.addEventListener('click',()=> {
+      // her kan du senere koble din fil-modal på; nu bare feltfokus
+      const sel = findInputSelector(card,'image');
+      document.querySelector(sel).focus();
+    });
+
+    box.appendChild(card);
+  });
+}
+
+PB.onReady.push(() => {
+  PB.data.slides ||= [];
+  renderSlides();
+
+  // koble header-knapper
+  const k = {
+    addImage(){ PB.data.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); },
+    addText(){ PB.data.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); },
+    addEmpties(){ PB.data.slides.push({type:"empties", title:"TØMNINGS DAGE", duration:12}); renderSlides(); },
+    addBirth(){ PB.data.slides.push({type:"birthday", title:"FØDSELSDAG", duration:12}); renderSlides(); }
+  };
+  document.getElementById('addImage')  .onclick = k.addImage;
+  document.getElementById('addText')   .onclick = k.addText;
+  document.getElementById('addEmpties').onclick = k.addEmpties;
+  document.getElementById('addBirth')  .onclick = k.addBirth;
+});
+
+// slides gemmes implicit fordi vi allerede har muteret PB.data.slides i UI’et
+PB.onSave.push(()=>{ /* no-op */ });
 </script>
