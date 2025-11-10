@@ -180,26 +180,16 @@
   },
   "slides": [
     {
-      "type": "birthday",
-      "title": "FØDSELSDAG",
-      "duration": 12
-    },
-    {
-      "type": "birthday",
-      "title": "FØDSELSDAG",
+      "type": "image",
+      "title": "Forhandler netværk McConnel",
+      "image": "",
+      "sideText": "",
       "duration": 12
     },
     {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 10
-    },
-    {
-      "type": "image",
-      "title": "Forhandler netværk McConnel",
-      "image": "",
-      "sideText": "",
-      "duration": 12
     }
   ]
 }
