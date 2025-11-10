@@ -51,22 +51,9 @@
   },
   "slides": [
     {
-      "type": "image",
-      "title": "Kampagne",
-      "image": "/media/treetech",
-      "sideText": "Billede test",
-      "duration": 12
-    },
-    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 10
-    },
-    {
-      "type": "text",
-      "title": "Mandag",
-      "content": "Så det Mandag og lad det store arbejde begynde.",
-      "duration": 12
     }
   ]
 }
