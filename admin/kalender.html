@@ -1,0 +1,26 @@
+<section class="panel">
+  <h2>Kalender (ICS)</h2>
+
+  <label>Kalender ICS-URL</label>
+  <input id="calUrl" type="text" placeholder="https://.../calendar.ics">
+
+  <div class="row">
+    <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
+    <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
+  </div>
+
+  <label>Vis klokkeslæt</label>
+  <select id="calShowTime">
+    <option value="true" selected>Ja</option>
+    <option value="false">Nej</option>
+  </select>
+
+  <label>Visningsstil</label>
+  <select id="calStyle">
+    <option value="boxes" selected>Bokse</option>
+    <option value="list">Liste</option>
+    <option value="bullets">Punkter</option>
+  </select>
+
+  <small class="small">Vises på <code>/kalender.html</code>. Hvis ICS-URL er tom, vises kommende fødselsdage i stedet.</small>
+</section>
