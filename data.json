@@ -175,6 +175,11 @@
         "name": "test",
         "date": "11.11.2025",
         "image": "/medarbejdere/Erik"
+      },
+      {
+        "name": "test 2",
+        "date": "12.11.2025",
+        "image": "/medarbejdere/Henrik"
       }
     ]
   },
