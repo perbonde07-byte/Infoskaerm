@@ -46,7 +46,7 @@
   },
   "calendar": {
     "url": "https://outlook.live.com/owa/calendar/c4c03a29-7c4c-45ba-828d-bedd587ff4b2/06c869a8-1507-4506-951e-d38d1c754bf2/cid-3EB4B2918E478AE6/calendar.ics",
-    "daysAhead": 60,
+    "daysAhead": 30,
     "maxEvents": 50
   },
   "slides": [
