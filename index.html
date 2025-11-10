@@ -80,20 +80,6 @@
   .slide-birthday .photo{width:min(340px,38vw);height:min(340px,38vw);object-fit:cover;border-radius:18px;border:2px solid rgba(255,255,255,.18);box-shadow:0 10px 36px rgba(0,0,0,.25)}
   .slide-birthday .name{margin:.6em 0;font-size:clamp(22px,2.6vw,40px);font-weight:800}
   .slide-birthday .msg{font-size:clamp(16px,1.6vw,26px)}
-
-  /* PB-ADD: safe area + robust centrering (kun tilføjelse) */
-  .content{
-    padding: max(22px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right))
-             max(60px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
-  }
-  .slide-empties .card{
-    max-width: min(1200px, 94vw);
-    max-height: 82vh;
-    margin-inline: auto;
-  }
-  @media (max-width: 980px){
-    .slide-empties{ padding: min(5vh, 36px); }
-  }
 </style>
 </head>
 <body>
@@ -233,9 +219,6 @@ function renderEmptiesSlide(root/*, s*/){
       </div>
     </section>
   `;
-  // PB-ADD: tilpas kortet når DOM'en er klar
-  requestAnimationFrame(() => fitEmptiesCardToViewport());
-
   function col(list){
     return `
       <div class="tbl">
@@ -260,24 +243,13 @@ function buildEmptiesPlan(){
   const skip = new Set((E.skipDates||[]).map(s=>s.trim()));
   const horizon = Math.max(4, Math.min(40, Number(E.horizon||8)));
 
-  // lav liste over alle gyldige ugedage fra start → frem, spring skip over
   const out=[], todayYMD=asYMD(new Date());
-  // find indeks i navne, der matcher første dato efter/lig med start
   let nameIdx=0; let d = new Date(start);
-  // rul d bagud til nærmeste mandag for deterministisk rotation
-  while (d.getDay()!==1) d.setDate(d.getDate()-1);
+  while (d.getDay()!==1) d.setDate(d.getDate()-1);          // rul bagud til mandag for stabilitet
+  function isWantedDay(date){ const wd = date.getDay()||7; return weekdays.includes(wd); }
+  function stepToNextWanted(date){ do { date.setDate(date.getDate()+1); } while (!isWantedDay(date)); }
+  while(!isWantedDay(d) || d < start) stepToNextWanted(d);  // første ønskedag >= start
 
-  function isWantedDay(date){
-    const wd = date.getDay()||7; // søn=0 → 7
-    return weekdays.includes(wd);
-  }
-  function stepToNextWanted(date){
-    do { date.setDate(date.getDate()+1); } while (!isWantedDay(date));
-  }
-  // find første ønskedag >= start
-  while(!isWantedDay(d) || d < start) stepToNextWanted(d);
-
-  // rotation af navne er deterministisk fra start: tæller kun når vi fandt en faktisk dag
   while(out.length < horizon){
     const dmy = fmtDMY(d);
     if(!skip.has(dmy)){
@@ -288,7 +260,7 @@ function buildEmptiesPlan(){
     }
     stepToNextWanted(d);
   }
-  // markér "aktuel" som første dato >= i dag
+  // markér "aktuel" som første dato ≥ i dag
   let flagged=false;
   for(const r of out){
     if(!flagged && r.yyyymmdd>=todayYMD){ r.isNow=true; flagged=true; } else r.isNow=false;
@@ -296,35 +268,6 @@ function buildEmptiesPlan(){
   if(!flagged && out.length) out[out.length-1].isNow = true;
   return out;
 }
-
-/* PB-ADD: automatisk fit til viewport for tømnings-kortet */
-function fitEmptiesCardToViewport() {
-  const card = document.querySelector('.slide-empties .card');
-  if (!card) return;
-
-  // Nulstil tidligere evt. skalering
-  card.style.transform = 'none';
-  card.style.transformOrigin = 'center center';
-
-  const pad = 24; // lidt luft
-  const vw = document.documentElement.clientWidth - pad*2;
-  const vh = document.documentElement.clientHeight - pad*2;
-
-  // natural size
-  const rect = card.getBoundingClientRect();
-
-  // Skalér kun hvis nødvendigt
-  const scale = Math.min(1, vw / rect.width, vh / rect.height);
-  if (scale < 1) {
-    card.style.transform = `scale(${scale})`;
-  }
-}
-
-// Tilpas hvis vinduet ændrer størrelse
-window.addEventListener('resize', () => {
-  const has = document.querySelector('.slide-empties .card');
-  if (has) fitEmptiesCardToViewport();
-});
 
 /* ===== PB-DESIGN • boot ===== */
 (async function start(){
@@ -357,4 +300,5 @@ window.addEventListener('resize', () => {
 </script>
 </body>
 </html>
+
 
