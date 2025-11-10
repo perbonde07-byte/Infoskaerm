@@ -180,16 +180,16 @@
   },
   "slides": [
     {
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 10
+    },
+    {
       "type": "image",
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "test",
       "duration": 12
-    },
-    {
-      "type": "empties",
-      "title": "TØMNINGS DAGE",
-      "duration": 10
     }
   ]
 }
