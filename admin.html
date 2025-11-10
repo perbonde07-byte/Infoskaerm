@@ -5,60 +5,47 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Admin • Infoscreen</title>
 <style>
-  /* ========== PB-DESIGN: tema ========== */
+  /* === PB-DESIGN: klassisk admin UI (samme layout som før) === */
   :root{
-    --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --muted:#a8d7de;
-    --line:#0a2328; --ok:#1f9d68; --bad:#d35a5a; --btn:#173c43;
+    --bg:#0d4952; --panel:#0c2d33; --ink:#e9fbff; --dim:#a8d7de;
+    --ok:#1f9d68; --bad:#d35a5a; --line:#0a2328; --btn:#173c43;
     --radius:14px;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-
-  header{max-width:1200px;margin:18px auto 8px;padding:0 16px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+  header{max-width:1200px;margin:18px auto 10px;padding:0 18px;display:flex;align-items:center;justify-content:space-between}
   h1{margin:0;font-weight:800}
   .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .btn{background:var(--btn);border:1px solid var(--line);color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
-  .btn.ok{background:var(--ok)}
-  .btn.bad{background:#5a1f1f;border-color:#411515}
-  .pin{max-width:200px}
-
-  .wrap{max-width:1200px;margin:0 auto 80px;padding:0 16px;display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .btn.ok{background:var(--ok)} .btn.bad{background:#5a1f1f;border-color:#411515}
+  .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
   .panel h2{margin:0 0 10px}
-  .muted{color:var(--muted);font-size:13px}
-
-  /* Tabs (venstre kolonne) */
-  .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-  .tab-btn{background:#092b30;border:1px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
-  .tab-btn[aria-selected="true"]{outline:2px solid var(--ok)}
-  .tabview{display:none}
-  .tabview.active{display:block}
-
-  /* Inputs */
-  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+  label{display:block;font-size:13px;color:var(--dim);margin:10px 0 6px}
   input,textarea,select{width:100%;border-radius:10px;border:1px solid #18424a;background:#0a2328;color:var(--ink);padding:10px 12px}
   textarea{min-height:90px;resize:vertical}
   .row{display:flex;gap:10px;flex-wrap:wrap}
   .row>*{flex:1}
+  .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid var(--line);padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
+  .small{font-size:12px;color:#9abec4}
 
-  /* Slides (højre kolonne) */
+  /* Slides (højre) */
   .slides{display:flex;flex-direction:column;gap:10px}
   .slide-card{border:1px solid var(--line);border-radius:12px;background:#092b30;padding:12px}
   .slide-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
   .slide-meta{font-size:13px;color:#9fc3c9}
   .slide-body{margin-top:8px;display:grid;gap:8px}
 
-  /* Modal – med SCROLL FIX */
+  /* Modal (SCROLL-FIX) */
   .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px;z-index:50}
   .modal.open{display:flex}
   .sheet{
-    width:min(1100px, 96vw);
-    max-height:90vh;           /* <- vigtig */
+    max-width:1100px;width:100%;
+    max-height:90vh;               /* <- vigtig */
     background:#092b30;border:1px solid var(--line);border-radius:14px;padding:16px;
     display:flex;flex-direction:column;gap:10px;
   }
   .sheet .bar{display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .sheet .ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .list{flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:12px}
   .list table{width:100%;border-collapse:collapse}
   .list th,.list td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left}
@@ -75,109 +62,169 @@
     <button class="btn" id="addImage">+ Billede</button>
     <button class="btn" id="addText">+ Tekst</button>
     <button class="btn" id="addTomning">+ Tømning</button>
-    <button class="btn" id="addBday">+ Fødselsdage</button>
+    <button class="btn" id="addBirth">+ Fødselsdage</button>
   </div>
 </header>
 
 <div class="wrap">
-  <!-- VENSTRE: tabs + include-views -->
-  <section class="panel">
-    <div class="tabs" role="tablist" aria-label="Konfiguration">
-      <button class="tab-btn" data-tab="#tab-brand" aria-selected="true">Brand & Tema</button>
-      <button class="tab-btn" data-tab="#tab-tomning">Tømning</button>
-      <button class="tab-btn" data-tab="#tab-bday">Fødselsdage</button>
-      <button class="tab-btn" data-tab="#tab-cal">Kalender</button>
-    </div>
+  <!-- VENSTRE: alle sektioner som før -->
+  <div class="left-col" style="display:flex;flex-direction:column;gap:14px">
+    <section class="panel">
+      <h2>Brand</h2>
+      <label>Brand</label>
+      <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
+      <label>Logo URL</label>
+      <div class="row">
+        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
+        <button class="btn" data-pick="#logoUrl">Vælg fra filer</button>
+      </div>
+      <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
+      <h2>Tema</h2>
+      <div class="row">
+        <div><label>Baggrund 1</label><input id="bg1" type="text" placeholder="#0d4952"></div>
+        <div><label>Baggrund 2</label><input id="bg2" type="text" placeholder="#0b6a74"></div>
+        <div><label>Accent</label><input id="accent" type="text" placeholder="#a7d0c9"></div>
+      </div>
+      <label>Opdaterings-interval (ms)</label>
+      <input id="refreshMs" type="number" min="60000" step="1000" value="300000">
+    </section>
 
-    <div class="tabview active" id="tab-brand" data-include="/admin/brand_tema.html"></div>
-    <div class="tabview"          id="tab-tomning" data-include="/admin/tomning.html"></div>
-    <div class="tabview"          id="tab-bday"   data-include="/admin/foedselsdage.html"></div>
-    <div class="tabview"          id="tab-cal"    data-include="/admin/kalender.html"></div>
+    <section class="panel">
+      <h2>Tømning (automatisk plan)</h2>
+      <div class="row">
+        <div><label>Startdato</label><input id="tomStart" type="date"></div>
+        <div><label>Horizon (antal kommende linjer)</label><input id="tomHorizon" type="number" min="2" max="20" value="8"></div>
+      </div>
+      <label>Ugedage</label>
+      <div class="row" style="gap:12px">
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="tom-wd" value="1"> MAN</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="tom-wd" value="2"> TIR</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="tom-wd" value="3"> ONS</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="tom-wd" value="4"> TOR</label>
+        <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="tom-wd" value="5"> FRE</label>
+      </div>
+      <label>Navne (rækkefølge — en pr. linje)</label>
+      <textarea id="tomNames" placeholder="Per&#10;Louise&#10;Max"></textarea>
+      <label>Ekskluder datoer (en pr. linje — dd.mm.yyyy)</label>
+      <textarea id="tomSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
+      <label>Antal kolonner i visning</label>
+      <select id="tomCols"><option value="1">1 kolonne</option><option value="2" selected>2 kolonner</option></select>
+    </section>
 
-    <div class="row" style="margin-top:12px;justify-content:flex-end">
-      <input id="adminPin" class="pin" type="password" placeholder="PIN (ADMIN_PIN)">
-      <button class="btn ok" id="saveBtn">Gem ændringer</button>
-    </div>
-  </section>
+    <section class="panel">
+      <h2>Fødselsdage</h2>
+      <label>Standard-besked (bruges i alarm-slides)</label>
+      <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
+      <div id="bdayList"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="addBdayRow">+ Tilføj person</button>
+      </div>
+      <small class="small">Dato kan være <b>dd.mm</b> eller <b>dd.mm.yyyy</b>. Visning viser fødselsdato og alder (PB-DESIGN).</small>
+    </section>
 
-  <!-- HØJRE: slides-liste -->
+    <section class="panel">
+      <h2>Kalender (ICS)</h2>
+      <label>Kalender ICS-URL</label>
+      <input id="calUrl" type="text" placeholder="https://.../calendar.ics">
+      <div class="row">
+        <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
+        <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Vis klokkeslæt</label>
+          <select id="calShowTime"><option value="ja">ja</option><option value="nej">nej</option></select>
+        </div>
+        <div>
+          <label>Visningsstil</label>
+          <select id="calStyle">
+            <option value="bokse">Bokse</option>
+            <option value="liste">Liste</option>
+            <option value="prikker">Bullet/Prikker</option>
+          </select>
+        </div>
+      </div>
+      <small class="small">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden kommende fødselsdage.</small>
+    </section>
+  </div>
+
+  <!-- HØJRE: slides -->
   <section class="panel">
     <h2>Slides (rækkefølge)</h2>
     <div class="slides" id="slides"></div>
-    <p class="muted">Brug “Op/Ned” til at sortere. “Tømning”/“Fødselsdage” bruger venstrepanelets indstillinger.</p>
+    <small class="small">Brug “Op/Ned” til at sortere. “Tømning”/“Fødselsdage” bruger venstrepanelets indstillinger.</small>
   </section>
 </div>
 
-<!-- Modal: filer (med SCROLL) -->
+<div class="footer">
+  <input id="adminPin" type="password" placeholder="PIN (ADMIN_PIN)" style="max-width:200px">
+  <button class="btn ok" id="saveBtn">Gem ændringer</button>
+</div>
+
+<!-- Modal: filer (scrollbar er aktiveret) -->
 <div class="modal" id="fileModal" aria-hidden="true">
   <div class="sheet">
     <div class="bar">
       <strong>Filer</strong>
-      <div class="ctrls">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn" data-tab="medarbejdere">/medarbejdere</button>
         <button class="btn" data-tab="media">/media</button>
         <button class="btn bad" id="closeFiles">Luk</button>
       </div>
     </div>
-
     <div class="row">
       <input id="upName" type="text" placeholder="Navn.jpg" style="flex:0 0 220px">
       <input id="upFile" type="file" accept="image/*" style="flex:1">
       <button class="btn ok" id="btnUpload" style="flex:0 0 130px">Upload</button>
       <span id="upHint" class="status"></span>
     </div>
-
     <div class="list">
       <table id="fileTable">
-        <thead>
-          <tr><th></th><th>Navn</th><th>Sti</th><th>Brug</th><th>Omdøb</th><th>Slet</th></tr>
-        </thead>
+        <thead><tr><th></th><th>Navn</th><th>Sti</th><th>Brug</th><th>Omdøb</th><th>Slet</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
-
     <div id="opStatus" class="status"></div>
   </div>
 </div>
 
 <script>
-/* ========== PB-DESIGN: små hjælpere ========== */
+/* ==========================
+   PB-DESIGN: hjælpefunktioner
+========================== */
 const $  = (q, el=document) => el.querySelector(q);
 const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
-
 let DATA=null, ACTIVE_DIR="medarbejdere", FILE_TARGET=null;
 
-/* API-wrapper */
+/* API */
 async function api(action, payload){
   const r = await fetch("/api/data", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ action, ...(payload||{}) }) });
   const j = await r.json(); if(!j.ok) throw new Error(j.error||"Fejl"); return j;
 }
 async function loadData(){ const j = await (await fetch("/api/data")).json(); if(!j.ok) throw new Error(j.error||"Fejl"); return j.content; }
 
-/* Include loader */
-async function loadIncludes() {
-  const hosts = document.querySelectorAll("[data-include]");
-  await Promise.all([...hosts].map(async el => {
-    const url = el.getAttribute("data-include");
-    const res = await fetch(url, { cache:"no-cache" });
-    el.innerHTML = await res.text();
-  }));
-}
-
-/* Faner */
-function initTabs(){
-  $$(".tab-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const sel = btn.getAttribute("data-tab");
-      $$(".tab-btn").forEach(b=>b.setAttribute("aria-selected", String(b===btn)));
-      $$(".tabview").forEach(v=>v.classList.toggle("active", "#"+v.id===sel));
-    });
-  });
-}
-
-/* Linje-/tekst helpers */
 function toLines(el){ return (el.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean) }
 function fromLines(arr){ return (arr||[]).join("\n") }
+
+/* Fødselsdage UI */
+function renderBdays(b){
+  const host=$("#bdayList"); host.innerHTML="";
+  (b||[]).forEach((p,i)=>{
+    const id="img_"+i;
+    const row=document.createElement("div"); row.className="row"; row.style.marginTop="8px";
+    row.innerHTML=`
+      <input type="text" placeholder="Navn" value="${p.name||""}" data-k="name">
+      <input type="text" placeholder="dd.mm eller dd.mm.yyyy" value="${p.date||""}" data-k="date" style="max-width:220px">
+      <input id="${id}" type="text" placeholder="/medarbejdere/Per.jpg" value="${p.image||""}" data-k="image">
+      <button class="btn" data-pick="#${id}">Vælg fra filer</button>
+      <button class="btn bad" data-del>Fjern</button>`;
+    row.addEventListener("input", e=>{const k=e.target.dataset.k; if(k) p[k]=e.target.value.trim();});
+    $("[data-del]",row).onclick=()=>{ b.splice(i,1); renderBdays(b); };
+    $("[data-pick]",row).onclick=(ev)=>{ openFileModal("medarbejdere", ev.currentTarget.getAttribute("data-pick")); };
+    host.appendChild(row);
+  });
+  $("#addBdayRow").onclick=()=>{ b.push({name:"",date:"",image:""}); renderBdays(b); };
+}
 
 /* Slides UI */
 function slideTitle(s){
@@ -196,6 +243,7 @@ function renderSlides(){
   const box=$("#slides"); box.innerHTML="";
   (DATA.slides||[]).forEach((s,idx)=>{
     const card=document.createElement("div"); card.className="slide-card";
+
     const head=document.createElement("div"); head.className="slide-head";
     head.innerHTML=`
       <div><strong>${slideTitle(s)}</strong> <span class="slide-meta">(${s.type})</span></div>
@@ -219,12 +267,14 @@ function renderSlides(){
         </div>
         <div class="row">
           <textarea data-k="sideText" placeholder="Valgfri tekst ved siden af billedet">${s.sideText||""}</textarea>
-        </div>` :
-      s.type==="text" ? `
-        <div class="row"><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>` :
-      s.type==="tomning" ? `<div class="muted">Bruger “Tømning (automatisk plan)” fra venstre panel.</div>` :
-      s.type==="birthday" ? `<div class="muted">Bruger “Fødselsdage” fra venstre panel.</div>` :
-      ``}
+        </div>
+      `: s.type==="text" ? `
+        <div class="row"><textarea data-k="content" placeholder="Tekstindhold">${s.content||""}</textarea></div>
+      `: s.type==="tomning" ? `
+        <div class="small">Bruger “Tømning (automatisk plan)” fra venstre panel.</div>
+      `: s.type==="birthday" ? `
+        <div class="small">Bruger “Fødselsdage” fra venstre panel.</div>
+      `: ``}
     `;
     card.appendChild(body);
 
@@ -233,25 +283,119 @@ function renderSlides(){
       let v=e.target.value; if(k==="duration") v=Number(v||12);
       s[k]=v;
     });
-    $("[data-up]",card).onclick=()=>{ if(idx>0){ [DATA.slides[idx-1],DATA.slides[idx]]=[DATA.slides[idx],DATA.slides[idx-1]]; renderSlides(); } };
-    $("[data-down]",card).onclick=()=>{ if(idx<DATA.slides.length-1){ [DATA.slides[idx+1],DATA.slides[idx]]=[DATA.slides[idx],DATA.slides[idx+1]]; renderSlides(); } };
+    $("[data-up]",card).onclick=()=>{ if(idx>0){ const t=DATA.slides[idx-1]; DATA.slides[idx-1]=DATA.slides[idx]; DATA.slides[idx]=t; renderSlides(); } };
+    $("[data-down]",card).onclick=()=>{ if(idx<DATA.slides.length-1){ const t=DATA.slides[idx+1]; DATA.slides[idx+1]=DATA.slides[idx]; DATA.slides[idx]=t; renderSlides(); } };
     $("[data-del]",card).onclick=()=>{ DATA.slides.splice(idx,1); renderSlides(); };
     $("[data-pick]",card)?.addEventListener("click",()=>openFileModal("media", findInputSelector(card,"image")));
     box.appendChild(card);
   });
 }
 
-/* Modal: filer (med scroll) */
+/* Init + Save */
+(async function init(){
+  DATA = await loadData();
+
+  // defaults
+  DATA.brand ??= ""; DATA.logoUrl ??= "";
+  DATA.theme ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
+  DATA.settings??= { refreshMs:300000 };
+  DATA.tomning ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
+  DATA.birthdays ??= { message:"", people:[] };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTime:true, style:"bokse" };
+  DATA.slides    ??= [];
+
+  // brand/tema
+  $("#brand").value  = DATA.brand;
+  $("#logoUrl").value= DATA.logoUrl;
+  $("#bg1").value    = DATA.theme.bg1;
+  $("#bg2").value    = DATA.theme.bg2;
+  $("#accent").value = DATA.theme.accent;
+  $("#refreshMs").value = DATA.settings.refreshMs;
+
+  // tømning
+  $("#tomStart").value   = DATA.tomning.startDate||"";
+  $("#tomHorizon").value = DATA.tomning.horizon||8;
+  const wd = (DATA.tomning.weekdays||[]);
+  $$(".tom-wd").forEach(cb=>{ cb.checked = wd.includes(Number(cb.value)); });
+  $("#tomNames").value = fromLines(DATA.tomning.names||[]);
+  $("#tomSkip").value  = fromLines(DATA.tomning.skipDates||[]);
+  $("#tomCols").value  = String(DATA.tomning.columns||2);
+
+  // fødselsdage
+  $("#bdayMsg").value = DATA.birthdays.message||"";
+  renderBdays(DATA.birthdays.people||[]);
+
+  // kalender
+  $("#calUrl").value      = DATA.calendar.url||"";
+  $("#calDays").value     = DATA.calendar.daysAhead||60;
+  $("#calMax").value      = DATA.calendar.maxEvents||50;
+  $("#calShowTime").value = DATA.calendar.showTime ? "ja":"nej";
+  $("#calStyle").value    = DATA.calendar.style||"bokse";
+
+  // slides + knapper
+  renderSlides();
+  $("#addImage").onclick   = ()=>{ DATA.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); };
+  $("#addText").onclick    = ()=>{ DATA.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); };
+  $("#addTomning").onclick = ()=>{ DATA.slides.push({type:"tomning", title:"TØMNINGS DAGE", duration:12}); renderSlides(); };
+  $("#addBirth").onclick   = ()=>{ DATA.slides.push({type:"birthday", title:"FØDSELSDAGE", duration:12}); renderSlides(); };
+
+  $("#saveBtn").onclick = onSave;
+
+  // modal knapper
+  $("#openFiles").onclick = ()=>openFileModal("medarbejdere");
+  $("#closeFiles").onclick = closeFileModal;
+  $$(".sheet [data-tab]").forEach(b=> b.onclick = ()=>{ ACTIVE_DIR=b.getAttribute("data-tab"); refreshDir(); });
+})().catch(e=>alert(e.message||e));
+
+async function onSave(){
+  DATA.brand = $("#brand").value.trim();
+  DATA.logoUrl = $("#logoUrl").value.trim();
+  DATA.theme = { bg1: $("#bg1").value.trim(), bg2: $("#bg2").value.trim(), accent: $("#accent").value.trim() };
+  DATA.settings = { refreshMs: Number($("#refreshMs").value||300000) };
+
+  DATA.tomning = {
+    startDate: $("#tomStart").value,
+    horizon: Number($("#tomHorizon").value||8),
+    weekdays: $$(".tom-wd").filter(cb=>cb.checked).map(cb=>Number(cb.value)),
+    names: toLines($("#tomNames")),
+    skipDates: toLines($("#tomSkip")),
+    columns: Number($("#tomCols").value||2)
+  };
+
+  const people=[];
+  $$("#bdayList .row").forEach(r=>{
+    people.push({
+      name:$("[data-k=name]",r).value.trim(),
+      date:$("[data-k=date]",r).value.trim(),
+      image:$("[data-k=image]",r).value.trim()
+    });
+  });
+  DATA.birthdays = { message: $("#bdayMsg").value.trim(), people: people.filter(p=>p.name) };
+
+  DATA.calendar = {
+    url: $("#calUrl").value.trim(),
+    daysAhead: Number($("#calDays").value||60),
+    maxEvents: Number($("#calMax").value||50),
+    showTime: ($("#calShowTime").value==="ja"),
+    style: $("#calStyle").value||"bokse"
+  };
+
+  const pin=$("#adminPin").value.trim(); if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
+  await api("saveDataJson", { data: DATA, message:`PB-DESIGN: admin gem` });
+  alert("Gemt ✔");
+}
+
+/* ============ Fil-modal (med scroll) ============ */
 function openFileModal(dir="medarbejdere", targetInput=null){
   ACTIVE_DIR=dir; FILE_TARGET=targetInput; $("#fileModal").classList.add("open"); refreshDir();
 }
 function closeFileModal(){ $("#fileModal").classList.remove("open"); FILE_TARGET=null; }
+
 async function refreshDir(){
   $("#opStatus").textContent="Henter…";
   const { items } = await api("listDir", { path: ACTIVE_DIR });
   const tb=$("#fileTable tbody"); tb.innerHTML="";
-  (items||[]).filter(x=>x.type==="file")
-  .sort((a,b)=>a.name.localeCompare(b.name,"da",{numeric:true}))
+  (items||[]).filter(x=>x.type==="file").sort((a,b)=>a.name.localeCompare(b.name,"da",{numeric:true}))
   .forEach(it=>{
     const tr=document.createElement("tr");
     tr.innerHTML=`
@@ -261,17 +405,13 @@ async function refreshDir(){
       <td><button class="btn" data-use>Brug</button></td>
       <td><button class="btn" data-rename>Omdøb</button></td>
       <td><button class="btn bad" data-del>Slet</button></td>`;
-    $("[data-use]",tr).onclick=()=>{ if(FILE_TARGET){ const el=document.querySelector(FILE_TARGET); if(el) el.value=`/${it.path}`; closeFileModal(); } };
+    $("[data-use]",tr).onclick=()=>{ if(FILE_TARGET){ const el=document.querySelector(FILE_TARGET); if(el) el.value=\`/${it.path}\`; closeFileModal(); } };
     $("[data-rename]",tr).onclick=async()=>{
       const nn=prompt("Nyt navn (inkl. .jpg/.png):", it.name); if(!nn) return;
       await api("renamePath", { oldPath: it.path, newPath: `${ACTIVE_DIR}/${nn}`, message:`PB-DESIGN: rename ${it.path}` });
       refreshDir();
     };
-    $("[data-del]",tr).onclick=async()=>{
-      if(!confirm(`Slet /${it.path}?`))return;
-      await api("deletePath",{ path: it.path, message:`PB-DESIGN: delete ${it.path}` });
-      refreshDir();
-    };
+    $("[data-del]",tr).onclick=async()=>{ if(!confirm(\`Slet /${it.path}?\`))return; await api("deletePath",{ path: it.path, message:`PB-DESIGN: delete ${it.path}` }); refreshDir(); };
     tb.appendChild(tr);
   });
   $("#opStatus").textContent=`/${ACTIVE_DIR}: ${items?.length||0} filer`;
@@ -284,130 +424,8 @@ $("#btnUpload").onclick = async ()=>{
   await api("uploadBase64", { path:`${ACTIVE_DIR}/${name}`, base64:b64, message:`PB-DESIGN: upload ${ACTIVE_DIR}/${name}` });
   $("#upHint").textContent="Uploadet ✔"; $("#upFile").value=""; $("#upName").value=""; refreshDir();
 };
-$("#openFiles").onclick = ()=>openFileModal("medarbejdere");
-$("#closeFiles").onclick = closeFileModal;
-$$(".sheet [data-tab]")?.forEach(b=> b.onclick = ()=>{ ACTIVE_DIR=b.getAttribute("data-tab"); refreshDir(); });
-
-/* Init & Save */
-async function onSave(){
-  // Brand & tema
-  DATA.brand   = ($("#brand")?.value||"").trim();
-  DATA.logoUrl = ($("#logoUrl")?.value||"").trim();
-  DATA.theme   = { bg1: $("#bg1")?.value?.trim()||"#0d4952", bg2: $("#bg2")?.value?.trim()||"#0b6a74", accent: $("#accent")?.value?.trim()||"#a7d0c9" };
-  DATA.settings= { refreshMs: Number($("#refreshMs")?.value||300000) };
-
-  // Tømning
-  DATA.tomning = {
-    startDate: $("#tomStart")?.value||"",
-    horizon: Number($("#tomHorizon")?.value||8),
-    weekdays: $$(".tom-wd")?.filter(cb=>cb.checked).map(cb=>Number(cb.value)) || [],
-    names: toLines($("#tomNames")||{value:""}),
-    skipDates: toLines($("#tomSkip")||{value:""}),
-    columns: Number($("#tomCols")?.value||2)
-  };
-
-  // Fødselsdage
-  const people=[];
-  $$("#bdayList .row").forEach(r=>{
-    people.push({
-      name:$("[data-k=name]",r).value.trim(),
-      date:$("[data-k=date]",r).value.trim(),
-      image:$("[data-k=image]",r).value.trim()
-    });
-  });
-  DATA.birthdays = { message: $("#bdayMsg")?.value?.trim()||"", people: people.filter(p=>p.name) };
-
-  // Kalender
-  DATA.calendar = {
-    url: $("#calUrl")?.value?.trim()||"",
-    daysAhead: Number($("#calDays")?.value||60),
-    maxEvents: Number($("#calMax")?.value||50),
-    showTime: ($("#calShowTime")?.value||"ja")==="ja",
-    style: $("#calStyle")?.value||"bokse"
-  };
-
-  const pin=$("#adminPin").value.trim(); if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
-  await api("saveDataJson", { data: DATA, message:`PB-DESIGN: admin gem` });
-  alert("Gemt ✔");
-}
-
-/* Hoved-init */
-(async function initAll(){
-  await loadIncludes();   // hent /admin/*.html
-  initTabs();
-
-  // knapper til at tilføje slides
-  $("#addImage").onclick  = ()=>{ DATA.slides.push({type:"image", title:"Kampagne", image:"", sideText:"", duration:12}); renderSlides(); };
-  $("#addText").onclick   = ()=>{ DATA.slides.push({type:"text", title:"Tekst", content:"", duration:12}); renderSlides(); };
-  $("#addTomning").onclick= ()=>{ DATA.slides.push({type:"tomning", title:"TØMNINGS DAGE", duration:12}); renderSlides(); };
-  $("#addBday").onclick   = ()=>{ DATA.slides.push({type:"birthday", title:"FØDSELSDAGE", duration:12}); renderSlides(); };
-
-  $("#saveBtn").onclick = onSave;
-
-  // hent data + udfyld felter
-  DATA = await loadData();
-  DATA.brand   ??= "";
-  DATA.logoUrl ??= "";
-  DATA.theme   ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
-  DATA.settings??= { refreshMs:300000 };
-  DATA.tomning  ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
-  DATA.birthdays??= { message:"", people:[] };
-  DATA.calendar ??= { url:"", daysAhead:60, maxEvents:50, showTime:true, style:"bokse" };
-  DATA.slides   ??= [];
-
-  // Brand & tema
-  $("#brand").value  = DATA.brand;
-  $("#logoUrl").value= DATA.logoUrl;
-  $("#bg1").value    = DATA.theme.bg1;
-  $("#bg2").value    = DATA.theme.bg2;
-  $("#accent").value = DATA.theme.accent;
-  $("#refreshMs").value = DATA.settings.refreshMs;
-
-  // Tømning
-  $("#tomStart").value   = DATA.tomning.startDate||"";
-  $("#tomHorizon").value = DATA.tomning.horizon||8;
-  const wd = (DATA.tomning.weekdays||[]);
-  $$(".tom-wd").forEach(cb=>{ cb.checked = wd.includes(Number(cb.value)); });
-  $("#tomNames").value = fromLines(DATA.tomning.names||[]);
-  $("#tomSkip").value  = fromLines(DATA.tomning.skipDates||[]);
-  $("#tomCols").value  = String(DATA.tomning.columns||2);
-
-  // Fødselsdage
-  $("#bdayMsg").value = DATA.birthdays.message||"";
-  renderBdays(DATA.birthdays.people||[]);
-
-  // Kalender
-  $("#calUrl").value  = DATA.calendar.url||"";
-  $("#calDays").value = DATA.calendar.daysAhead||60;
-  $("#calMax").value  = DATA.calendar.maxEvents||50;
-  $("#calShowTime").value = DATA.calendar.showTime ? "ja":"nej";
-  $("#calStyle").value    = DATA.calendar.style||"bokse";
-
-  // Slides
-  renderSlides();
-})().catch(e=>alert(e.message||e));
-
-/* Fødselsdage – UI renderer */
-function renderBdays(b){
-  const host=$("#bdayList"); if(!host) return;
-  host.innerHTML="";
-  (b||[]).forEach((p,i)=>{
-    const id="img_"+i;
-    const row=document.createElement("div"); row.className="row"; row.style.marginTop="8px";
-    row.innerHTML=`
-      <input type="text" placeholder="Navn" value="${p.name||""}" data-k="name">
-      <input type="text" placeholder="dd.mm eller dd.mm.yyyy" value="${p.date||""}" data-k="date" style="max-width:220px">
-      <input id="${id}" type="text" placeholder="/medarbejdere/Per.jpg" value="${p.image||""}" data-k="image">
-      <button class="btn" data-pick="#${id}">Vælg fra filer</button>
-      <button class="btn bad" data-del>Fjern</button>`;
-    row.addEventListener("input", e=>{const k=e.target.dataset.k; if(k) p[k]=e.target.value.trim();});
-    $("[data-del]",row).onclick=()=>{ b.splice(i,1); renderBdays(b); };
-    $("[data-pick]",row).onclick=(ev)=>{ openFileModal("medarbejdere", ev.currentTarget.getAttribute("data-pick")); };
-    host.appendChild(row);
-  });
-  $("#addBdayRow")?.addEventListener("click", ()=>{ b.push({name:"",date:"",image:""}); renderBdays(b); });
-}
 </script>
 </body>
 </html>
+
 
