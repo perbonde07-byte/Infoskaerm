@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Kalender • Infoskærm</title>
 <style>
-  :root{ --bg:#0b6a74; --bg2:#0d4952; --ink:#e9fbff; --line:rgba(255,255,255,.12); --accent:#a7d0c9; }
+  :root{
+    --bg:#0b6a74; --bg2:#0d4952; --ink:#e9fbff; --line:rgba(255,255,255,.12);
+    --accent:#a7d0c9;
+  }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
@@ -19,12 +22,9 @@
   .brand{margin-top:12px;opacity:.8;font-size:12px}
 
   /* Visningsstile */
-  .events.bullets li::marker{content:"• "}
-  .events.arrows li::marker{content:"→ "}
-  .events{margin:0;padding-left:1.2em}
-  .cards{display:grid;gap:10px}
-  .cardItem{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:rgba(0,0,0,.06)}
-  .dateBadge{display:inline-block;background:rgba(255,255,255,.08);border:1px solid var(--line);padding:2px 8px;border-radius:999px;margin-right:8px}
+  .bullet::before{content:"•"; margin-right:.6em; color:var(--accent)}
+  .arrow::before{content:"→"; margin-right:.6em; color:var(--accent)}
+  .box{border:1px solid var(--line); border-radius:10px; padding:10px 12px}
 </style>
 </head>
 <body>
@@ -33,39 +33,49 @@
     <h1 id="title">Kalender</h1>
     <div id="msg" class="muted" style="margin-bottom:8px"></div>
 
-    <!-- Liste/bokse – skifter efter style -->
-    <div id="listWrap"></div>
+    <!-- “boxes” style uses rows with bordered cells; bullets/arrows use list-look but we keep table to align dates -->
+    <table>
+      <thead>
+        <tr><th>Dato</th><th id="thTime">Tid</th><th>Event</th><th>Sted</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
 
     <div class="brand" id="brand"></div>
   </div>
 </div>
 
 <script>
-const $ = (q,el=document)=>el.querySelector(q);
+const $=(q,el=document)=>el.querySelector(q);
 
 function pad2(n){return String(n).padStart(2,"0")}
 function fmtDate(d){return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`}
 function fmtTime(d){return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`}
-function parseICS(text){
-  const events=[];
-  const chunks = text.split(/BEGIN:VEVENT/gi).slice(1);
-  for(const ch of chunks){
-    const block = ch.split(/END:VEVENT/i)[0] || "";
-    const pick = re => (block.match(re)||[])[1]?.trim() || "";
-    const dtstart = pick(/DTSTART(?:;[^:\n]*)?:(.+)\r?\n/i);
-    const dtend   = pick(/DTEND(?:;[^:\n]*)?:(.+)\r?\n/i);
-    const summary = pick(/SUMMARY:(.+)\r?\n/i);
-    const location= pick(/LOCATION:(.+)\r?\n/i);
 
-    function parseDT(s){
+function parseICS(text){
+  // simpel iCal-parser for VEVENT
+  const events=[];
+  const chunks=text.split(/BEGIN:VEVENT/gi).slice(1);
+  for(const ch of chunks){
+    const block=(ch.split(/END:VEVENT/i)[0]||"")+"\n";
+    const pick=(re)=>{ const m=block.match(re); return m?m[1].trim():""; };
+
+    const dtstart=pick(/DTSTART(?:;[^:\n]*)?:(.+)\r?\n/i);
+    const dtend  =pick(/DTEND(?:;[^:\n]*)?:(.+)\r?\n/i);
+    const summary=pick(/SUMMARY:(.+)\r?\n/i);
+    const location=pick(/LOCATION:(.+)\r?\n/i);
+    const description=pick(/DESCRIPTION:(.+)\r?\n/i);
+
+    const parseDT=(s)=>{
       if(!s) return null;
-      const m = s.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?$/);
+      const m=s.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?$/);
       if(!m) return null;
       const [_,Y,Mo,D,H,Mi,S]=m;
-      return H ? new Date(+Y,Mo-1,D,+H,+Mi,+S) : new Date(+Y,Mo-1,D,0,0,0);
-    }
-    const ds = parseDT(dtstart), de = parseDT(dtend);
-    if(ds) events.push({start:ds, end:de, summary, location});
+      if(H) return new Date(Number(Y),Number(Mo)-1,Number(D),Number(H),Number(Mi),Number(S));
+      return new Date(Number(Y),Number(Mo)-1,Number(D),0,0,0);
+    };
+    const ds=parseDT(dtstart), de=parseDT(dtend);
+    if(ds) events.push({start:ds,end:de,summary,location,description});
   }
   return events.sort((a,b)=>a.start-b.start);
 }
@@ -77,67 +87,61 @@ async function loadData(){
 }
 
 (async function start(){
-  const DATA = await loadData();
-  const brand = DATA?.brand || "Infoskærm";
-  const showTimes = (DATA?.calendar?.showTimes ?? true);
-  const style = DATA?.calendar?.style || "bullets"; // bullets | arrows | boxes
-  const url = DATA?.calendar?.url || "";
-  const ahead = Number(DATA?.calendar?.daysAhead || 60);
-  const max = Number(DATA?.calendar?.maxEvents || 50);
+  const DATA=await loadData();
+  const brand=DATA?.brand || "Infoskærm";
+  const cal=DATA?.calendar || {};
+  const showTimes = Boolean(cal.showTimes ?? true);
+  const style = cal.style || "boxes";          // "bullets" | "arrows" | "boxes"
+  const url = cal.url || "";
+  const ahead = Number(cal.daysAhead || 60);
+  const max = Number(cal.maxEvents || 50);
 
-  $("#brand").textContent = brand;
-  $("#title").textContent = "Kalender";
+  $("#brand").textContent=brand;
+  $("#title").textContent="Kalender";
+  $("#thTime").style.display=showTimes?"":"none";
 
   if(!url){
-    $("#msg").textContent = "Ingen ICS-URL sat – viser ingen events.";
+    $("#msg").textContent="Ingen ICS-URL sat – viser ingen events.";
     return;
   }
 
   let txt="";
   try{
-    const r=await fetch(url);
+    const r=await fetch(url,{cache:"no-store"});
     if(!r.ok) throw new Error("Kunne ikke hente ICS (CORS eller URL?)");
-    txt = await r.text();
+    txt=await r.text();
   }catch(e){
-    $("#msg").textContent = "Fejl ved hentning af ICS: " + (e.message||e);
+    $("#msg").textContent="Fejl ved hentning af ICS: "+(e.message||e);
     return;
   }
 
-  const all = parseICS(txt);
-  const now = new Date();
-  const lim = new Date(); lim.setDate(now.getDate()+ahead);
+  const all=parseICS(txt);
+  const now=new Date();
+  const lim=new Date(); lim.setDate(now.getDate()+ahead);
 
-  const rows = all.filter(ev => ev.start >= now && ev.start <= lim).slice(0, max);
+  const rows=all.filter(ev=>ev.start>=now && ev.start<=lim).slice(0,max);
   $("#msg").textContent = rows.length ? `${rows.length} kommende event${rows.length>1?"s":""}` : "Ingen kommende events i perioden.";
 
-  const wrap = $("#listWrap"); wrap.innerHTML="";
-  if(style==="boxes"){
-    const grid=document.createElement("div"); grid.className="cards";
-    rows.forEach(ev=>{
-      const item=document.createElement("div"); item.className="cardItem";
-      item.innerHTML = `
-        <div class="dateBadge">${fmtDate(ev.start)}${showTimes?` • ${fmtTime(ev.start)}`:""}</div>
-        <div style="margin-top:6px;font-weight:600">${(ev.summary||"").replace(/\\n/g," ")}</div>
-        ${ev.location?`<div class="muted" style="margin-top:4px">${ev.location}</div>`:""}
-      `;
-      grid.appendChild(item);
-    });
-    wrap.appendChild(grid);
-  } else {
-    const ul=document.createElement("ul"); ul.className=`events ${style}`;
-    rows.forEach(ev=>{
-      const li=document.createElement("li");
-      li.innerHTML = `
-        <strong>${fmtDate(ev.start)}</strong>${showTimes?` — ${fmtTime(ev.start)}`:""}:
-        ${(ev.summary||"").replace(/\\n/g," ")}
-        ${ev.location?`<span class="muted"> • ${ev.location}</span>`:""}
-      `;
-      ul.appendChild(li);
-    });
-    wrap.appendChild(ul);
+  const tbody=$("#rows"); tbody.innerHTML="";
+  for(const ev of rows){
+    const tr=document.createElement("tr");
+    const dateStr=fmtDate(ev.start);
+    const timeStr=fmtTime(ev.start);
+
+    // marker stil
+    let titleClass="";
+    if(style==="bullets") titleClass="bullet";
+    else if(style==="arrows") titleClass="arrow";
+    else if(style==="boxes") titleClass="box";
+
+    tr.innerHTML=`
+      <td>${dateStr}</td>
+      <td style="${showTimes?"":"display:none"}">${timeStr}</td>
+      <td class="${titleClass}">${(ev.summary||"").replace(/\\n/g," ")}</td>
+      <td>${ev.location||""}</td>`;
+    tbody.appendChild(tr);
   }
 })();
 </script>
 </body>
 </html>
-
