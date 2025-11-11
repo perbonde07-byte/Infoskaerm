@@ -281,6 +281,7 @@ function renderSlides(){
 }
 function findInputSelector(scope, key){
   const inp = scope.querySelector(`[data-k="${key}"]`);
+  if(!inp){ console.warn("Mangler input for", key); return null; }
   if(!inp.id) inp.id = `f_${key}_${Math.random().toString(36).slice(2,7)}`;
   return `#${inp.id}`;
 }
@@ -390,7 +391,17 @@ async function refreshDir(){
       <td><button class="btn" data-use>Brug</button></td>
       <td><button class="btn" data-rename>Omdøb</button></td>
       <td><button class="btn bad" data-del>Slet</button></td>`;
-    $("[data-use]",tr).onclick=()=>{ if(FILE_TARGET){ const el=document.querySelector(FILE_TARGET); if(el) el.value=`/${it.path}`; closeFileModal(); } };
+    $("[data-use]",tr).onclick=()=>{ 
+      if(FILE_TARGET){ 
+        const el=document.querySelector(FILE_TARGET); 
+        if(el){ 
+          el.value=`/${it.path}`; 
+          // vigtig: fyr input-event så UI og evt. lyttere opdager ændringen
+          el.dispatchEvent(new Event("input",{bubbles:true})); 
+        }
+        closeFileModal(); 
+      } 
+    };
     $("[data-rename]",tr).onclick=async()=>{
       const nn=prompt("Nyt navn (inkl. .jpg/.png):", it.name); if(!nn) return;
       await api("renamePath", { oldPath: it.path, newPath: `${ACTIVE_DIR}/${nn}`, message:`PB-DESIGN: rename ${it.path}` });
