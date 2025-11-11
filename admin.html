@@ -14,7 +14,9 @@
   h1{margin:0;font-weight:800}
   .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .btn{background:#173c43;border:1px solid #0a2328;color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer}
-  .btn.ok{background:var(--ok)} .btn.bad{background:#5a1f1f;border-color:#411515}
+  .btn.ok{background:var(--ok)}
+  .btn.bad{background:#5a1f1f;border-color:#411515}
+
   .wrap{max-width:1200px;margin:0 auto 80px;padding:0 18px;display:grid;grid-template-columns:1fr 420px;gap:14px}
   .panel{background:var(--panel);border:1px solid #0a2328;border-radius:var(--radius);padding:18px}
   .panel h2{margin:0 0 10px}
@@ -24,6 +26,7 @@
   .row{display:flex;gap:10px;flex-wrap:wrap}
   .row>*{flex:1}
   .footer{position:sticky;bottom:0;background:#0c2d33;border-top:1px solid #0a2328;padding:10px 18px;display:flex;justify-content:flex-end;gap:10px}
+
   .slides{display:flex;flex-direction:column;gap:10px}
   .slide-card{border:1px solid #0a2328;border-radius:12px;background:#092b30;padding:12px}
   .slide-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -31,7 +34,7 @@
   .slide-body{margin-top:8px;display:grid;gap:8px}
   .small{font-size:12px;color:#9abec4}
 
-  /* Modal filer */
+  /* Modal filer (scrollbar) */
   .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:24px}
   .modal.open{display:flex}
   .sheet{max-width:1100px;width:100%;background:#092b30;border:1px solid #0a2328;border-radius:14px;padding:18px;max-height:90vh;overflow:auto}
@@ -55,7 +58,7 @@
 </header>
 
 <div class="wrap">
-  <!-- VENSTRE -->
+  <!-- VENSTRE KOLONNE -->
   <div class="left-col" style="display:flex;flex-direction:column;gap:14px">
     <section class="panel">
       <h2>Brand</h2>
@@ -63,7 +66,7 @@
       <input id="brand" type="text" placeholder="Bredsgaard • Infoskærm">
       <label>Logo URL</label>
       <div class="row">
-        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo.png">
+        <input id="logoUrl" type="text" placeholder="/media/Bredsgaard-logo transparnt.png">
         <button class="btn" data-pick="#logoUrl">Vælg fra filer</button>
       </div>
       <div style="height:1px;background:#0a2328;margin:16px -18px"></div>
@@ -84,16 +87,16 @@
         <div><label>Horizon (antal kommende linjer)</label><input id="emptiesHorizon" type="number" min="2" max="20" value="8"></div>
       </div>
       <label>Ugedage</label>
-      <div class="row" style="gap:12px">
+      <div class="row" id="wdWrap" style="gap:12px">
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="1"> MAN</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="2"> TIR</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="3"> ONS</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="4"> TOR</label>
         <label class="btn" style="flex:0 0 auto"><input type="checkbox" class="wd" value="5"> FRE</label>
       </div>
-      <label>Navne (en pr. linje)</label>
+      <label>Navne (rækkefølge — en pr. linje)</label>
       <textarea id="emptiesNames" placeholder="Per&#10;Louise&#10;Max"></textarea>
-      <label>Ekskluder datoer (dd.mm.yyyy)</label>
+      <label>Ekskluder datoer (en pr. linje — dd.mm.yyyy)</label>
       <textarea id="emptiesSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
       <label>Antal kolonner i visning</label>
       <select id="emptiesCols"><option value="1">1 kolonne</option><option value="2" selected>2 kolonner</option></select>
@@ -101,7 +104,7 @@
 
     <section class="panel">
       <h2>Fødselsdage</h2>
-      <label>Standard-besked</label>
+      <label>Standard-besked (bruges i alarm-slides)</label>
       <input id="bdayMsg" type="text" placeholder="Tillykke med fødselsdagen - Håber du har dig en god uge.">
       <div id="bdayList"></div>
       <div class="row" style="margin-top:10px">
@@ -112,26 +115,37 @@
 
     <section class="panel">
       <h2>Kalender (ICS)</h2>
+
+      <!-- ICS-URL (skjult) -->
       <label>Kalender ICS-URL</label>
-      <input id="calUrl" type="text" placeholder="https://.../calendar.ics">
+      <div class="row" style="align-items:center">
+        <input id="calUrl" type="password" placeholder="https://.../calendar.ics">
+        <button class="btn" id="toggleUrl" style="flex:0 0 120px">Vis/Skjul</button>
+        <button class="btn" id="copyUrl" style="flex:0 0 120px">Kopiér</button>
+      </div>
+
       <div class="row">
         <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
         <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
       </div>
-      <label style="display:flex;align-items:center;gap:8px">
+
+      <!-- NYT: vis klokken & stil -->
+      <label style="display:flex;align-items:center;gap:8px;margin-top:6px">
         <input id="calShowTimes" type="checkbox" checked> Vis klokkeslæt i kalenderen
       </label>
+
       <label>Visningsstil</label>
       <select id="calStyle">
-        <option value="points">Punktliste (•)</option>
+        <option value="bullets">Punktliste (•)</option>
         <option value="arrows">Pile (→)</option>
         <option value="boxes">Bokse</option>
       </select>
+
       <small class="small">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden i stedet kommende fødselsdage.</small>
     </section>
   </div>
 
-  <!-- HØJRE: SLIDES -->
+  <!-- HØJRE KOLONNE: SLIDES -->
   <section class="panel">
     <h2>Slides (rækkefølge)</h2>
     <div class="slides" id="slides"></div>
@@ -275,14 +289,13 @@ function findInputSelector(scope, key){
 /* ===== init + save ===== */
 (async function init(){
   DATA = await loadData();
-
   DATA.brand   ??= "";
   DATA.logoUrl ??= "";
   DATA.theme   ??= { bg1:"#0d4952", bg2:"#0b6a74", accent:"#a7d0c9" };
   DATA.settings??= { refreshMs:300000 };
   DATA.empties ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
   DATA.birthdays ??= { message:"", people:[] };
-  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTimes:true, style:"points" };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, showTimes:true, style:"bullets" };
   DATA.slides    ??= [];
 
   $("#brand").value  = DATA.brand;
@@ -307,7 +320,7 @@ function findInputSelector(scope, key){
   $("#calDays").value = DATA.calendar.daysAhead||60;
   $("#calMax").value  = DATA.calendar.maxEvents||50;
   $("#calShowTimes").checked = Boolean(DATA.calendar.showTimes ?? true);
-  $("#calStyle").value = DATA.calendar.style || "points";
+  $("#calStyle").value = DATA.calendar.style || "bullets";
 
   renderSlides();
 
@@ -321,6 +334,15 @@ function findInputSelector(scope, key){
   $$("[data-pick]").forEach(b=>b.addEventListener("click",(ev)=>openFileModal("media", ev.currentTarget.getAttribute("data-pick"))));
   $("#closeFiles").onclick = closeFileModal;
   $$(".sheet [data-tab]").forEach(b=> b.onclick = ()=>{ ACTIVE_DIR=b.getAttribute("data-tab"); refreshDir(); });
+
+  // ICS reveal/copy
+  $("#toggleUrl").onclick = ()=>{
+    const el=$("#calUrl");
+    el.type = el.type==="password" ? "text" : "password";
+  };
+  $("#copyUrl").onclick = async ()=>{
+    try{ await navigator.clipboard.writeText($("#calUrl").value||""); alert("ICS-URL kopieret"); }catch(e){ alert("Kunne ikke kopiere"); }
+  };
 })().catch(e=>alert(e.message||e));
 
 async function onSave(){
@@ -353,7 +375,7 @@ async function onSave(){
     daysAhead: Number($("#calDays").value||60),
     maxEvents: Number($("#calMax").value||50),
     showTimes: $("#calShowTimes").checked,
-    style: $("#calStyle").value || "points"
+    style: $("#calStyle").value || "bullets"
   };
 
   const pin=$("#adminPin").value.trim(); if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
@@ -387,7 +409,7 @@ async function refreshDir(){
       await api("renamePath", { oldPath: it.path, newPath: `${ACTIVE_DIR}/${nn}`, message:`PB-DESIGN: rename ${it.path}` });
       refreshDir();
     };
-    $("[data-del]",tr).onclick=async()=>{ if(!confirm(`Slet /${it.path}?`))return; await api("deletePath",{ path: it.path, message:`PB-DESIGN: delete ${it.path}` }); refreshDir(); };
+    $("[data-del]",tr).onclick=async()=>{ if(!confirm(\`Slet /${it.path}?\`))return; await api("deletePath",{ path: it.path, message:`PB-DESIGN: delete ${it.path}` }); refreshDir(); };
     tb.appendChild(tr);
   });
   $("#opStatus").textContent=`/${ACTIVE_DIR}: ${items?.length||0} filer`;
