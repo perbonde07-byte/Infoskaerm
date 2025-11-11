@@ -1,148 +1,119 @@
+
 <!doctype html>
 <html lang="da">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Kalender • Infoskærm</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalender</title>
 <style>
-  :root{
-    --bg:#0b6a74; --bg2:#0d4952; --ink:#e9fbff; --line:rgba(255,255,255,.12);
-    --accent:#a7d0c9;
-  }
+  :root{ --bg:#0d4952; --panel:#083d43; --ink:#e9fbff; }
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  .wrap{min-height:100%;padding:24px;display:grid;place-items:center}
-  .card{width:min(1200px,95vw);background:rgba(0,0,0,.08);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:20px}
-  h1{margin:0 0 14px;font-weight:800;letter-spacing:.03em}
-  table{width:100%;border-collapse:collapse}
-  th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
-  th{opacity:.85;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
-  .muted{opacity:.8}
-  .brand{margin-top:12px;opacity:.8;font-size:12px}
-
-  /* Visningsstile */
-  .bullet::before{content:"•"; margin-right:.6em; color:var(--accent)}
-  .arrow::before{content:"→"; margin-right:.6em; color:var(--accent)}
-  .box{border:1px solid var(--line); border-radius:10px; padding:10px 12px}
+  body{margin:0;background:var(--bg);color:var(--ink);font:20px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .outer{min-height:100vh;padding:28px}
+  .frame{min-height:calc(100vh - 56px);border-radius:26px;border:1px solid #0a2b30;box-shadow:inset 0 0 0 2px #0a2b3040; padding:26px;}
+  h1{margin:0 0 18px;font-size:52px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:#092f36;border:1px solid #0a2b30;border-radius:18px;padding:16px}
+  .date{font-weight:800;font-size:24px;margin-bottom:6px}
+  .row{display:flex;gap:14px;align-items:baseline}
+  .title{font-weight:700}
+  .loc{opacity:.85}
+  .when{margin-left:auto;opacity:.9}
+  @media (max-width:1200px){ .grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1 id="title">Kalender</h1>
-    <div id="msg" class="muted" style="margin-bottom:8px"></div>
-
-    <!-- “boxes” style uses rows with bordered cells; bullets/arrows use list-look but we keep table to align dates -->
-    <table>
-      <thead>
-        <tr><th>Dato</th><th id="thTime">Tid</th><th>Event</th><th>Sted</th></tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
-
-    <div class="brand" id="brand"></div>
+<div class="outer">
+  <div class="frame">
+    <h1>KALENDER</h1>
+    <div id="grid" class="grid"></div>
   </div>
 </div>
 
 <script>
-const $=(q,el=document)=>el.querySelector(q);
-
-function pad2(n){return String(n).padStart(2,"0")}
-function fmtDate(d){return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`}
-function fmtTime(d){return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`}
-
-function parseICS(text){
-  // simpel iCal-parser for VEVENT
-  const events=[];
-  const chunks=text.split(/BEGIN:VEVENT/gi).slice(1);
-  for(const ch of chunks){
-    const block=(ch.split(/END:VEVENT/i)[0]||"")+"\n";
-    const pick=(re)=>{ const m=block.match(re); return m?m[1].trim():""; };
-
-    const dtstart=pick(/DTSTART(?:;[^:\n]*)?:(.+)\r?\n/i);
-    const dtend  =pick(/DTEND(?:;[^:\n]*)?:(.+)\r?\n/i);
-    const summary=pick(/SUMMARY:(.+)\r?\n/i);
-    const location=pick(/LOCATION:(.+)\r?\n/i);
-    const description=pick(/DESCRIPTION:(.+)\r?\n/i);
-
-    const parseDT=(s)=>{
-      if(!s) return null;
-      const m=s.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})Z?)?$/);
-      if(!m) return null;
-      const [_,Y,Mo,D,H,Mi,S]=m;
-      if(H) return new Date(Number(Y),Number(Mo)-1,Number(D),Number(H),Number(Mi),Number(S));
-      return new Date(Number(Y),Number(Mo)-1,Number(D),0,0,0);
-    };
-    const ds=parseDT(dtstart), de=parseDT(dtend);
-    if(ds) events.push({start:ds,end:de,summary,location,description});
-  }
-  return events.sort((a,b)=>a.start-b.start);
-}
+const $ = s=>document.querySelector(s);
+const pad2 = n => String(n).padStart(2,"0");
+const fmtDate = d => `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`;
+const fmtTime = d => d.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
 
 async function loadData(){
-  const r=await fetch("/api/data"); const j=await r.json();
-  if(!j.ok) throw new Error(j.error||"Ingen data");
-  return j.content;
+  const r = await fetch("/api/data"); const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Fejl i data.json"); return j.content;
+}
+async function loadICS(url, days, max){
+  const u = `/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`;
+  const r = await fetch(u); const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"Fejl i ICS"); return j.events||[];
+}
+function groupByDate(events){
+  const map=new Map();
+  for(const e of events){
+    const k=new Date(e.start).toDateString(); if(!map.has(k)) map.set(k,[]);
+    map.get(k).push(e);
+  }
+  return Array.from(map.entries()).sort((a,b)=>new Date(a[0])-new Date(b[0]));
+}
+function renderEvents(raw){
+  const g=$("#grid"); g.innerHTML="";
+  const groups=groupByDate(raw);
+  groups.forEach(([key,list])=>{
+    const d=new Date(key); const card=document.createElement("div"); card.className="card";
+    card.innerHTML=`<div class="date">${fmtDate(d)}</div>`;
+    list.forEach(e=>{
+      const row=document.createElement("div"); row.className="row";
+      row.innerHTML=`<div class="title">${escapeHtml(e.summary||"(Ingen titel)")}</div>
+                     <div class="loc">${escapeHtml(e.location||"")}</div>
+                     <div class="when">${fmtTime(new Date(e.start))}${e.end?`–${fmtTime(new Date(e.end))}`:""}</div>`;
+      card.appendChild(row);
+    });
+    g.appendChild(card);
+  });
+  if (!groups.length) g.innerHTML = `<div class="card">Ingen kommende begivenheder.</div>`;
+}
+function escapeHtml(s){ return String(s||"").replace(/[&<>"]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m])) }
+
+function buildBirthdayFallback(data){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const next30 = new Date(today.getTime()+30*86400000);
+  const list=(data.birthdays?.people||[]).map(p=>{
+    const [dd,mm,yyyy] = (p.date||"").split(".");
+    if (!dd||!mm) return null;
+    const year=today.getFullYear();
+    const dt=new Date(year,Number(mm)-1,Number(dd));
+    if (dt<today) dt.setFullYear(year+1);
+    return { name:p.name, date:dt, born:yyyy||"" };
+  }).filter(Boolean).filter(x=>x.date<=next30).sort((a,b)=>a.date-b.date);
+
+  const g=$("#grid"); g.innerHTML="";
+  list.forEach(x=>{
+    const card=document.createElement("div"); card.className="card";
+    const ageTxt = x.born? ` (${new Date().getFullYear()-Number(x.born)} år)`:"";
+    card.innerHTML=`<div class="date">${fmtDate(x.date)}</div>
+                    <div class="row"><div class="title">${escapeHtml(x.name)}${ageTxt}</div></div>`;
+    g.appendChild(card);
+  });
+  if (!list.length) g.innerHTML=`<div class="card">Ingen data – tilføj ICS-URL i admin, eller opret fødselsdage.</div>`;
 }
 
-(async function start(){
-  const DATA=await loadData();
-  const brand=DATA?.brand || "Infoskærm";
-  const cal=DATA?.calendar || {};
-  const showTimes = Boolean(cal.showTimes ?? true);
-  const style = cal.style || "boxes";          // "bullets" | "arrows" | "boxes"
-  const url = cal.url || "";
-  const ahead = Number(cal.daysAhead || 60);
-  const max = Number(cal.maxEvents || 50);
+(async function init(){
+  const cfg = await loadData();
+  if (cfg.theme?.bg1) document.documentElement.style.setProperty("--bg", cfg.theme.bg1);
+  if (cfg.theme?.bg2) document.documentElement.style.setProperty("--panel", cfg.theme.bg2);
+  const url = cfg.calendar?.url || "";
+  const days = Number(cfg.calendar?.daysAhead || 60);
+  const max  = Number(cfg.calendar?.maxEvents || 50);
 
-  $("#brand").textContent=brand;
-  $("#title").textContent="Kalender";
-  $("#thTime").style.display=showTimes?"":"none";
-
-  if(!url){
-    $("#msg").textContent="Ingen ICS-URL sat – viser ingen events.";
-    return;
+  if (url) {
+    const ev = await loadICS(url, days, max);
+    renderEvents(ev);
+  } else {
+    buildBirthdayFallback(cfg);
   }
-
-  let txt="";
-  try{
-    const r=await fetch(url,{cache:"no-store"});
-    if(!r.ok) throw new Error("Kunne ikke hente ICS (CORS eller URL?)");
-    txt=await r.text();
-  }catch(e){
-    $("#msg").textContent="Fejl ved hentning af ICS: "+(e.message||e);
-    return;
-  }
-
-  const all=parseICS(txt);
-  const now=new Date();
-  const lim=new Date(); lim.setDate(now.getDate()+ahead);
-
-  const rows=all.filter(ev=>ev.start>=now && ev.start<=lim).slice(0,max);
-  $("#msg").textContent = rows.length ? `${rows.length} kommende event${rows.length>1?"s":""}` : "Ingen kommende events i perioden.";
-
-  const tbody=$("#rows"); tbody.innerHTML="";
-  for(const ev of rows){
-    const tr=document.createElement("tr");
-    const dateStr=fmtDate(ev.start);
-    const timeStr=fmtTime(ev.start);
-
-    // marker stil
-    let titleClass="";
-    if(style==="bullets") titleClass="bullet";
-    else if(style==="arrows") titleClass="arrow";
-    else if(style==="boxes") titleClass="box";
-
-    tr.innerHTML=`
-      <td>${dateStr}</td>
-      <td style="${showTimes?"":"display:none"}">${timeStr}</td>
-      <td class="${titleClass}">${(ev.summary||"").replace(/\\n/g," ")}</td>
-      <td>${ev.location||""}</td>`;
-    tbody.appendChild(tr);
-  }
+  const refreshMs = Number(cfg.settings?.refreshMs || 300000);
+  setTimeout(()=>location.reload(), Math.max(60000, refreshMs));
 })();
 </script>
 </body>
 </html>
+
 
