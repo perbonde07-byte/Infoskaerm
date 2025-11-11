@@ -190,6 +190,16 @@
   },
   "slides": [
     {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
+      "duration": 12
+    },
+    {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
+      "duration": 12
+    },
+    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 10
