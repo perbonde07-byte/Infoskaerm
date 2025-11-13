@@ -190,12 +190,6 @@
   },
   "slides": [
     {
-      "type": "text",
-      "title": "Tekst",
-      "content": "",
-      "duration": 12
-    },
-    {
       "type": "image",
       "title": "XCMG",
       "image": "/media/XCMG.jpg",
