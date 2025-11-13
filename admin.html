@@ -229,6 +229,15 @@
 </div>
 
 <script>
+  // Fjern evt. ?admin=0705 fra adresselinjen
+  if (location.search) {
+    try {
+      history.replaceState(null, "", location.pathname + location.hash);
+    } catch (e) {
+      // hvis browseren ikke tillader det, gør vi bare ingenting
+    }
+  }
+  
 /* ===== KONSTANT PIN (ændres her hvis du vil skifte kode) ===== */
 const ADMIN_PIN = "0705";  // <-- skift denne, hvis du vil ændre koden
 
