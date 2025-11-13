@@ -207,6 +207,12 @@
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
       "duration": 20
+    },
+    {
+      "type": "text",
+      "title": "Tekst",
+      "content": "",
+      "duration": 12
     }
   ]
 }
