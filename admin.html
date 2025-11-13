@@ -44,9 +44,52 @@
   .list th,.list td{border-bottom:1px solid #0a2328;padding:10px 12px;text-align:left}
   .list th{background:#0b2a30;color:#a6c6cb;font-weight:700;letter-spacing:.06em;font-size:12px}
   .thumb{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid #0a2328;background:#062026}
+
+  /* === ADMIN-LOCK OVERLAY === */
+  .lock-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.78);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:2000;
+  }
+  .lock-overlay.hidden{display:none}
+  .lock-card{
+    background:#092b30;
+    border-radius:18px;
+    border:1px solid #0a2328;
+    padding:22px 20px 18px;
+    width:100%;
+    max-width:360px;
+    box-shadow:0 18px 50px rgba(0,0,0,.5);
+  }
+  .lock-card h2{margin:0 0 8px;font-size:20px}
+  .lock-card p{margin:0 0 14px;font-size:14px;color:#c0dde2}
+  .lock-row{display:flex;gap:8px;align-items:center}
+  .lock-row input{flex:1}
+  .lock-msg{margin-top:8px;font-size:13px;min-height:1em}
+  .lock-msg.error{color:#f7a3a3}
+  .lock-msg.ok{color:#9ce0b0}
 </style>
 </head>
 <body>
+
+<!-- ADMIN-LOCK OVER HELE SIDEN -->
+<div id="adminLock" class="lock-overlay">
+  <div class="lock-card">
+    <h2>Admin låst</h2>
+    <p>Indtast PIN for at åbne admin og redigere infoskærmen.</p>
+    <div class="lock-row">
+      <input id="lockPin" type="password" inputmode="numeric" autocomplete="off"
+             placeholder="PIN" maxlength="8">
+      <button class="btn ok" id="lockBtn">Åbn</button>
+    </div>
+    <div id="lockMsg" class="lock-msg"></div>
+  </div>
+</div>
+
 <header>
   <h1>Admin • Infoscreen</h1>
   <div class="head-actions">
@@ -107,7 +150,10 @@
       <textarea id="emptiesSkip" placeholder="25.12.2025&#10;01.01.2026"></textarea>
 
       <label>Antal kolonner i visning</label>
-      <select id="emptiesCols"><option value="1">1 kolonne</option><option value="2" selected>2 kolonner</option></select>
+      <select id="emptiesCols">
+        <option value="1">1 kolonne</option>
+        <option value="2" selected>2 kolonner</option>
+      </select>
     </section>
 
     <section class="panel">
@@ -129,6 +175,13 @@
         <div><label>Dage frem (visning)</label><input id="calDays" type="number" min="1" max="365" value="60"></div>
         <div><label>Maks. antal events</label><input id="calMax" type="number" min="1" max="500" value="50"></div>
       </div>
+
+      <label>Antal kolonner i kalender-visning</label>
+      <select id="calCols">
+        <option value="1">1 kolonne</option>
+        <option value="2" selected>2 kolonner</option>
+      </select>
+
       <small class="small">Vises på <code>/kalender.html</code>. Hvis tomt, viser kalender-siden i stedet kommende fødselsdage.</small>
     </section>
   </div>
@@ -142,7 +195,7 @@
 </div>
 
 <div class="footer">
-  <input id="adminPin" type="password" placeholder="PIN (ADMIN_PIN)" style="max-width:200px">
+  <input id="adminPin" type="password" placeholder="PIN" style="max-width:200px">
   <button class="btn ok" id="saveBtn">Gem ændringer</button>
 </div>
 
@@ -176,6 +229,9 @@
 </div>
 
 <script>
+/* ===== KONSTANT PIN (ændres her hvis du vil skifte kode) ===== */
+const ADMIN_PIN = "0705";  // <-- skift denne, hvis du vil ændre koden
+
 /* ===== utils ===== */
 const $  = (q, el=document) => el.querySelector(q);
 const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
@@ -295,7 +351,7 @@ function findInputSelector(scope, key){
   DATA.settings??= { refreshMs:300000 };
   DATA.empties ??= { startDate:"", horizon:8, weekdays:[1], names:[], skipDates:[], columns:2 };
   DATA.birthdays ??= { message:"", people:[] };
-  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50 };
+  DATA.calendar  ??= { url:"", daysAhead:60, maxEvents:50, columns:2 };
   DATA.slides    ??= [];
 
   $("#brand").value  = DATA.brand;
@@ -319,6 +375,7 @@ function findInputSelector(scope, key){
   $("#calUrl").value  = DATA.calendar.url||"";
   $("#calDays").value = DATA.calendar.daysAhead||60;
   $("#calMax").value  = DATA.calendar.maxEvents||50;
+  $("#calCols").value = String(DATA.calendar.columns || 2);
 
   renderSlides();
 
@@ -332,6 +389,14 @@ function findInputSelector(scope, key){
   $$("[data-pick]").forEach(b=>b.addEventListener("click",(ev)=>openFileModal("media", ev.currentTarget.getAttribute("data-pick"))));
   $("#closeFiles").onclick = closeFileModal;
   $$(".sheet [data-tab]").forEach(b=> b.onclick = ()=>{ ACTIVE_DIR=b.getAttribute("data-tab"); refreshDir(); });
+
+  // ADMIN LOCK – auto-unlock hvis tidligere godkendt i denne browser
+  const unlocked = localStorage.getItem("infoscreen_admin_unlocked")==="1";
+  if(unlocked){
+    hideLock();
+  }else{
+    showLock();
+  }
 })().catch(e=>alert(e.message||e));
 
 async function onSave(){
@@ -362,14 +427,48 @@ async function onSave(){
   DATA.calendar = {
     url: $("#calUrl").value.trim(),
     daysAhead: Number($("#calDays").value||60),
-    maxEvents: Number($("#calMax").value||50)
+    maxEvents: Number($("#calMax").value||50),
+    columns: Number($("#calCols").value||2)
   };
 
   const pin=$("#adminPin").value.trim();
-  if(!pin){ alert("Indtast PIN (ADMIN_PIN) før gem."); return;}
+  if(pin !== ADMIN_PIN){
+    alert("Forkert PIN – ændringer blev ikke gemt.");
+    return;
+  }
+
   await api("saveDataJson", { data: DATA, message:`PB-DESIGN: admin gem` });
   alert("Gemt ✔");
 }
+
+/* ===== ADMIN LOCK LOGIK ===== */
+function showLock(){
+  $("#adminLock").classList.remove("hidden");
+  const inp = $("#lockPin");
+  if(inp){ inp.value=""; inp.focus(); }
+}
+function hideLock(){
+  $("#adminLock").classList.add("hidden");
+}
+function tryUnlock(){
+  const pin = ($("#lockPin").value||"").trim();
+  const msg = $("#lockMsg");
+  if(pin === ADMIN_PIN){
+    msg.textContent="Åbnet – velkommen.";
+    msg.className="lock-msg ok";
+    hideLock();
+    localStorage.setItem("infoscreen_admin_unlocked","1");
+    $("#adminPin").value = pin; // udfyld gem-PIN automatisk
+  }else{
+    msg.textContent="Forkert PIN.";
+    msg.className="lock-msg error";
+  }
+}
+
+$("#lockBtn").onclick = tryUnlock;
+$("#lockPin")?.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){ tryUnlock(); }
+});
 
 /* ===== filer modal ===== */
 function openFileModal(dir="medarbejdere", targetInput=null){
@@ -396,7 +495,6 @@ async function refreshDir(){
         const el=document.querySelector(FILE_TARGET); 
         if(el){ 
           el.value=`/${it.path}`; 
-          // vigtig: fyr input-event så UI og evt. lyttere opdager ændringen
           el.dispatchEvent(new Event("input",{bubbles:true})); 
         }
         closeFileModal(); 
