@@ -191,6 +191,12 @@
   },
   "slides": [
     {
+      "type": "text",
+      "title": "Bent ude af huset",
+      "content": "",
+      "duration": 12
+    },
+    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 5
@@ -208,12 +214,6 @@
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
       "duration": 20
-    },
-    {
-      "type": "text",
-      "title": "Bent ude af huset",
-      "content": "",
-      "duration": 12
     }
   ]
 }
