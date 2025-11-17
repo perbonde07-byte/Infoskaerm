@@ -192,21 +192,21 @@
   "slides": [
     {
       "type": "text",
-      "title": "Bent ude af huset",
-      "content": "",
+      "title": "Ude af huset",
+      "content": "Bent og morten er ude og se på maskiner...",
       "duration": 12
     },
     {
       "type": "empties",
       "title": "TØMNINGS DAGE",
-      "duration": 5
+      "duration": 20
     },
     {
       "type": "image",
       "title": "XCMG",
       "image": "/media/XCMG.jpg",
       "sideText": "XCMG etablerer sig i Danmark\nErfaren brancheprofil bag elektrisk fremstød\nDen globale maskinproducent XCMG satser nu stort på batterielektriske entreprenørmaskiner i Danmark.\u000bMed Erik Høi i spidsen og Peter Daugbjerg som partner er salget nu i gang – Høi dækker Østdanmark, Daugbjerg Vestdanmark.\nDe første demomaskiner forventes omkring juletid, bl.a.:\n30 & 25 tons gravemaskiner\n25 tons gummihjulslæsser\n6 tons læsser\nTeleskoplæsser\nServicepartnere:\nJJ Hydraulik (Måløv)\nBredsgaard A/S (Kjellerup)\nTilsammen dækker de hele landet med ca. 20 udekørende teknikere og værkstedsfaciliteter.\nXCMG Danmark drives af YES-EU, med fokus på nul-emission og batterikraft\n",
-      "duration": 5
+      "duration": 20
     },
     {
       "type": "image",
