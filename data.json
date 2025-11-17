@@ -208,6 +208,12 @@
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
       "duration": 20
+    },
+    {
+      "type": "text",
+      "title": "Bent ude af huset",
+      "content": "",
+      "duration": 12
     }
   ]
 }
