@@ -211,9 +211,9 @@
     },
     {
       "type": "text",
-      "title": "Ude af huset",
-      "content": "Bent og morten er ude og se på fikse maskiner...",
-      "duration": 12
+      "title": "Bent har møder",
+      "content": "Til møder i tidsrum 10.00-16.00\n",
+      "duration": 15
     }
   ]
 }
