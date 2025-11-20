@@ -160,6 +160,11 @@
         "name": "Klaus j",
         "date": "10.09",
         "image": "/medarbejdere/Klaus J"
+      },
+      {
+        "name": "test",
+        "date": "20.11",
+        "image": ""
       }
     ]
   },
