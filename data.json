@@ -38,123 +38,138 @@
     "people": [
       {
         "name": "Per",
-        "date": "07.05.1986",
+        "date": "07.05",
         "image": ""
       },
       {
         "name": "Viktor",
-        "date": "11.02.1985",
+        "date": "11.02",
         "image": "/medarbejdere/Viktor"
       },
       {
         "name": "Mads",
-        "date": "21.02.1996",
+        "date": "21.02",
         "image": "/medarbejdere/Mads"
       },
       {
         "name": "Erik",
-        "date": "09.03.1959",
+        "date": "09.03",
         "image": "/medarbejdere/Erik"
       },
       {
         "name": "Søren",
-        "date": "09.03.1996",
+        "date": "09.03",
         "image": "/medarbejdere/Søren"
       },
       {
         "name": "Bo",
-        "date": "06.03.1981",
+        "date": "06.03",
         "image": "/medarbejdere/Bo"
       },
       {
         "name": "Jesper",
-        "date": "19.03.2000",
+        "date": "19.03",
         "image": "/medarbejdere/Jesper"
       },
       {
         "name": "Sofus",
-        "date": "14.05.2007",
+        "date": "14.05",
         "image": ""
       },
       {
         "name": "Bent",
-        "date": "16.05.1984",
+        "date": "16.05",
         "image": "/medarbejdere/Bent"
       },
       {
         "name": "Kristian",
-        "date": "06.05.1994",
+        "date": "06.05",
         "image": "/medarbejdere/Kristian"
       },
       {
         "name": "Jørgen",
-        "date": "29.05.1961",
+        "date": "29.05",
         "image": "/medarbejdere/Jørgen"
       },
       {
-        "name": "Karsten",
-        "date": "29.06.1965",
+        "name": "Carsten",
+        "date": "29.06",
         "image": "/medarbejdere/Carsten"
       },
       {
+        "name": "Oleksandre",
+        "date": "03.07",
+        "image": ""
+      },
+      {
+        "name": "Lisbeth",
+        "date": "04.07",
+        "image": ""
+      },
+      {
         "name": "Jens",
-        "date": "05.07.1959",
+        "date": "05.07",
         "image": "/medarbejdere/Jens"
       },
       {
         "name": "Claus",
-        "date": "19.07.1973",
+        "date": "19.07",
         "image": "/medarbejdere/Claus H"
       },
       {
-        "name": "Andrii",
-        "date": "07.08.1996",
+        "name": "Andrej",
+        "date": "07.08",
         "image": ""
       },
       {
         "name": "Rasmus",
-        "date": "03.08.1982",
+        "date": "03.08",
         "image": "/medarbejdere/Rasmus"
       },
       {
         "name": "Peter",
-        "date": "31.08.1989",
+        "date": "31.08",
         "image": "/medarbejdere/Peter"
       },
       {
-        "name": "Mads K.",
-        "date": "04.09.2005",
+        "name": "Mads k",
+        "date": "04.09",
         "image": "/medarbejdere/Mads K"
       },
       {
         "name": "Pia",
-        "date": "12.10.1978",
+        "date": "12.10",
         "image": "/medarbejdere/Pia"
       },
       {
         "name": "Morten",
-        "date": "19.10.1992",
+        "date": "19.10",
         "image": "/medarbejdere/Morten"
       },
       {
         "name": "Vitalii",
-        "date": "27.10.1987",
+        "date": "27.10",
         "image": "/medarbejdere/Vitalii"
       },
       {
-        "name": "Carina",
-        "date": "31.10.1987",
+        "name": "Karina",
+        "date": "31.10",
         "image": "/medarbejdere/Karina"
       },
       {
         "name": "Christina",
-        "date": "12.12.1985",
+        "date": "12.12",
         "image": "/medarbejdere/Christina"
       },
       {
         "name": "Henrik",
-        "date": "08.12.1967",
+        "date": "08.12",
         "image": "/medarbejdere/Henrik"
+      },
+      {
+        "name": "Tanja",
+        "date": "26.05",
+        "image": ""
       }
     ]
   },
