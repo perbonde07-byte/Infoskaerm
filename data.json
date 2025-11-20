@@ -171,10 +171,20 @@
   },
   "slides": [
     {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
+      "duration": 12
+    },
+    {
       "type": "text",
       "title": "Arbejdskort ",
       "content": "Afslutning af gamle arbejdskort - tjek biler - arbejdsborde - arbejdsrum. \nAfleveres i jeres arbejdsrum eller til Christina. ",
       "duration": 15
+    },
+    {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
+      "duration": 12
     },
     {
       "type": "image",
