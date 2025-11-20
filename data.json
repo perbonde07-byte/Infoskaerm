@@ -92,19 +92,9 @@
         "image": "/medarbejdere/Jørgen"
       },
       {
-        "name": "Carsten",
+        "name": "Karsten",
         "date": "29.06.1965",
         "image": "/medarbejdere/Carsten"
-      },
-      {
-        "name": "Oleksandre",
-        "date": "03.07.1990",
-        "image": ""
-      },
-      {
-        "name": "Lisbeth",
-        "date": "04.07.1954",
-        "image": ""
       },
       {
         "name": "Jens",
@@ -117,7 +107,7 @@
         "image": "/medarbejdere/Claus H"
       },
       {
-        "name": "Andrej",
+        "name": "Andrii",
         "date": "07.08.1996",
         "image": ""
       },
@@ -132,7 +122,7 @@
         "image": "/medarbejdere/Peter"
       },
       {
-        "name": "Mads k",
+        "name": "Mads K.",
         "date": "04.09.2005",
         "image": "/medarbejdere/Mads K"
       },
@@ -152,7 +142,7 @@
         "image": "/medarbejdere/Vitalii"
       },
       {
-        "name": "Karina",
+        "name": "Carina",
         "date": "31.10.1987",
         "image": "/medarbejdere/Karina"
       },
@@ -165,11 +155,6 @@
         "name": "Henrik",
         "date": "08.12.1967",
         "image": "/medarbejdere/Henrik"
-      },
-      {
-        "name": "Tanja",
-        "date": "26.05",
-        "image": ""
       }
     ]
   },
