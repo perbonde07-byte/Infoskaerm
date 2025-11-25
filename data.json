@@ -194,6 +194,18 @@
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
       "duration": 20
+    },
+    {
+      "type": "text",
+      "title": "Bent og co på tur",
+      "content": "Uge 51 15.16.17 tager til udstilling ",
+      "duration": 12
+    },
+    {
+      "type": "text",
+      "title": "Jule afslutning",
+      "content": "19december fra 12.30 - 16.00",
+      "duration": 12
     }
   ]
 }
