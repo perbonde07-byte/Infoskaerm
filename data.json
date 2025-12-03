@@ -177,6 +177,12 @@
   "slides": [
     {
       "type": "text",
+      "title": "Juleafslutning",
+      "content": "Fredag d. 19/12 - 2025\nkl. 12:30-16:00\ni vores lokaler i NR. 17\n\nkl. 12.30-13.30 pølsevogn\nkl. 13.30.15.00 Bredsgaard orienteringsmøde\nkl. 15.00 Kaffe, Julekager og Juleslik\n\nUddeling af årets julegaver\n\nSTORT TAK FOR ÅRET DER SNART ER GÅET",
+      "duration": 20
+    },
+    {
+      "type": "text",
       "title": "Arbejdskort ",
       "content": "Afslutning af gamle arbejdskort - tjek biler - arbejdsborde - arbejdsrum. \nAfleveres i jeres arbejdsrum eller til Christina. ",
       "duration": 15
@@ -210,7 +216,7 @@
       "type": "image",
       "title": "Juleafslutning",
       "image": "/media/Juleafslutning",
-      "sideText": "",
+      "sideText": "Fredag d. 19/12 - 2025\nkl. 12:30-16:00\ni vores lokaler i NR. 17\n\nkl. 12.30-13.30 pølsevogn\nkl. 13.30.15.00 Bredsgaard orienteringsmøde\nkl. 15.00 Kaffe, Julekager og Juleslik\n\nUddeling af årets julegaver\n\nSTORT TAK FOR ÅRET DER SNART ER GÅET",
       "duration": 20
     }
   ]
