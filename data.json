@@ -176,10 +176,9 @@
   },
   "slides": [
     {
-      "type": "image",
-      "title": "Juleafslutning",
-      "image": "/media/Juletræ",
-      "sideText": "Fredag d. 19/12 - 2025\nkl. 12:30-16:00\ni vores lokaler i NR. 17\n\nkl. 12.30-13.30 pølsevogn\nkl. 13.30.15.00 Bredsgaard orienteringsmøde\nkl. 15.00 Kaffe, Julekager og Juleslik\n\nUddeling af årets julegaver\n\nSTORT TAK FOR ÅRET DER SNART ER GÅET",
+      "type": "text",
+      "title": "Bredsgaard Julefrokost 2025",
+      "content": "Årets julefrokost afholdes i \nRødkærsbro hallen\nLørdag d.6 December kl. 18.00\n\nvi ser frem til at se jer alle der er tilmeldt.",
       "duration": 20
     },
     {
@@ -198,6 +197,13 @@
     {
       "type": "empties",
       "title": "TØMNINGS DAGE",
+      "duration": 20
+    },
+    {
+      "type": "image",
+      "title": "Juleafslutning",
+      "image": "/media/Juletræ",
+      "sideText": "Fredag d. 19/12 - 2025\nkl. 12:30-16:00\ni vores lokaler i NR. 17\n\nkl. 12.30-13.30 pølsevogn\nkl. 13.30.15.00 Bredsgaard orienteringsmøde\nkl. 15.00 Kaffe, Julekager og Juleslik\n\nUddeling af årets julegaver\n\nSTORT TAK FOR ÅRET DER SNART ER GÅET",
       "duration": 20
     },
     {
