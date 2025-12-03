@@ -207,9 +207,10 @@
       "duration": 12
     },
     {
-      "type": "text",
-      "title": "Jule afslutning",
-      "content": "19 December fra 12.30 - 16.00",
+      "type": "image",
+      "title": "Juleafslutning",
+      "image": "/media/Juleafslutning",
+      "sideText": "",
       "duration": 20
     }
   ]
