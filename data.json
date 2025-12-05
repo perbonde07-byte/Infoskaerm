@@ -172,6 +172,19 @@
   "slides": [
     {
       "type": "text",
+      "title": "Rundstykker Mandag",
+      "content": "D.8 december giver Henrik rundstykker i anledning af hans fødselsdag",
+      "duration": 20
+    },
+    {
+      "type": "image",
+      "title": "Juleafslutning",
+      "image": "/media/Juletræ",
+      "sideText": "Fredag d. 19/12 - 2025\nkl. 12:30-16:00\ni vores lokaler i NR. 17\n\nkl. 12.30-13.30 pølsevogn\nkl. 13.30.15.00 Bredsgaard orienteringsmøde\nkl. 15.00 Kaffe, Julekager og Juleslik\n\nUddeling af årets julegaver\n\nSTORT TAK FOR ÅRET DER SNART ER GÅET",
+      "duration": 20
+    },
+    {
+      "type": "text",
       "title": "Bredsgaard Julefrokost 2025",
       "content": "Årets julefrokost afholdes i \nRødkærsbro hallen\nLørdag d.6 December kl. 18.00\n\nvi ser frem til at se jer alle der er tilmeldt.",
       "duration": 20
@@ -196,16 +209,14 @@
     },
     {
       "type": "image",
-      "title": "Juleafslutning",
-      "image": "/media/Juletræ",
-      "sideText": "Fredag d. 19/12 - 2025\nkl. 12:30-16:00\ni vores lokaler i NR. 17\n\nkl. 12.30-13.30 pølsevogn\nkl. 13.30.15.00 Bredsgaard orienteringsmøde\nkl. 15.00 Kaffe, Julekager og Juleslik\n\nUddeling af årets julegaver\n\nSTORT TAK FOR ÅRET DER SNART ER GÅET",
-      "duration": 20
-    },
-    {
-      "type": "image",
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
+      "duration": 20
+    },
+    {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
       "duration": 20
     },
     {
@@ -213,17 +224,6 @@
       "title": "Bent og Co på tur",
       "content": "Uge 51 15.16.17 tager Bent og CO til udstilling ",
       "duration": 12
-    },
-    {
-      "type": "text",
-      "title": "Rundstykker Mandag",
-      "content": "D.8 december giver Henrik rundstykker i anledning af hans fødselsdag",
-      "duration": 20
-    },
-    {
-      "type": "birthday",
-      "title": "FØDSELSDAG",
-      "duration": 20
     }
   ]
 }
