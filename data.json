@@ -171,14 +171,14 @@
   },
   "slides": [
     {
-      "type": "text",
-      "title": "Rundstykker Mandag",
-      "content": "D.8 december giver Henrik rundstykker i anledning af hans fødselsdag",
+      "type": "birthday",
+      "title": "FØDSELSDAG",
       "duration": 20
     },
     {
-      "type": "birthday",
-      "title": "FØDSELSDAG",
+      "type": "text",
+      "title": "Rundstykker Mandag",
+      "content": "D.8 december giver Henrik rundstykker i anledning af hans fødselsdag",
       "duration": 20
     },
     {
