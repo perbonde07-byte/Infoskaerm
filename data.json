@@ -177,6 +177,11 @@
       "duration": 20
     },
     {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
+      "duration": 20
+    },
+    {
       "type": "image",
       "title": "Juleafslutning",
       "image": "/media/Juletræ",
@@ -212,11 +217,6 @@
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
-      "duration": 20
-    },
-    {
-      "type": "birthday",
-      "title": "FØDSELSDAG",
       "duration": 20
     },
     {
