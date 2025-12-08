@@ -213,6 +213,11 @@
       "title": "Bent og Co på tur",
       "content": "Uge 51 15.16.17 tager Bent og CO til udstilling ",
       "duration": 1
+    },
+    {
+      "type": "birthday",
+      "title": "FØDSELSDAG",
+      "duration": 12
     }
   ]
 }
