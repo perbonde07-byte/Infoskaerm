@@ -232,19 +232,21 @@
 <script>
 /* ===== PB-DESIGN • helper ===== */
 const $ = (q,el=document)=>el.querySelector(q);
-function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]))}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;","&gt;":"&gt;","\"":"&quot;","'":"&#39;" }[m]))}
 function pad2(n){return String(n).padStart(2,"0")}
 function fmtDMY(d){ return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}` }
 function asYMD(d){ return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}` }
 
 /* ===== PB-DESIGN • load data ===== */
-let DATA=null, IDX=0, TIMER=null;
+let DATA=null, IDX=0, TIMER=null, BDAY_INDEX=0;
+
 async function loadData(){
   const r = await fetch("/api/data");
   const j = await r.json();
   if(!j.ok) throw new Error(j.error||"Kunne ikke hente data.json");
   return j.content;
 }
+
 function applyTheme(){
   document.documentElement.style.setProperty("--bg1", DATA?.theme?.bg1 || "#0b6a74");
   document.documentElement.style.setProperty("--bg2", DATA?.theme?.bg2 || "#0d4952");
@@ -268,9 +270,9 @@ function renderSlide(){
   const app = $("#app");
   app.innerHTML = "";
   const s = DATA.slides[IDX] || {};
-  if(s.type==="image")       renderImageSlide(app, s);
-  else if(s.type==="text")   renderTextSlide(app, s);
-  else if(s.type==="empties")renderEmptiesSlide(app, s);
+  if(s.type==="image")        renderImageSlide(app, s);
+  else if(s.type==="text")    renderTextSlide(app, s);
+  else if(s.type==="empties") renderEmptiesSlide(app, s);
   else if(s.type==="birthday")renderBirthdaySlide(app, s);
   else app.textContent = s.title || "Slide";
   startTimer(s.duration ?? 12);
@@ -292,6 +294,7 @@ function renderImageSlide(root, s){
     </section>
   `;
 }
+
 function renderTextSlide(root, s){
   root.innerHTML = `
     <section class="slide-text">
@@ -301,7 +304,7 @@ function renderTextSlide(root, s){
   `;
 }
 
-/* === PB-DESIGN • NY FØDSELSDAGSLOGIK (søndag før → søndag efter) === */
+/* === PB-DESIGN • Fødselsdag: søndag før → søndag efter + rotation === */
 function renderBirthdaySlide(root, s){
   const msg = DATA?.birthdays?.message || "Tillykke med fødselsdagen!";
   const people = DATA?.birthdays?.people || [];
@@ -313,7 +316,6 @@ function renderBirthdaySlide(root, s){
   const today = new Date();
   const currentYear = today.getFullYear();
 
-  // hjælpere til vindue: søndag før & søndag efter
   function prevSunday(d){
     const date = new Date(d);
     while(date.getDay() !== 0){ // 0 = søndag
@@ -323,9 +325,9 @@ function renderBirthdaySlide(root, s){
   }
   function nextSunday(d){
     const date = new Date(d);
-    do {
+    do{
       date.setDate(date.getDate() + 1);
-    } while(date.getDay() !== 0); // stop ved næste søndag
+    }while(date.getDay() !== 0); // stop ved næste søndag
     return date;
   }
 
@@ -337,10 +339,8 @@ function renderBirthdaySlide(root, s){
     const mm = (+m[2]) - 1;
     const bornYear = m[3] ? +m[3] : null;
 
-    // fødselsdag i dette år
     const thisYear = new Date(currentYear, mm, dd);
     const displayDate = fmtDMY(thisYear);
-
     const windowStart = prevSunday(thisYear);
     const windowEnd   = nextSunday(thisYear);
 
@@ -361,20 +361,22 @@ function renderBirthdaySlide(root, s){
     return;
   }
 
-  // 1) find alle personer hvor i dag ligger mellem søndag før og søndag efter
+  // alle som har aktiv periode nu (søndag før → søndag efter)
   const active = parsed.filter(p => today >= p.windowStart && today <= p.windowEnd);
 
   let person;
   if(active.length){
-    // stabil rækkefølge: nærmest fødselsdag først
-    active.sort((a,b)=>a.thisYear - b.thisYear);
-    person = active[0];
+    // roter gennem ALLE aktive før vi starter forfra
+    if(BDAY_INDEX >= active.length){
+      BDAY_INDEX = 0;
+    }
+    person = active[BDAY_INDEX];
+    BDAY_INDEX++;
   } else {
-    // 2) hvis ingen i "aktivt vindue": find den næste kommende fødselsdag (kalenderlogik)
+    // ingen aktiv lige nu → find næste kommende fødselsdag i kalenderen
     const candidates = parsed.map(p=>{
       let nextDate = new Date(p.thisYear);
       if(nextDate < today){
-        // allerede passeret i år → kig på næste år
         nextDate = new Date(currentYear+1, p.thisYear.getMonth(), p.thisYear.getDate());
       }
       return {
@@ -383,7 +385,9 @@ function renderBirthdaySlide(root, s){
         diff: nextDate - today
       };
     }).sort((a,b)=>a.diff - b.diff);
+
     person = candidates[0];
+    BDAY_INDEX = 0; // reset rotation udenfor aktive vinduer
   }
 
   const age = person.bornYear ? (currentYear - person.bornYear) : null;
@@ -405,9 +409,7 @@ function renderBirthdaySlide(root, s){
 
 /* ===== PB-DESIGN • TØMNINGS DAGE (ny visning) ===== */
 function renderEmptiesSlide(root/*, s*/){
-  // 1) byg plan
   const plan = buildEmptiesPlan();
-  // 2) del i kolonner (1/2)
   const cols = Math.max(1, Math.min(2, Number(DATA?.empties?.columns||2)));
   const mid = cols===2 ? Math.ceil(plan.length/2) : plan.length;
   const left = plan.slice(0, mid);
@@ -466,7 +468,7 @@ function buildEmptiesPlan(){
     }
     stepToNextWanted(d);
   }
-  // markér "aktuel" som første dato ≥ i dag
+
   let flagged=false;
   for(const r of out){
     if(!flagged && r.yyyymmdd>=todayYMD){ r.isNow=true; flagged=true; } else r.isNow=false;
@@ -478,6 +480,7 @@ function buildEmptiesPlan(){
 /* ===== PB-DESIGN • boot ===== */
 (async function start(){
   DATA = await loadData();
+  BDAY_INDEX = 0;
 
   // defaults
   DATA.theme ??={};
@@ -486,21 +489,41 @@ function buildEmptiesPlan(){
   DATA.slides ??=[];
   applyTheme();
 
-  // footer brand
+  // AUTO: indsæt birthday-slide hvis der findes fødselsdagsdata,
+  // men ingen slides med type "birthday"
+  const hasBirthdaySlide = DATA.slides.some(s => s.type === "birthday");
+  if(!hasBirthdaySlide && DATA.birthdays?.people?.length){
+    DATA.slides.push({
+      type: "birthday",
+      duration: DATA.birthdays.duration ?? 12
+    });
+  }
+
   $("#brandText").textContent = DATA.brand || "Infoskærm";
 
-  // render første slide
   IDX = 0;
   renderSlide();
 
-  // auto-refresh af data (skifter ikke slide/markering kunstigt)
   const ms = Math.max(60000, Number(DATA.settings.refreshMs||300000));
   setInterval(async ()=>{
     try{
       const fresh = await loadData();
       DATA = fresh;
+      BDAY_INDEX = 0; // reset rotation ved reload af data
+      DATA.theme ??={};
+      DATA.settings??={refreshMs:300000};
+      DATA.empties??={startDate:"",horizon:8,weekdays:[1],names:[],skipDates:[],columns:2};
+      DATA.slides ??=[];
       applyTheme();
-      // behold aktuel slide-index
+
+      const hasBirthdaySlide = DATA.slides.some(s => s.type === "birthday");
+      if(!hasBirthdaySlide && DATA.birthdays?.people?.length){
+        DATA.slides.push({
+          type: "birthday",
+          duration: DATA.birthdays.duration ?? 12
+        });
+      }
+
       renderSlide();
     }catch(e){
       // ignorer net-fejl på TV
