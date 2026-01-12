@@ -11,7 +11,7 @@
   },
   "empties": {
     "startDate": "2025-01-05",
-    "horizon": 11,
+    "horizon": 10,
     "weekdays": [
       1
     ],
@@ -25,8 +25,7 @@
       "Vitalii",
       "Andreii",
       "Jesper",
-      "Jørgen",
-      "test"
+      "Jørgen"
     ],
     "skipDates": [
       "29.12.2025"
