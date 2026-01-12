@@ -185,14 +185,14 @@
   },
   "slides": [
     {
-      "type": "text",
-      "title": "Arbejdskort ",
-      "content": "Afslutning af gamle arbejdskort - tjek biler - arbejdsborde - arbejdsrum. \nAfleveres i jeres arbejdsrum eller til Christina. ",
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
       "duration": 12
     },
     {
-      "type": "empties",
-      "title": "TØMNINGS DAGE",
+      "type": "text",
+      "title": "Arbejdskort ",
+      "content": "Afslutning af gamle arbejdskort - tjek biler - arbejdsborde - arbejdsrum. \nAfleveres i jeres arbejdsrum eller til Christina. ",
       "duration": 12
     },
     {
