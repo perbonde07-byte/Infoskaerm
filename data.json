@@ -7,7 +7,7 @@
     "accent": "#a7d0c9"
   },
   "settings": {
-    "refreshMs": 300000
+    "refreshMs": 900000
   },
   "empties": {
     "startDate": "2026-01-05",
