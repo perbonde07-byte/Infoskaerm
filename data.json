@@ -183,16 +183,16 @@
   },
   "slides": [
     {
+      "type": "empties",
+      "title": "TØMNINGS DAGE",
+      "duration": 12
+    },
+    {
       "type": "image",
       "title": "Ny førstehjælpskasse opsat på værkstedet",
       "image": "/media/Førstehjælp",
       "sideText": "Vi har nu fået opsat vores førstehjælpskasse og øjenskyl på værkstedet.\n\nUdstyret er placeret ved døren ud mod karantinen, så det er let og hurtigt tilgængeligt i tilfælde af uheld, stænk i øjnene eller andre mindre skader i det daglige arbejde.\n\nKassen indeholder almindeligt førstehjælpsudstyr samt øjenskyl, som er særligt vigtigt ved arbejde med maskiner, støv, snavs og kemikalier.\n\n👉 Gør dig bekendt med placeringen, så du ved, hvor udstyret er, hvis behovet opstår – enten for dig selv eller en kollega.\n\nSikkerhed og arbejdsmiljø er fælles ansvar, og hurtig adgang til førstehjælp kan gøre en afgørende forskel.",
       "duration": 20
-    },
-    {
-      "type": "empties",
-      "title": "TØMNINGS DAGE",
-      "duration": 12
     },
     {
       "type": "text",
