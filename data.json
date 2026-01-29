@@ -195,12 +195,6 @@
       "duration": 20
     },
     {
-      "type": "text",
-      "title": "Arbejdskort ",
-      "content": "Afslutning af gamle arbejdskort - tjek biler - arbejdsborde - arbejdsrum. \nAfleveres i jeres arbejdsrum eller til Christina. ",
-      "duration": 12
-    },
-    {
       "type": "image",
       "title": "XCMG etablerer sig i Danmark",
       "image": "/media/XCMG.jpg",
@@ -212,6 +206,12 @@
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
+      "duration": 12
+    },
+    {
+      "type": "text",
+      "title": "Morgenbrød",
+      "content": "Claus H. giver morgenbrød fredag d. 30/01-2026 kl. 9 i kantinen. ",
       "duration": 12
     }
   ]
