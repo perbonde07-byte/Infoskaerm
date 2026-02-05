@@ -183,6 +183,12 @@
   },
   "slides": [
     {
+      "type": "text",
+      "title": "Viktor  i andledning af fødselsdag",
+      "content": "har Viktor rundstykker med til klokken 09.00 16 februar 2026",
+      "duration": 12
+    },
+    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 12
@@ -206,12 +212,6 @@
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
-      "duration": 12
-    },
-    {
-      "type": "text",
-      "title": "Viktor  i andledning af fødselsdag",
-      "content": "har Viktor rundstykker med til klokken 09.00 16 februar 2026",
       "duration": 12
     }
   ]
