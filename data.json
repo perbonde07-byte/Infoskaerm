@@ -213,6 +213,13 @@
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
       "duration": 12
+    },
+    {
+      "type": "image",
+      "title": "Hjælp os med at få Graecus Nordic godt i gang!",
+      "image": "/media/graecusnordic forside",
+      "sideText": "Jo flere der besøger siden – både via Google og direkte – jo bedre hjælper det os med at komme i gang på SEO-fronten og blive synlige i søgninger.\n\n🔍 Hvis du opdager små fejl, ord der kan forbedres eller noget der ser forkert ud, så skriv det gerne ned og send det til Per – så bliver det rettet hurtigt.\n\nTak fordi du hjælper med at få siden godt fra start!",
+      "duration": 15
     }
   ]
 }
