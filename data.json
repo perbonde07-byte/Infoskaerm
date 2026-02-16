@@ -46,7 +46,7 @@
       {
         "name": "Mads",
         "date": "21.02",
-        "image": "/medarbejdere/Mads"
+        "image": "/medarbejdere/mads"
       },
       {
         "name": "Erik",
@@ -166,11 +166,6 @@
       {
         "name": "Oleksandr",
         "date": "03.07",
-        "image": ""
-      },
-      {
-        "name": "Laura",
-        "date": "23.02",
         "image": ""
       }
     ]
