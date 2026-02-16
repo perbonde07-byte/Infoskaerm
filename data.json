@@ -191,6 +191,12 @@
       "duration": 12
     },
     {
+      "type": "text",
+      "title": "Til værkstedet ",
+      "content": "Obs. håndscanneren er flyttet ud på værkstedet - står på det første værkstedsbord. Den er sat til og virker!!  \nSå I skal bruge den også i hydraulik rummet! ",
+      "duration": 12
+    },
+    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 12
