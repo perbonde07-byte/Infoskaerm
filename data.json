@@ -36,7 +36,7 @@
       {
         "name": "Per",
         "date": "07.05",
-        "image": ""
+        "image": "/media/Billede mangler"
       },
       {
         "name": "Viktor",
@@ -71,7 +71,7 @@
       {
         "name": "Sofus",
         "date": "14.05",
-        "image": ""
+        "image": "/media/Billede mangler"
       },
       {
         "name": "Bent",
@@ -101,7 +101,7 @@
       {
         "name": "Andrii",
         "date": "07.08",
-        "image": ""
+        "image": "/media/Billede mangler"
       },
       {
         "name": "Rasmus",
@@ -161,12 +161,12 @@
       {
         "name": "Frederik",
         "date": "18.10",
-        "image": ""
+        "image": "/media/Billede mangler"
       },
       {
         "name": "Oleksandr",
         "date": "03.07",
-        "image": ""
+        "image": "/media/Billede mangler"
       }
     ]
   },
