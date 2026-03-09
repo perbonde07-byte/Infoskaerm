@@ -10,7 +10,7 @@
     "refreshMs": 900000
   },
   "empties": {
-    "startDate": "2026-02-09",
+    "startDate": "2026-01-01",
     "horizon": 8,
     "weekdays": [
       1
