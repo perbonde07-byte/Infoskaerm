@@ -11,7 +11,7 @@
   },
   "empties": {
     "startDate": "2026-01-01",
-    "horizon": 10,
+    "horizon": 8,
     "weekdays": [
       1
     ],
@@ -25,9 +25,7 @@
       "Andreii",
       "Jørgen"
     ],
-    "skipDates": [
-      "29.12.2025"
-    ],
+    "skipDates": [],
     "columns": 2
   },
   "birthdays": {
