@@ -171,6 +171,13 @@
   },
   "slides": [
     {
+      "type": "image",
+      "title": "Kampagne",
+      "image": "/media/Philip praktik",
+      "sideText": "Philip er i praktik d. 18/3 og d. 19/3 på værkstedet. Tage godt imod ham.",
+      "duration": 12
+    },
+    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 12
@@ -213,13 +220,6 @@
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
-      "duration": 12
-    },
-    {
-      "type": "image",
-      "title": "Kampagne",
-      "image": "/media/Philip praktik",
-      "sideText": "Philip er i praktik d. 18/3 og d. 19/3 på værkstedet. Tage godt imod ham.",
       "duration": 12
     }
   ]
