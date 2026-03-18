@@ -178,6 +178,12 @@
       "duration": 12
     },
     {
+      "type": "text",
+      "title": "TIL MONTØR",
+      "content": "Gamle arbejdskort der er klar til at blive afsluttet - bedes afleveres senest d. 20/3-2026 med tekst samt reservedele. \nTjek bil - arbejdsbord - dit rum. ",
+      "duration": 12
+    },
+    {
       "type": "empties",
       "title": "TØMNINGS DAGE",
       "duration": 12
@@ -188,18 +194,6 @@
       "image": "/media/graecusnordic forside",
       "sideText": "Jo flere der besøger siden – både via Google og direkte – jo bedre hjælper det os med at komme i gang på SEO-fronten og blive synlige i søgninger.\n\n🔍 Hvis du opdager små fejl, ord der kan forbedres eller noget der ser forkert ud, så skriv det gerne ned og send det til Per – så bliver det rettet hurtigt.\n\nTak fordi du hjælper med at få siden godt fra start!",
       "duration": 15
-    },
-    {
-      "type": "text",
-      "title": "Sommerferie 2026",
-      "content": "ALLE bedes give besked til Christina ift. hvilken uger man ønsker sommerferie. \nSenest d. 16. marts 2026 ✔",
-      "duration": 12
-    },
-    {
-      "type": "text",
-      "title": "Til værkstedet ",
-      "content": "Obs. håndscanneren er flyttet ud på værkstedet - står på det første værkstedsbord. Den er sat til og virker!!  \nSå I skal bruge den også i hydraulik rummet! ",
-      "duration": 12
     },
     {
       "type": "image",
