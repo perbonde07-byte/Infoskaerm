@@ -171,6 +171,13 @@
   },
   "slides": [
     {
+      "type": "image",
+      "title": "Ny Praktikant",
+      "image": "/media/Praktikant 13 april",
+      "sideText": "Vi byder velkommen til vores nye praktikant:\n\nNavn Efternavn\n\nStarter mandag d. 13. april og vil være hos os i en periode på 2 uger.\n\nTag godt imod vedkommende 😊",
+      "duration": 12
+    },
+    {
       "type": "text",
       "title": "TIL MONTØR",
       "content": "Gamle arbejdskort der er klar til at blive afsluttet - bedes afleveres senest d. 8/4-2026 med tekst samt reservedele. \nTjek bil - arbejdsbord - dit rum. ",
@@ -200,13 +207,6 @@
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
-      "duration": 12
-    },
-    {
-      "type": "image",
-      "title": "Ny Praktikant",
-      "image": "/media/Praktikant 13 april",
-      "sideText": "Vi byder velkommen til vores nye praktikant:\n\nNavn Efternavn\n\nStarter mandag d. 13. april og vil være hos os i en periode på 2 uger.\n\nTag godt imod vedkommende 😊",
       "duration": 12
     }
   ]
