@@ -3,259 +3,183 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kalender</title>
+<title>Gantt</title>
+
 <style>
-  :root{
-    --bg:#0d4952;
-    --panel:#083d43;
-    --ink:#e9fbff;
-    --line:#0a2b30;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--ink);
-    font:clamp(14px,1.2vw,20px)/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial;
-  }
+:root{
+  --bg:#0d4952;
+  --panel:#083d43;
+  --ink:#e9fbff;
+}
 
-  /* Scene / ramme – matcher index.html */
-  .outer{
-    position:fixed;
-    inset:0;
-    padding:18px;
-  }
-  .frame{
-    position:relative;
-    width:100%;
-    height:100%;
-    border-radius:26px;
-    border:1px solid var(--line);
-    box-shadow:inset 0 0 0 2px #0a2b3040;
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-  }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:sans-serif;
+}
 
-  h1{
-    margin:0 0 14px;
-    font-size:clamp(28px,3.6vw,48px);
-    letter-spacing:.18em;
-  }
+.frame{
+  padding:20px;
+}
 
-  /* Grid styres af JS: cols1 / cols2 */
-  .grid{
-    flex:1;
-    display:grid;
-    gap:16px;
-    align-content:flex-start;
-    min-height:0;
-  }
-  .grid.cols1{grid-template-columns:1fr;}
-  .grid.cols2{grid-template-columns:1fr 1fr;}
+h1{
+  font-size:40px;
+}
 
-  .card{
-    background:#092f36;
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:12px 14px;
-    display:flex;
-    flex-direction:column;
-    min-width:0;
-  }
-  .date{
-    font-weight:800;
-    font-size:clamp(18px,2vw,22px);
-    margin-bottom:6px;
-  }
+.card{
+  background:#092f36;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:15px;
+}
 
-  .row{
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    padding:2px 0;
-  }
+.date{
+  font-weight:bold;
+  margin-bottom:8px;
+  font-size:20px;
+}
 
-  /* ⭐ Teksten kan nu bryde linjer, min 14px, max ca. 22px */
-  .title{
-    font-weight:700;
-    flex:1 1 auto;
-    min-width:0;
-    font-size:clamp(14px,1.3vw,22px);
-    line-height:1.35;
-    white-space:normal;
-    word-break:break-word;
-  }
-  .loc{
-    opacity:.85;
-    flex:1 1 auto;
-    min-width:0;
-    font-size:clamp(14px,1.1vw,20px);
-    line-height:1.35;
-    white-space:normal;
-    word-break:break-word;
-  }
+.row{
+  margin-bottom:6px;
+}
 
-  .when{
-    margin-left:auto;
-    opacity:.95;
-    font-weight:700;
-    font-size:0.8em;
-    min-width:2.3em;
-    text-align:center;
-    border-radius:999px;
-    border:1px solid var(--line);
-    padding:2px 6px 3px;
-    background:#08353b;
-    flex:0 0 auto; /* lås bredde, så teksten ikke skubber den ud */
-  }
-
-  .empty-card{
-    background:#092f36;
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:14px;
-  }
-
-  @media (max-width:1200px){
-    .grid.cols2{grid-template-columns:1fr;} /* sikkerhed på små skærme */
-  }
+.bar{
+  padding:6px 10px;
+  border-radius:6px;
+  display:inline-block;
+}
 </style>
 </head>
+
 <body>
-<div class="outer">
-  <div class="frame">
-    <h1>KALENDER</h1>
-    <div id="grid" class="grid"></div>
-  </div>
+
+<div class="frame">
+  <h1>PLAN</h1>
+  <div id="grid"></div>
 </div>
 
 <script>
+
 const $ = s=>document.querySelector(s);
-const pad2 = n => String(n).padStart(2,"0");
-const fmtDate = d => `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}`;
-// beholdes til evt. fremtidig brug, men bruges ikke i UI’et
-const fmtTime = d => d.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
 
 async function loadData(){
   const r = await fetch("/api/data");
   const j = await r.json();
-  if(!j.ok) throw new Error(j.error||"Fejl i data.json");
   return j.content;
 }
+
 async function loadICS(url, days, max){
   const u = `/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`;
   const r = await fetch(u);
   const j = await r.json();
-  if(!j.ok) throw new Error(j.error||"Fejl i ICS");
   return j.events||[];
 }
 
-function groupByDate(events){
-  const map=new Map();
-  for(const e of events){
-    const k=new Date(e.start).toDateString();
-    if(!map.has(k)) map.set(k,[]);
-    map.get(k).push(e);
-  }
-  return Array.from(map.entries()).sort((a,b)=>new Date(a[0])-new Date(b[0]));
+/* ---------------- PARSE ---------------- */
+
+function parseEvent(e){
+  const text = (e.summary || "").toUpperCase();
+  const parts = text.split(" ");
+
+  const person = parts[0] || "UKENDT";
+
+  let priority = 3;
+  if (text.includes("P1")) priority = 1;
+  else if (text.includes("P2")) priority = 2;
+
+  const done = text.includes("FÆRDIG");
+
+  const cleanText = (e.summary || "")
+    .replace(/^([A-Z]{1,3})\s*/i, "")
+    .replace(/P[1-3]/i, "")
+    .replace(/FÆRDIG/i, "")
+    .trim();
+
+  return {
+    person,
+    priority,
+    done,
+    text: cleanText,
+    start: new Date(e.start),
+    end: new Date(e.end)
+  };
 }
 
+/* ---------------- RENDER ---------------- */
+
 function renderEvents(raw){
-  const g=$("#grid");
-  g.innerHTML="";
-  const groups=groupByDate(raw);
 
-  groups.forEach(([key,list])=>{
-    const d=new Date(key);
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`<div class="date">${fmtDate(d)}</div>`;
+  const g = $("#grid");
+  g.innerHTML = "";
 
-    list.forEach((e,index)=>{
-      const row=document.createElement("div");
-      row.className="row";
+  const parsed = raw.map(parseEvent);
 
-      // Bogstav-markør i stedet for klokkeslæt – A, B, C ...
-      const marker = String.fromCharCode("A".charCodeAt(0) + (index % 26));
+  const map = {};
 
-      row.innerHTML=`
-        <div class="title">${escapeHtml(e.summary||"(Ingen titel)")}</div>
-        <div class="loc">${escapeHtml(e.location||"")}</div>
-        <div class="when">${escapeHtml(marker)}</div>
-      `;
+  parsed.forEach(e=>{
+    if(!map[e.person]) map[e.person] = [];
+    map[e.person].push(e);
+  });
+
+  Object.values(map).forEach(list=>{
+    list.sort((a,b)=>a.start-b.start);
+  });
+
+  Object.keys(map).sort().forEach(person=>{
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `<div class="date">${person}</div>`;
+
+    map[person].forEach(e=>{
+
+      const row = document.createElement("div");
+      row.className = "row";
+
+      let color = "#4caf50";
+      if(e.priority === 1) color = "#ff4d4d";
+      else if(e.priority === 2) color = "#ffd24d";
+
+      const bar = document.createElement("div");
+      bar.className = "bar";
+
+      bar.style.background = color;
+      bar.style.opacity = e.done ? 0.4 : 1;
+      bar.style.textDecoration = e.done ? "line-through" : "none";
+
+      bar.textContent = e.text;
+
+      row.appendChild(bar);
       card.appendChild(row);
     });
 
     g.appendChild(card);
   });
 
-  if (!groups.length){
-    g.innerHTML = `<div class="empty-card">Ingen kommende begivenheder.</div>`;
+  if(!raw.length){
+    g.innerHTML = "Ingen data";
   }
 }
 
-function escapeHtml(s){
-  return String(s||"").replace(/[&<>"]/g,m=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"
-  }[m]));
-}
+/* ---------------- INIT ---------------- */
 
-function buildBirthdayFallback(data){
-  const today=new Date(); today.setHours(0,0,0,0);
-  const next30 = new Date(today.getTime()+30*86400000);
-  const list=(data.birthdays?.people||[]).map(p=>{
-    const [dd,mm,yyyy] = (p.date||"").split(".");
-    if (!dd||!mm) return null;
-    const year=today.getFullYear();
-    const dt=new Date(year,Number(mm)-1,Number(dd));
-    if (dt<today) dt.setFullYear(year+1);
-    return { name:p.name, date:dt, born:yyyy||"" };
-  }).filter(Boolean).filter(x=>x.date<=next30).sort((a,b)=>a.date-b.date);
+(async function(){
 
-  const g=$("#grid");
-  g.innerHTML="";
-  list.forEach(x=>{
-    const card=document.createElement("div");
-    card.className="card";
-    const ageTxt = x.born? ` (${new Date().getFullYear()-Number(x.born)} år)`:"";
-    card.innerHTML=`<div class="date">${fmtDate(x.date)}</div>
-                    <div class="row"><div class="title">${escapeHtml(x.name)}${ageTxt}</div></div>`;
-    g.appendChild(card);
-  });
-  if (!list.length)
-    g.innerHTML=`<div class="empty-card">Ingen data – tilføj ICS-URL i admin, eller opret fødselsdage.</div>`;
-}
-
-(async function init(){
   const cfg = await loadData();
-
-  // tema-farver fra admin
-  if (cfg.theme?.bg1) document.documentElement.style.setProperty("--bg", cfg.theme.bg1);
-  if (cfg.theme?.bg2) document.documentElement.style.setProperty("--panel", cfg.theme.bg2);
-
-  // kolonner fra admin: calendar.columns (1 eller 2)
-  const gridEl = document.getElementById("grid");
-  const cols = Number(cfg.calendar?.columns || 2);
-  gridEl.classList.add(cols === 1 ? "cols1" : "cols2");
 
   const url = cfg.calendar?.url || "";
   const days = Number(cfg.calendar?.daysAhead || 60);
   const max  = Number(cfg.calendar?.maxEvents || 50);
 
-  if (url) {
+  if(url){
     const ev = await loadICS(url, days, max);
     renderEvents(ev);
-  } else {
-    buildBirthdayFallback(cfg);
   }
 
-  const refreshMs = Number(cfg.settings?.refreshMs || 300000);
-  setTimeout(()=>location.reload(), Math.max(900000, refreshMs));
 })();
 </script>
+
 </body>
 </html>
-
-
