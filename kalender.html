@@ -11,76 +11,112 @@
   --panel:#083d43;
   --ink:#e9fbff;
   --card:#0b3a40;
+  --border:#0a2b30;
 }
+
+*{box-sizing:border-box}
 
 body{
   margin:0;
   background:var(--bg);
   color:var(--ink);
-  font-family:system-ui,Segoe UI,Roboto;
+  font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;
 }
 
-/* Layout */
 .wrapper{
-  padding:20px;
+  padding:18px;
+  min-height:100vh;
+}
+
+.frame{
+  min-height:calc(100vh - 36px);
+  border-radius:22px;
+  border:1px solid var(--border);
+  box-shadow:inset 0 0 0 2px #0a2b3040;
+  padding:18px;
 }
 
 h1{
-  font-size:42px;
-  letter-spacing:.2em;
-  margin-bottom:20px;
+  margin:0 0 16px;
+  font-size:clamp(28px,3vw,44px);
+  letter-spacing:.18em;
 }
 
-/* GRID = mange personer på én skærm */
 #grid{
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:14px;
+  align-content:start;
 }
 
-/* PERSON CARD */
 .card{
   background:var(--card);
-  border-radius:14px;
-  padding:10px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:12px;
+  min-width:0;
 }
 
-/* NAVN */
 .name{
-  font-weight:700;
-  margin-bottom:8px;
+  font-weight:800;
+  margin-bottom:10px;
   font-size:16px;
-  letter-spacing:.1em;
+  letter-spacing:.08em;
+  opacity:.95;
 }
 
-/* OPGAVER LIGGER PÅ LINJE */
 .row{
   display:flex;
   flex-wrap:wrap;
-  gap:6px;
+  gap:8px;
 }
 
-/* OPGAVE BOX */
 .bar{
-  padding:6px 10px;
-  border-radius:6px;
-  font-size:12px;
-  font-weight:600;
-  white-space:nowrap;
+  padding:8px 12px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.25;
+  white-space:normal;
+  word-break:break-word;
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  color:#102326;
+  max-width:100%;
+}
+
+.bar.p1{ background:#ff5c5c; }
+.bar.p2{ background:#ff9f43; }
+.bar.p3{ background:#7bd88f; }
+.bar.p4{ background:#6cb6ff; }
+.bar.p5{ background:#c0c6cf; }
+
+.bar.done{
+  opacity:.45;
+  text-decoration:line-through;
+}
+
+.empty{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  opacity:.8;
 }
 </style>
 </head>
 
 <body>
-
 <div class="wrapper">
-  <h1>PLAN</h1>
-  <div id="grid"></div>
+  <div class="frame">
+    <h1>PLAN</h1>
+    <div id="grid"></div>
+  </div>
 </div>
 
 <script>
-
-const $ = s=>document.querySelector(s);
+const $ = s => document.querySelector(s);
 
 /* ---------------- API ---------------- */
 
@@ -94,67 +130,79 @@ async function loadICS(url, days, max){
   const u = `/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`;
   const r = await fetch(u);
   const j = await r.json();
-  return j.events||[];
+  return j.events || [];
 }
 
 /* ---------------- PARSE ---------------- */
+/*
+  Eksempler:
+  PB* Skift olie
+  PB* LB* P1 Skift olie
+  MH* P3 Gennemgang FÆRDIG
+*/
 
 function parseEvent(e){
+  const original = (e.summary || "").trim();
 
-  const original = e.summary || "";
+  // find alle personer med *
+  const persons = (original.match(/([A-ZÆØÅ]{2,})\*/gi) || [])
+    .map(p => p.replace("*", "").toUpperCase());
 
-  // ⭐ KUN vis hvis der er *
-  if (!original.includes("*")) return null;
+  if (!persons.length) return null;
 
-  const text = original.toUpperCase();
-  const parts = text.split(" ");
+  // find prioritet P1-P5
+  const prioMatch = original.match(/\bP([1-5])\b/i);
+  const priority = prioMatch ? Number(prioMatch[1]) : 3;
 
-  const person = parts[0] || "UKENDT";
+  // færdig-status
+  const done = /\bFÆRDIG\b/i.test(original);
 
-  let priority = 3;
-  if (text.includes("P1")) priority = 1;
-  else if (text.includes("P2")) priority = 2;
-
-  const done = text.includes("FÆRDIG");
-
+  // rens titeltekst
   const cleanText = original
-    .replace(/^([A-Z]{1,3})\s*/i, "")
-    .replace("*", "")
-    .replace(/P[1-3]/i, "")
-    .replace(/FÆRDIG/i, "")
+    .replace(/([A-ZÆØÅ]{2,})\*/gi, "")
+    .replace(/\bP[1-5]\b/gi, "")
+    .replace(/\bFÆRDIG\b/gi, "")
+    .replace(/\s+/g, " ")
     .trim();
 
-  return {
+  return persons.map(person => ({
     person,
     priority,
     done,
-    text: cleanText,
-    start: new Date(e.start)
-  };
+    text: cleanText || "(ingen tekst)",
+    start: new Date(e.start),
+    end: new Date(e.end || e.start)
+  }));
 }
 
 /* ---------------- RENDER ---------------- */
 
 function renderEvents(raw){
-
   const g = $("#grid");
   g.innerHTML = "";
 
-  const parsed = raw.map(parseEvent).filter(Boolean);
+  const parsed = raw
+    .map(parseEvent)
+    .filter(Boolean)
+    .flat();
+
+  if (!parsed.length){
+    g.innerHTML = `<div class="empty">Ingen planlagte opgaver</div>`;
+    return;
+  }
 
   const map = {};
 
-  parsed.forEach(e=>{
-    if(!map[e.person]) map[e.person] = [];
+  parsed.forEach(e => {
+    if (!map[e.person]) map[e.person] = [];
     map[e.person].push(e);
   });
 
-  Object.values(map).forEach(list=>{
-    list.sort((a,b)=>a.start-b.start);
+  Object.values(map).forEach(list => {
+    list.sort((a,b) => a.start - b.start);
   });
 
-  Object.keys(map).sort().forEach(person=>{
-
+  Object.keys(map).sort().forEach(person => {
     const card = document.createElement("div");
     card.className = "card";
 
@@ -165,52 +213,39 @@ function renderEvents(raw){
     const row = document.createElement("div");
     row.className = "row";
 
-    map[person].forEach(e=>{
-
-      let color = "#4caf50"; // normal
-      if(e.priority === 1) color = "#ff4d4d"; // vigtig
-      else if(e.priority === 2) color = "#ffd24d"; // medium
-
+    map[person].forEach(e => {
       const bar = document.createElement("div");
-      bar.className = "bar";
-
-      bar.style.background = color;
-      bar.style.opacity = e.done ? 0.4 : 1;
-      bar.style.textDecoration = e.done ? "line-through" : "none";
-
+      bar.className = `bar p${e.priority}${e.done ? " done" : ""}`;
       bar.textContent = e.text;
-
       row.appendChild(bar);
     });
 
     card.appendChild(name);
     card.appendChild(row);
-
     g.appendChild(card);
   });
-
-  if(!parsed.length){
-    g.innerHTML = "<div>Ingen planlagte opgaver</div>";
-  }
 }
 
 /* ---------------- INIT ---------------- */
 
 (async function(){
-
   const cfg = await loadData();
 
   const url = cfg.calendar?.url || "";
   const days = Number(cfg.calendar?.daysAhead || 60);
   const max  = Number(cfg.calendar?.maxEvents || 50);
 
-  if(url){
+  if (url) {
     const ev = await loadICS(url, days, max);
     renderEvents(ev);
+  } else {
+    document.getElementById("grid").innerHTML =
+      `<div class="empty">Ingen ICS-URL fundet i admin.</div>`;
   }
 
+  const refreshMs = Number(cfg.settings?.refreshMs || 300000);
+  setTimeout(() => location.reload(), Math.max(900000, refreshMs));
 })();
 </script>
-
 </body>
 </html>
