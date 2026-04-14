@@ -1,30 +1,44 @@
 export function getClientIp(req) {
-  let ip =
-    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-    req.socket?.remoteAddress ||
-    "";
+  try {
+    const xff = req.headers["x-forwarded-for"] || "";
+    const ip = xff.split(",")[0].trim();
 
-  if (ip.startsWith("::ffff:")) {
-    ip = ip.replace("::ffff:", "");
+    if (!ip) return "";
+
+    return ip.replace("::ffff:", "");
+  } catch (e) {
+    return "";
   }
+}
 
-  return ip;
+export function parseAllowList() {
+  const raw = process.env.ALLOWED_IPS || "";
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 export function isAllowedIp(req) {
-  const allowed = (process.env.ALLOWED_IPS || "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
+  const clientIp = getClientIp(req);
+  const allowList = parseAllowList();
 
-  const ip = getClientIp(req);
+  if (!allowList.length) return false;
 
-  return allowed.includes(ip);
+  return allowList.some((allowed) => {
+    if (clientIp === allowed) return true;
+
+    if (allowed.includes("/24")) {
+      const base = allowed.split("/")[0];
+      const a = base.split(".");
+      const b = clientIp.split(".");
+      return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+    }
+
+    return false;
+  });
 }
 
 export function deny(res) {
-  return res.status(403).json({
-    ok: false,
-    error: "Adgang nægtet"
-  });
+  return res.status(403).json({ error: "Adgang nægtet" });
 }
