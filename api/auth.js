@@ -4,8 +4,13 @@
 export const config = { runtime: "nodejs" };
 
 import crypto from "crypto";
+import { isAllowedIp, deny } from "./_ipCheck";
 
 export default async function handler(req, res) {
+  if (!isAllowedIp(req)) {
+    return deny(res);
+  }
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method Not Allowed" });
