@@ -3,58 +3,77 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gantt</title>
+<title>Plan</title>
 
 <style>
 :root{
   --bg:#0d4952;
   --panel:#083d43;
   --ink:#e9fbff;
+  --card:#0b3a40;
 }
 
 body{
   margin:0;
   background:var(--bg);
   color:var(--ink);
-  font-family:sans-serif;
+  font-family:system-ui,Segoe UI,Roboto;
 }
 
-.frame{
+/* Layout */
+.wrapper{
   padding:20px;
 }
 
 h1{
-  font-size:40px;
+  font-size:42px;
+  letter-spacing:.2em;
+  margin-bottom:20px;
 }
 
+/* GRID = mange personer på én skærm */
+#grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap:14px;
+}
+
+/* PERSON CARD */
 .card{
-  background:#092f36;
-  border-radius:12px;
+  background:var(--card);
+  border-radius:14px;
   padding:10px;
-  margin-bottom:15px;
 }
 
-.date{
-  font-weight:bold;
+/* NAVN */
+.name{
+  font-weight:700;
   margin-bottom:8px;
-  font-size:20px;
+  font-size:16px;
+  letter-spacing:.1em;
 }
 
+/* OPGAVER LIGGER PÅ LINJE */
 .row{
-  margin-bottom:6px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
 }
 
+/* OPGAVE BOX */
 .bar{
   padding:6px 10px;
   border-radius:6px;
-  display:inline-block;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
 }
 </style>
 </head>
 
 <body>
 
-<div class="frame">
+<div class="wrapper">
   <h1>PLAN</h1>
   <div id="grid"></div>
 </div>
@@ -62,6 +81,8 @@ h1{
 <script>
 
 const $ = s=>document.querySelector(s);
+
+/* ---------------- API ---------------- */
 
 async function loadData(){
   const r = await fetch("/api/data");
@@ -79,7 +100,13 @@ async function loadICS(url, days, max){
 /* ---------------- PARSE ---------------- */
 
 function parseEvent(e){
-  const text = (e.summary || "").toUpperCase();
+
+  const original = e.summary || "";
+
+  // ⭐ KUN vis hvis der er *
+  if (!original.includes("*")) return null;
+
+  const text = original.toUpperCase();
   const parts = text.split(" ");
 
   const person = parts[0] || "UKENDT";
@@ -90,8 +117,9 @@ function parseEvent(e){
 
   const done = text.includes("FÆRDIG");
 
-  const cleanText = (e.summary || "")
+  const cleanText = original
     .replace(/^([A-Z]{1,3})\s*/i, "")
+    .replace("*", "")
     .replace(/P[1-3]/i, "")
     .replace(/FÆRDIG/i, "")
     .trim();
@@ -101,8 +129,7 @@ function parseEvent(e){
     priority,
     done,
     text: cleanText,
-    start: new Date(e.start),
-    end: new Date(e.end)
+    start: new Date(e.start)
   };
 }
 
@@ -113,7 +140,7 @@ function renderEvents(raw){
   const g = $("#grid");
   g.innerHTML = "";
 
-  const parsed = raw.map(parseEvent);
+  const parsed = raw.map(parseEvent).filter(Boolean);
 
   const map = {};
 
@@ -131,16 +158,18 @@ function renderEvents(raw){
     const card = document.createElement("div");
     card.className = "card";
 
-    card.innerHTML = `<div class="date">${person}</div>`;
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = person;
+
+    const row = document.createElement("div");
+    row.className = "row";
 
     map[person].forEach(e=>{
 
-      const row = document.createElement("div");
-      row.className = "row";
-
-      let color = "#4caf50";
-      if(e.priority === 1) color = "#ff4d4d";
-      else if(e.priority === 2) color = "#ffd24d";
+      let color = "#4caf50"; // normal
+      if(e.priority === 1) color = "#ff4d4d"; // vigtig
+      else if(e.priority === 2) color = "#ffd24d"; // medium
 
       const bar = document.createElement("div");
       bar.className = "bar";
@@ -152,14 +181,16 @@ function renderEvents(raw){
       bar.textContent = e.text;
 
       row.appendChild(bar);
-      card.appendChild(row);
     });
+
+    card.appendChild(name);
+    card.appendChild(row);
 
     g.appendChild(card);
   });
 
-  if(!raw.length){
-    g.innerHTML = "Ingen data";
+  if(!parsed.length){
+    g.innerHTML = "<div>Ingen planlagte opgaver</div>";
   }
 }
 
