@@ -8,448 +8,200 @@
 <style>
 :root{
   --bg:#0d4952;
-  --panel:#083d43;
-  --panel2:#0b3a40;
-  --ink:#e9fbff;
+  --card:#0b3a40;
   --line:#0a2b30;
-  --muted:#b8d7dc;
-  --timeCol: 90px;
-  --nameCol: 110px;
-  --rowH: 56px;
-  --hours: 13; /* 06-19 */
+  --ink:#e9fbff;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
 body{
+  margin:0;
   background:var(--bg);
   color:var(--ink);
-  font:16px/1.35 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  font-family:system-ui;
 }
 
-.outer{
-  position:fixed;
-  inset:0;
-  padding:18px;
-}
-.frame{
-  width:100%;
-  height:100%;
-  border-radius:26px;
-  border:1px solid var(--line);
-  box-shadow:inset 0 0 0 2px #0a2b3040;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  min-height:0;
+.wrapper{
+  padding:20px;
 }
 
 h1{
-  margin:0 0 14px;
-  font-size:clamp(28px,3.6vw,48px);
-  letter-spacing:.18em;
+  font-size:42px;
+  letter-spacing:.2em;
+  margin-bottom:20px;
 }
 
-.meta{
-  margin:0 0 12px;
-  color:var(--muted);
-  font-size:14px;
+#grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap:14px;
 }
 
-.board{
-  flex:1;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:12px;
   border:1px solid var(--line);
-  border-radius:18px;
-  overflow:hidden;
-  background:#0a353b;
 }
 
-.header{
-  display:grid;
-  grid-template-columns: var(--nameCol) 1fr;
-  border-bottom:1px solid var(--line);
-  background:#0a3137;
-  flex:0 0 auto;
-}
-
-.header .left{
-  padding:12px 10px;
+.name{
   font-weight:800;
-  letter-spacing:.08em;
-  border-right:1px solid var(--line);
+  margin-bottom:10px;
+  letter-spacing:.1em;
 }
 
-.time-scale{
-  position:relative;
-  display:grid;
-  grid-template-columns: repeat(var(--hours), minmax(var(--timeCol), 1fr));
-}
-
-.time-cell{
-  padding:10px 6px;
-  text-align:center;
-  font-weight:700;
-  color:var(--muted);
-  border-right:1px solid #0f4850;
-}
-
-.rows{
-  flex:1;
-  min-height:0;
-  overflow:auto;
-}
-
-.person-row{
-  display:grid;
-  grid-template-columns: var(--nameCol) 1fr;
-  min-height:var(--rowH);
-  border-bottom:1px solid #0f4850;
-}
-
-.person-name{
-  padding:14px 10px;
-  font-weight:800;
-  font-size:20px;
-  border-right:1px solid var(--line);
-  background:#0b3a40;
+.row{
   display:flex;
-  align-items:center;
-}
-
-.timeline{
-  position:relative;
-  min-height:var(--rowH);
-  background:
-    repeating-linear-gradient(
-      to right,
-      transparent 0,
-      transparent calc(var(--timeCol) - 1px),
-      #0f4850 calc(var(--timeCol) - 1px),
-      #0f4850 var(--timeCol)
-    );
+  flex-wrap:wrap;
+  gap:8px;
 }
 
 .bar{
-  position:absolute;
-  top:10px;
-  height:36px;
+  padding:8px 12px;
   border-radius:10px;
-  padding:7px 10px;
-  font-size:14px;
-  font-weight:800;
-  line-height:1;
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
-  color:#102326;
-  box-shadow:0 2px 8px rgba(0,0,0,.18);
+  font-size:13px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:normal;
 }
 
-.p1{ background:#ff5c5c; }
-.p2{ background:#ff9f43; }
-.p3{ background:#7bd88f; }
-.p4{ background:#6cb6ff; }
-.p5{ background:#c0c6cf; }
+/* farver */
+.p1{ background:#ff4d4d; }
+.p2{ background:#ff944d; }
+.p3{ background:#4caf50; }
+.p4{ background:#3fa7ff; }
+.p5{ background:#999; }
 
 .done{
-  opacity:.45;
+  opacity:.4;
   text-decoration:line-through;
 }
 
 .empty{
-  padding:16px;
-  color:var(--muted);
-}
-
-.note{
-  margin-top:10px;
-  font-size:13px;
-  color:var(--muted);
-}
-
-@media (max-width: 1100px){
-  :root{
-    --nameCol: 88px;
-    --timeCol: 72px;
-    --rowH: 52px;
-  }
-  .person-name{ font-size:16px; }
-  .bar{ font-size:12px; }
+  opacity:.7;
 }
 </style>
 </head>
 
 <body>
-<div class="outer">
-  <div class="frame">
-    <h1>PLAN</h1>
-    <div id="meta" class="meta"></div>
 
-    <div class="board">
-      <div class="header">
-        <div class="left">NAVN</div>
-        <div id="timeScale" class="time-scale"></div>
-      </div>
-      <div id="rows" class="rows"></div>
-    </div>
-
-    <div class="note">
-      Format i kalender: <strong>PB* LB* P1 Opgavetekst</strong>
-    </div>
-  </div>
+<div class="wrapper">
+  <h1>PLAN</h1>
+  <div id="grid"></div>
 </div>
 
 <script>
-const $ = s => document.querySelector(s);
 
-const DAY_START_HOUR = 6;
-const DAY_END_HOUR = 19;
-const HOURS = DAY_END_HOUR - DAY_START_HOUR;
-
-document.documentElement.style.setProperty("--hours", HOURS);
+const $ = s=>document.querySelector(s);
 
 async function loadData(){
   const r = await fetch("/api/data");
-
-  if (!r.ok) {
-    const txt = await r.text().catch(() => "");
-    throw new Error(txt || "Fejl ved hentning af data");
-  }
-
   const j = await r.json();
-  if (!j.ok) throw new Error(j.error || "Fejl i data.json");
   return j.content;
 }
 
 async function loadICS(url, days, max){
-  const u = `/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`;
-  const r = await fetch(u);
-
-  if (!r.ok) {
-    const txt = await r.text().catch(() => "");
-    throw new Error(txt || "Fejl i ICS");
-  }
-
+  const r = await fetch(`/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`);
   const j = await r.json();
-  if (!j.ok) throw new Error(j.error || "Fejl i ICS");
   return j.events || [];
 }
 
-function escapeHtml(s){
-  return String(s || "").replace(/[&<>"]/g, m => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;"
-  }[m]));
-}
-
-function formatDate(d){
-  return d.toLocaleDateString("da-DK", {
-    day:"2-digit",
-    month:"2-digit",
-    year:"numeric"
-  });
-}
-
-function buildTimeScale(){
-  const scale = $("#timeScale");
-  scale.innerHTML = "";
-  for(let h = DAY_START_HOUR; h < DAY_END_HOUR; h++){
-    const cell = document.createElement("div");
-    cell.className = "time-cell";
-    cell.textContent = String(h).padStart(2,"0") + ":00";
-    scale.appendChild(cell);
-  }
-}
-
+/* 🔥 PARSER */
 function parseEvent(e){
-  const original = (e.summary || "").trim();
 
-  // Kun vis hvis mindst én person er markeret med *
+  const original = `${e.summary || ""} ${e.description || ""}`.trim();
+
   const persons = (original.match(/([A-ZÆØÅ]{2,})\*/gi) || [])
-    .map(p => p.replace("*", "").toUpperCase());
+    .map(p => p.replace("*","").toUpperCase());
 
   if (!persons.length) return null;
 
   const prioMatch = original.match(/\bP([1-5])\b/i);
   const priority = prioMatch ? Number(prioMatch[1]) : 3;
 
-  const done = /\bFÆRDIG\b/i.test(original);
+  const done = original.toUpperCase().includes("FÆRDIG");
 
-  const cleanText = original
+  const text = original
     .replace(/([A-ZÆØÅ]{2,})\*/gi, "")
     .replace(/\bP[1-5]\b/gi, "")
-    .replace(/\bFÆRDIG\b/gi, "")
-    .replace(/\s+/g, " ")
+    .replace(/FÆRDIG/i, "")
     .trim();
-
-  const start = new Date(e.start);
-  const end = new Date(e.end || e.start);
 
   return persons.map(person => ({
     person,
+    text: text || "(ingen tekst)",
     priority,
     done,
-    text: cleanText || "(ingen tekst)",
-    start,
-    end
+    start: new Date(e.start)
   }));
 }
 
-function clampToDay(date, baseDay){
-  const d = new Date(date);
-  const start = new Date(baseDay);
-  start.setHours(DAY_START_HOUR, 0, 0, 0);
-  const end = new Date(baseDay);
-  end.setHours(DAY_END_HOUR, 0, 0, 0);
+/* 🔥 RENDER */
+function render(events){
 
-  if (d < start) return start;
-  if (d > end) return end;
-  return d;
-}
+  const g = $("#grid");
+  g.innerHTML = "";
 
-function minutesFromDayStart(date, baseDay){
-  const base = new Date(baseDay);
-  base.setHours(DAY_START_HOUR, 0, 0, 0);
-  return (date - base) / 60000;
-}
-
-function pickTargetDay(events){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  // vælg i dag hvis der er events i dag, ellers første dag med events
-  const inToday = events.filter(e => {
-    const d = new Date(e.start);
-    d.setHours(0,0,0,0);
-    return d.getTime() === today.getTime();
-  });
-  if (inToday.length) return today;
-
-  if (events.length){
-    const d = new Date(events[0].start);
-    d.setHours(0,0,0,0);
-    return d;
-  }
-
-  return today;
-}
-
-function renderEvents(raw){
-  const rows = $("#rows");
-  const meta = $("#meta");
-  rows.innerHTML = "";
-
-  const tasks = raw
+  const parsed = events
     .map(parseEvent)
     .filter(Boolean)
     .flat();
 
-  if (!tasks.length){
-    meta.textContent = "";
-    rows.innerHTML = `<div class="empty">Ingen planlagte opgaver fundet.</div>`;
+  if (!parsed.length){
+    g.innerHTML = `<div class="empty">Ingen opgaver</div>`;
     return;
   }
 
-  tasks.sort((a,b) => a.start - b.start);
+  // sorter efter tid
+  parsed.sort((a,b)=>a.start-b.start);
 
-  const day = pickTargetDay(tasks);
+  const map = {};
 
-  const filtered = tasks.filter(t => {
-    const d = new Date(t.start);
-    d.setHours(0,0,0,0);
-    return d.getTime() === day.getTime();
+  parsed.forEach(e=>{
+    if(!map[e.person]) map[e.person] = [];
+    map[e.person].push(e);
   });
 
-  if (!filtered.length){
-    meta.textContent = "";
-    rows.innerHTML = `<div class="empty">Ingen opgaver på valgt dag.</div>`;
-    return;
-  }
+  Object.keys(map).sort().forEach(person=>{
 
-  meta.textContent = `Viser ${formatDate(day)} · ${filtered.length} opgaver`;
-
-  const grouped = {};
-  filtered.forEach(t => {
-    if (!grouped[t.person]) grouped[t.person] = [];
-    grouped[t.person].push(t);
-  });
-
-  Object.keys(grouped).sort().forEach(person => {
-    grouped[person].sort((a,b) => a.start - b.start);
-
-    const row = document.createElement("div");
-    row.className = "person-row";
+    const card = document.createElement("div");
+    card.className = "card";
 
     const name = document.createElement("div");
-    name.className = "person-name";
+    name.className = "name";
     name.textContent = person;
 
-    const timeline = document.createElement("div");
-    timeline.className = "timeline";
+    const row = document.createElement("div");
+    row.className = "row";
 
-    grouped[person].forEach(t => {
-      const start = clampToDay(t.start, day);
-      const endRaw = t.end > t.start ? t.end : new Date(t.start.getTime() + 30 * 60000);
-      const end = clampToDay(endRaw, day);
-
-      let startMin = minutesFromDayStart(start, day);
-      let endMin = minutesFromDayStart(end, day);
-
-      // minimum visuel bredde
-      if (endMin <= startMin) endMin = startMin + 30;
-
-      const totalMin = HOURS * 60;
-      const left = Math.max(0, Math.min(100, (startMin / totalMin) * 100));
-      const width = Math.max(3, ((endMin - startMin) / totalMin) * 100);
-
+    map[person].forEach(e=>{
       const bar = document.createElement("div");
-      bar.className = `bar p${t.priority}${t.done ? " done" : ""}`;
-      bar.style.left = left + "%";
-      bar.style.width = width + "%";
-      bar.title = `${t.person} · ${t.text}`;
-      bar.innerHTML = escapeHtml(t.text);
-
-      timeline.appendChild(bar);
+      bar.className = `bar p${e.priority}${e.done ? " done":""}`;
+      bar.textContent = e.text;
+      row.appendChild(bar);
     });
 
-    row.appendChild(name);
-    row.appendChild(timeline);
-    rows.appendChild(row);
+    card.appendChild(name);
+    card.appendChild(row);
+    g.appendChild(card);
   });
 }
 
-(async function init(){
-  try {
-    buildTimeScale();
+/* INIT */
+(async function(){
 
-    const cfg = await loadData();
+  const cfg = await loadData();
 
-    if (cfg.theme?.bg1) document.documentElement.style.setProperty("--bg", cfg.theme.bg1);
-    if (cfg.theme?.bg2) document.documentElement.style.setProperty("--panel", cfg.theme.bg2);
+  const url = cfg.calendar?.url || "";
+  const days = Number(cfg.calendar?.daysAhead || 60);
+  const max  = Number(cfg.calendar?.maxEvents || 50);
 
-    const url = cfg.calendar?.url || "";
-    const days = Number(cfg.calendar?.daysAhead || 10);
-    const max  = Number(cfg.calendar?.maxEvents || 50);
-
-    if (!url) {
-      $("#rows").innerHTML = `<div class="empty">Ingen ICS-URL fundet i admin.</div>`;
-      return;
-    }
-
+  if(url){
     const ev = await loadICS(url, days, max);
-    renderEvents(ev);
-
-    const refreshMs = Number(cfg.settings?.refreshMs || 300000);
-    setTimeout(() => location.reload(), Math.max(900000, refreshMs));
-  } catch (err) {
-    $("#rows").innerHTML = `<div class="empty">${escapeHtml(err.message || "Ukendt fejl")}</div>`;
+    render(ev);
   }
+
 })();
 </script>
+
 </body>
 </html>
