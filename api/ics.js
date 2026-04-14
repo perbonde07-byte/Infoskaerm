@@ -2,9 +2,15 @@
 // PB-DESIGN: Henter/pars­er ICS og returnerer kommende events (JSON).
 // Brug: /api/ics?url=<ENCODET_ICS_URL>&days=60&max=50
 
+import { isAllowedIp, deny } from "./_ipCheck";
+
 let CACHE = { url: "", until: 0, events: null };
 
 export default async function handler(req, res) {
+  if (!isAllowedIp(req)) {
+    return deny(res);
+  }
+
   try {
     const url = String(req.query.url || "").trim();
     const days = Math.max(1, Math.min(365, Number(req.query.days || 60)));
