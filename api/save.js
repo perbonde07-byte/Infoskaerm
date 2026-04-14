@@ -1,5 +1,11 @@
 // Pb-desigen: /api/save – gemmer data.json eller sletter filer i repoet
+import { isAllowedIp, deny } from "./_ipCheck";
+
 export default async function handler(req, res) {
+  if (!isAllowedIp(req)) {
+    return deny(res);
+  }
+
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error:'Kun POST' });
@@ -37,9 +43,9 @@ export default async function handler(req, res) {
         }
         const info = await meta.json();
         const sha = info.sha;
-        // delete via PUT (content API)
+        // delete via DELETE (content API)
         const del = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`,{
-          method:'PUT', headers: ghHeaders,
+          method:'DELETE', headers: ghHeaders,
           body: JSON.stringify({
             message: `Delete ${path} (admin)`,
             sha, branch, committer:{name:'Infoskærm',email:'no-reply@bredsgaard.dk'}
@@ -78,4 +84,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: e.message||'Ukendt fejl' });
   }
 }
-
