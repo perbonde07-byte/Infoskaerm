@@ -10,7 +10,7 @@
   --bg:#0d4952;
   --panel:#083d43;
   --panel2:#0b3a40;
-  --panel3:#0f4a53;
+  --panel3:#114c54;
   --ink:#e9fbff;
   --muted:#b7d6db;
   --line:#0a2b30;
@@ -18,6 +18,7 @@
 
 *{box-sizing:border-box}
 html,body{height:100%}
+
 body{
   margin:0;
   background:var(--bg);
@@ -26,10 +27,9 @@ body{
 }
 
 .wrapper{
-  height:100vh;
+  min-height:100vh;
   display:flex;
   flex-direction:column;
-  min-height:0;
 }
 
 .topbar{
@@ -69,12 +69,16 @@ h1{
   margin-bottom:10px;
 }
 
+.people-label{
+  font-weight:800;
+}
+
 .people-chip{
   display:inline-flex;
   align-items:center;
   gap:6px;
   border:1px solid var(--line);
-  background:#114c54;
+  background:var(--panel3);
   color:var(--ink);
   border-radius:999px;
   padding:6px 10px;
@@ -92,7 +96,7 @@ h1{
 }
 
 .people-admin input{
-  background:#0b3a40;
+  background:var(--panel2);
   color:var(--ink);
   border:1px solid var(--line);
   border-radius:10px;
@@ -101,9 +105,8 @@ h1{
 }
 
 .people-admin button,
-.header-actions button,
-.empty-btn{
-  background:#114c54;
+.header-actions button{
+  background:var(--panel3);
   color:var(--ink);
   border:1px solid var(--line);
   border-radius:10px;
@@ -116,7 +119,13 @@ h1{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
+  align-items:center;
   margin-bottom:10px;
+}
+
+.status{
+  color:var(--muted);
+  font-size:12px;
 }
 
 .queue-wrap{
@@ -151,59 +160,7 @@ h1{
   gap:10px;
   overflow:auto;
   padding-bottom:4px;
-}
-
-.task{
-  user-select:none;
-  -webkit-user-select:none;
-  touch-action:none;
-  min-width:220px;
-  max-width:320px;
-  border-radius:12px;
-  border:1px solid rgba(0,0,0,.15);
-  padding:10px 12px;
-  color:#12252a;
-  font-weight:800;
-  cursor:grab;
-  box-shadow:0 4px 10px rgba(0,0,0,.16);
-}
-
-.task:active{
-  cursor:grabbing;
-}
-
-.task .task-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  margin-bottom:6px;
-}
-
-.task .prio{
-  font-size:12px;
-  font-weight:900;
-  border-radius:999px;
-  padding:3px 7px;
-  background:rgba(255,255,255,.45);
-}
-
-.task .task-text{
-  font-size:14px;
-  line-height:1.25;
-  white-space:normal;
-  word-break:break-word;
-}
-
-.task.p1{ background:#ff6666; }
-.task.p2{ background:#ff9e57; }
-.task.p3{ background:#7bd88f; }
-.task.p4{ background:#6dbaff; }
-.task.p5{ background:#bcc3ca; }
-
-.task.done{
-  opacity:.48;
-  text-decoration:line-through;
+  min-height:74px;
 }
 
 .main{
@@ -238,7 +195,7 @@ h1{
 }
 
 .person-lane{
-  min-height:64px;
+  min-height:70px;
   border:1px dashed #2e6971;
   border-radius:12px;
   padding:8px;
@@ -255,15 +212,62 @@ h1{
   outline-offset:2px;
 }
 
+.task{
+  user-select:none;
+  -webkit-user-select:none;
+  min-width:220px;
+  max-width:320px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.15);
+  padding:10px 12px;
+  color:#12252a;
+  font-weight:800;
+  cursor:grab;
+  box-shadow:0 4px 10px rgba(0,0,0,.16);
+}
+
+.task:active{
+  cursor:grabbing;
+}
+
+.task-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:6px;
+}
+
+.prio{
+  font-size:12px;
+  font-weight:900;
+  border-radius:999px;
+  padding:3px 7px;
+  background:rgba(255,255,255,.45);
+}
+
+.task-text{
+  font-size:14px;
+  line-height:1.25;
+  white-space:normal;
+  word-break:break-word;
+}
+
+.task.p1{ background:#ff6666; }
+.task.p2{ background:#ff9e57; }
+.task.p3{ background:#7bd88f; }
+.task.p4{ background:#6dbaff; }
+.task.p5{ background:#bcc3ca; }
+
+.task.done{
+  opacity:.48;
+  text-decoration:line-through;
+}
+
 .empty{
   color:var(--muted);
   font-size:13px;
   padding:10px 2px 0;
-}
-
-.status{
-  color:var(--muted);
-  font-size:12px;
 }
 
 .hidden{
@@ -289,19 +293,19 @@ h1{
   <div class="topbar">
     <div class="topline">
       <h1>ARBEJDSBOARD</h1>
-      <div class="note">Træk opgaver fra toppen ned på en medarbejder. Klik på en opgave for at skifte prioritet.</div>
+      <div class="note">Kun opgaver med <strong>*</strong> tages med. Træk dem ned på en medarbejder. Klik på en opgave for at skifte prioritet.</div>
     </div>
 
     <div class="people-admin">
-      <strong>Medarbejdere:</strong>
+      <span class="people-label">Medarbejdere:</span>
       <div id="peopleChips"></div>
       <input id="newPerson" type="text" maxlength="6" placeholder="fx PB">
       <button id="addPersonBtn" type="button">Tilføj</button>
     </div>
 
     <div class="header-actions">
-      <button id="resetBtn" type="button">Nulstil fordeling</button>
-      <div class="status" id="statusText">Testversion: ændringer gemmes ikke permanent endnu.</div>
+      <button id="resetBtn" type="button">Nulstil dagens fordeling</button>
+      <div id="statusText" class="status">Klar</div>
     </div>
 
     <div id="queueWrap" class="queue-wrap">
@@ -322,13 +326,27 @@ h1{
 
 <script>
 const DEFAULT_PEOPLE = ["BH","LB","PB"];
+const SAVE_DELAY_MS = 10000;
+const QUEUE_LIMIT = 5;
 
 let state = {
+  cfg: null,
   people: [...DEFAULT_PEOPLE],
   allTasks: [],
-  assignments: {}, // taskId -> person | null
-  order: {}        // taskId -> number
+  dayKey: "",
+  board: {},
+  saveTimer: null,
+  dirty: false,
+  saving: false
 };
+
+function $(sel){
+  return document.querySelector(sel);
+}
+
+function setStatus(msg){
+  $("#statusText").textContent = msg;
+}
 
 async function loadData(){
   const r = await fetch("/api/data");
@@ -336,10 +354,33 @@ async function loadData(){
   return j.content;
 }
 
+async function saveData(cfg){
+  const r = await fetch("/api/data", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "saveDataJson",
+      message: "Opdater workboard",
+      data: cfg
+    })
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "Kunne ikke gemme");
+  return j;
+}
+
 async function loadICS(url, days, max){
   const r = await fetch(`/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`);
   const j = await r.json();
   return j.events || [];
+}
+
+function getTodayDateKey(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function isToday(dateStr){
+  return new Date(dateStr).toISOString().slice(0,10) === getTodayDateKey();
 }
 
 function makeTaskId(e){
@@ -351,62 +392,89 @@ function makeTaskId(e){
   ].join("||");
 }
 
-function todayKey(){
-  const d = new Date();
-  d.setHours(0,0,0,0);
-  return d.getTime();
-}
-
-function isToday(dateStr){
-  const d = new Date(dateStr);
-  d.setHours(0,0,0,0);
-  return d.getTime() === todayKey();
+function escapeHtml(s){
+  return String(s || "").replace(/[&<>"]/g, m => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;"
+  }[m]));
 }
 
 function parseEvent(e){
   const original = `${e.summary || ""} ${e.description || ""}`.trim();
 
-  // kun opgaver med *
   if (!original.includes("*")) return null;
 
-  const text = original
-    .replace(/\*/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
+  const text = original.replace(/\*/g, "").replace(/\s+/g, " ").trim();
   if (!text) return null;
 
   return {
     id: makeTaskId(e),
     text,
-    priority: 3,
-    done: false,
     start: new Date(e.start),
     startRaw: e.start
   };
 }
 
-function taskClass(t){
-  return `task p${t.priority}${t.done ? " done" : ""}`;
+function ensureWorkboard(){
+  if (!state.cfg.workboard) state.cfg.workboard = {};
+  if (!Array.isArray(state.cfg.workboard.people)) state.cfg.workboard.people = [...DEFAULT_PEOPLE];
+  if (!state.cfg.workboard.days || typeof state.cfg.workboard.days !== "object") state.cfg.workboard.days = {};
+  if (!state.cfg.workboard.days[state.dayKey]) state.cfg.workboard.days[state.dayKey] = {};
 }
 
-function cyclePriority(taskId){
-  const task = state.allTasks.find(t => t.id === taskId);
-  if (!task) return;
-  task.priority = task.priority >= 5 ? 1 : task.priority + 1;
-  render();
+function getTaskState(taskId){
+  ensureWorkboard();
+  const day = state.cfg.workboard.days[state.dayKey];
+  if (!day[taskId]) {
+    day[taskId] = {
+      person: null,
+      order: 0,
+      priority: 3,
+      done: false
+    };
+  }
+  return day[taskId];
+}
+
+function scheduleSave(){
+  state.dirty = true;
+  setStatus("Ikke gemt…");
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(() => {
+    persistBoard().catch(err => {
+      console.error(err);
+      setStatus("Gem fejlede");
+    });
+  }, SAVE_DELAY_MS);
+}
+
+async function persistBoard(){
+  if (!state.dirty || state.saving) return;
+
+  state.saving = true;
+  setStatus("Gemmer…");
+
+  state.cfg.workboard.people = [...state.people];
+
+  await saveData(state.cfg);
+
+  state.dirty = false;
+  state.saving = false;
+  setStatus("Gemt");
 }
 
 function renderPeopleChips(){
-  const root = document.getElementById("peopleChips");
+  const root = $("#peopleChips");
   root.innerHTML = "";
 
   state.people.forEach(person => {
     const chip = document.createElement("span");
     chip.className = "people-chip";
     chip.innerHTML = `
-      <span>${person}</span>
-      <button type="button" data-remove="${person}" title="Fjern ${person}">×</button>
+      <span>${escapeHtml(person)}</span>
+      <button type="button" data-remove="${escapeHtml(person)}" title="Fjern ${escapeHtml(person)}">×</button>
     `;
     root.appendChild(chip);
   });
@@ -419,28 +487,27 @@ function renderPeopleChips(){
 function removePerson(person){
   state.people = state.people.filter(p => p !== person);
 
-  // opgaver tilbage i køen og forrest
-  const returned = [];
-  Object.keys(state.assignments).forEach(taskId => {
-    if (state.assignments[taskId] === person) {
-      state.assignments[taskId] = null;
-      returned.push(taskId);
+  const moved = [];
+  state.allTasks.forEach(task => {
+    const s = getTaskState(task.id);
+    if (s.person === person) {
+      s.person = null;
+      moved.push(task.id);
     }
   });
 
-  // læg returnerede opgaver forrest
-  const now = Date.now();
-  returned.forEach((taskId, i) => {
-    state.order[taskId] = -1000 + i - now / 1000000000;
+  moved.forEach((taskId, idx) => {
+    const s = getTaskState(taskId);
+    s.order = -1000 + idx;
   });
 
   render();
+  scheduleSave();
 }
 
 function addPerson(){
-  const input = document.getElementById("newPerson");
+  const input = $("#newPerson");
   const value = input.value.trim().toUpperCase();
-
   if (!value) return;
   if (state.people.includes(value)) {
     input.value = "";
@@ -450,18 +517,29 @@ function addPerson(){
   state.people.push(value);
   state.people.sort();
   input.value = "";
+
   render();
+  scheduleSave();
+}
+
+function cyclePriority(taskId){
+  const s = getTaskState(taskId);
+  s.priority = s.priority >= 5 ? 1 : s.priority + 1;
+  render();
+  scheduleSave();
 }
 
 function createTaskElement(task){
+  const s = getTaskState(task.id);
+
   const el = document.createElement("div");
-  el.className = taskClass(task);
+  el.className = `task p${s.priority}${s.done ? " done" : ""}`;
   el.draggable = true;
   el.dataset.taskId = task.id;
 
   el.innerHTML = `
     <div class="task-top">
-      <span class="prio">P${task.priority}</span>
+      <span class="prio">P${s.priority}</span>
       <span>${task.start.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}</span>
     </div>
     <div class="task-text">${escapeHtml(task.text)}</div>
@@ -471,7 +549,9 @@ function createTaskElement(task){
     e.dataTransfer.setData("text/plain", task.id);
   });
 
-  el.addEventListener("click", () => cyclePriority(task.id));
+  el.addEventListener("click", () => {
+    cyclePriority(task.id);
+  });
 
   return el;
 }
@@ -492,38 +572,48 @@ function setupDropZone(zone, personOrNull){
     const taskId = e.dataTransfer.getData("text/plain");
     if (!taskId) return;
 
-    state.assignments[taskId] = personOrNull;
+    const s = getTaskState(taskId);
+    s.person = personOrNull;
 
-    // rækkefølge: læg bagest på person, forrest i kø hvis null
     if (personOrNull === null) {
-      state.order[taskId] = Math.min(...Object.values(state.order), 0) - 1;
+      const currentOrders = state.allTasks
+        .map(t => getTaskState(t.id).order)
+        .filter(n => Number.isFinite(n));
+      const minOrder = currentOrders.length ? Math.min(...currentOrders) : 0;
+      s.order = minOrder - 1;
     } else {
-      const maxOrder = Math.max(
-        0,
-        ...Object.keys(state.assignments)
-          .filter(id => state.assignments[id] === personOrNull)
-          .map(id => state.order[id] ?? 0)
-      );
-      state.order[taskId] = maxOrder + 1;
+      const samePersonOrders = state.allTasks
+        .filter(t => getTaskState(t.id).person === personOrNull)
+        .map(t => getTaskState(t.id).order)
+        .filter(n => Number.isFinite(n));
+      const maxOrder = samePersonOrders.length ? Math.max(...samePersonOrders) : 0;
+      s.order = maxOrder + 1;
     }
 
     render();
+    scheduleSave();
   });
 }
 
-function renderQueue(){
-  const wrap = document.getElementById("queueWrap");
-  const queue = document.getElementById("queue");
-  queue.innerHTML = "";
-
-  const unassigned = state.allTasks
-    .filter(t => (state.assignments[t.id] ?? null) === null)
+function getUnassignedTasks(){
+  return state.allTasks
+    .filter(task => getTaskState(task.id).person === null)
     .sort((a,b) => {
-      const ao = state.order[a.id] ?? 0;
-      const bo = state.order[b.id] ?? 0;
-      if (ao !== bo) return ao - bo;
+      const sa = getTaskState(a.id);
+      const sb = getTaskState(b.id);
+
+      if (sa.order !== sb.order) return sa.order - sb.order;
+      if (sa.priority !== sb.priority) return sa.priority - sb.priority;
       return a.start - b.start;
     });
+}
+
+function renderQueue(){
+  const wrap = $("#queueWrap");
+  const queue = $("#queue");
+  queue.innerHTML = "";
+
+  const unassigned = getUnassignedTasks();
 
   if (!unassigned.length) {
     wrap.classList.remove("show");
@@ -532,7 +622,7 @@ function renderQueue(){
 
   wrap.classList.add("show");
 
-  unassigned.slice(0, 5).forEach(task => {
+  unassigned.slice(0, QUEUE_LIMIT).forEach(task => {
     queue.appendChild(createTaskElement(task));
   });
 
@@ -540,7 +630,7 @@ function renderQueue(){
 }
 
 function renderRows(){
-  const rows = document.getElementById("rows");
+  const rows = $("#rows");
   rows.innerHTML = "";
 
   state.people.forEach(person => {
@@ -555,11 +645,13 @@ function renderRows(){
     lane.className = "person-lane";
 
     const tasks = state.allTasks
-      .filter(t => state.assignments[t.id] === person)
+      .filter(task => getTaskState(task.id).person === person)
       .sort((a,b) => {
-        const ao = state.order[a.id] ?? 0;
-        const bo = state.order[b.id] ?? 0;
-        if (ao !== bo) return ao - bo;
+        const sa = getTaskState(a.id);
+        const sb = getTaskState(b.id);
+
+        if (sa.order !== sb.order) return sa.order - sb.order;
+        if (sa.priority !== sb.priority) return sa.priority - sb.priority;
         return a.start - b.start;
       });
 
@@ -569,7 +661,9 @@ function renderRows(){
       empty.textContent = "Slip opgaver her";
       lane.appendChild(empty);
     } else {
-      tasks.forEach(task => lane.appendChild(createTaskElement(task)));
+      tasks.forEach(task => {
+        lane.appendChild(createTaskElement(task));
+      });
     }
 
     setupDropZone(lane, person);
@@ -586,31 +680,28 @@ function render(){
   renderRows();
 }
 
-function escapeHtml(s){
-  return String(s || "").replace(/[&<>"]/g, m => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;"
-  }[m]));
-}
-
 function resetBoard(){
-  state.allTasks.forEach((t, i) => {
-    state.assignments[t.id] = null;
-    state.order[t.id] = i;
+  state.allTasks.forEach((task, idx) => {
+    const s = getTaskState(task.id);
+    s.person = null;
+    s.order = idx;
+    s.priority = 3;
+    s.done = false;
   });
   render();
+  scheduleSave();
 }
 
 async function init(){
-  const cfg = await loadData();
-  const url = cfg.calendar?.url || "";
-  const days = Number(cfg.calendar?.daysAhead || 1);
-  const max = Number(cfg.calendar?.maxEvents || 50);
+  state.cfg = await loadData();
+  const url = state.cfg.calendar?.url || "";
+  const days = Number(state.cfg.calendar?.daysAhead || 1);
+  const max = Number(state.cfg.calendar?.maxEvents || 50);
+
+  state.dayKey = getTodayDateKey();
 
   if (!url) {
-    document.getElementById("rows").innerHTML = `<div class="empty">Ingen ICS-URL fundet.</div>`;
+    $("#rows").innerHTML = `<div class="empty">Ingen ICS-URL fundet.</div>`;
     return;
   }
 
@@ -619,25 +710,35 @@ async function init(){
   state.allTasks = events
     .filter(e => isToday(e.start))
     .map(parseEvent)
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((a,b) => a.start - b.start);
 
-  state.allTasks.sort((a,b) => a.start - b.start);
+  ensureWorkboard();
 
-  state.allTasks.forEach((task, i) => {
-    state.assignments[task.id] = null;
-    state.order[task.id] = i;
+  state.people = [...state.cfg.workboard.people];
+
+  state.allTasks.forEach((task, idx) => {
+    const s = getTaskState(task.id);
+    if (!Number.isFinite(s.order)) s.order = idx;
+    if (!("priority" in s)) s.priority = 3;
+    if (!("done" in s)) s.done = false;
+    if (!("person" in s)) s.person = null;
   });
 
-  document.getElementById("addPersonBtn").onclick = addPerson;
-  document.getElementById("newPerson").addEventListener("keydown", e => {
+  $("#addPersonBtn").onclick = addPerson;
+  $("#newPerson").addEventListener("keydown", e => {
     if (e.key === "Enter") addPerson();
   });
-  document.getElementById("resetBtn").onclick = resetBoard;
+  $("#resetBtn").onclick = resetBoard;
 
   render();
+  setStatus("Klar");
 }
 
-init();
+init().catch(err => {
+  console.error(err);
+  setStatus("Fejl ved indlæsning");
+});
 </script>
 </body>
 </html>
