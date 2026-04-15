@@ -271,14 +271,14 @@
           "done": false
         },
         "*33 teste opgave af Per||||2026-04-15T20:00:00.000Z||2026-04-15T20:30:00.000Z": {
-          "person": "MK",
-          "order": 4,
-          "priority": 5,
+          "person": "PB",
+          "order": 5,
+          "priority": 4,
           "done": false
         },
         "* 22teste opgave af Per||||2026-04-15T20:30:00.000Z||2026-04-15T21:00:00.000Z": {
-          "person": "BH",
-          "order": 3,
+          "person": "MK",
+          "order": 4,
           "priority": 3,
           "done": false
         }
