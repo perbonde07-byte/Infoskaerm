@@ -271,9 +271,9 @@
           "done": false
         },
         "*33 teste opgave af Per||||2026-04-15T20:00:00.000Z||2026-04-15T20:30:00.000Z": {
-          "person": null,
-          "order": 4,
-          "priority": 3,
+          "person": "BH",
+          "order": 5,
+          "priority": 4,
           "done": false
         },
         "* 22teste opgave af Per||||2026-04-15T20:30:00.000Z||2026-04-15T21:00:00.000Z": {
@@ -285,7 +285,9 @@
       }
     },
     "personStatus": {
-      "BH": ""
+      "BH": "",
+      "MK": "syg",
+      "PB": "fri"
     }
   }
 }
