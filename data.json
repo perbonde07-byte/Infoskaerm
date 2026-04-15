@@ -241,9 +241,9 @@
           "done": false
         },
         "* p1 skal på tur stadig test||||2026-04-15T19:00:00.000Z||2026-04-15T19:30:00.000Z": {
-          "person": null,
-          "order": 2,
-          "priority": 3,
+          "person": "MK",
+          "order": 3,
+          "priority": 1,
           "done": false
         },
         "* teste opgave af Per||||2026-04-15T19:30:00.000Z||2026-04-15T20:00:00.000Z": {
@@ -267,19 +267,31 @@
         "*44 teste opgave af Per||||2026-04-15T19:30:00.000Z||2026-04-15T20:00:00.000Z": {
           "person": null,
           "order": 3,
-          "priority": 3,
+          "priority": 1,
           "done": false
         },
         "*33 teste opgave af Per||||2026-04-15T20:00:00.000Z||2026-04-15T20:30:00.000Z": {
           "person": "BH",
-          "order": 5,
-          "priority": 4,
+          "order": 7,
+          "priority": 1,
           "done": false
         },
         "* 22teste opgave af Per||||2026-04-15T20:30:00.000Z||2026-04-15T21:00:00.000Z": {
           "person": null,
           "order": 5,
-          "priority": 3,
+          "priority": 1,
+          "done": false
+        },
+        "* p53 tester kørsel og møde||||2026-04-15T18:00:00.000Z||2026-04-15T18:30:00.000Z": {
+          "person": null,
+          "order": 0,
+          "priority": 1,
+          "done": false
+        },
+        "* p5 tester kørsel og møde||||2026-04-15T18:30:00.000Z||2026-04-15T19:00:00.000Z": {
+          "person": "BH",
+          "order": 6,
+          "priority": 1,
           "done": false
         }
       }
