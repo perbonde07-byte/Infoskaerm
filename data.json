@@ -231,7 +231,7 @@
         "* p5 tester kørsel og møde||||2026-04-15T18:00:00.000Z||2026-04-15T18:30:00.000Z": {
           "person": "BH",
           "order": 1,
-          "priority": 3,
+          "priority": 1,
           "done": false
         },
         "* teste opgave af Per||||2026-04-15T18:30:00.000Z||2026-04-15T19:00:00.000Z": {
@@ -243,7 +243,7 @@
         "* p1 skal på tur stadig test||||2026-04-15T19:00:00.000Z||2026-04-15T19:30:00.000Z": {
           "person": "BH",
           "order": 3,
-          "priority": 3,
+          "priority": 1,
           "done": false
         },
         "* teste opgave af Per||||2026-04-15T19:30:00.000Z||2026-04-15T20:00:00.000Z": {
@@ -273,7 +273,7 @@
         "*33 teste opgave af Per||||2026-04-15T20:00:00.000Z||2026-04-15T20:30:00.000Z": {
           "person": "BH",
           "order": 5,
-          "priority": 3,
+          "priority": 2,
           "done": false
         },
         "* 22teste opgave af Per||||2026-04-15T20:30:00.000Z||2026-04-15T21:00:00.000Z": {
