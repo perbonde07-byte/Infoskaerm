@@ -229,21 +229,21 @@
     "days": {
       "2026-04-15": {
         "* p5 tester kørsel og møde||||2026-04-15T18:00:00.000Z||2026-04-15T18:30:00.000Z": {
-          "person": "PB",
+          "person": "BH",
           "order": 1,
           "priority": 3,
           "done": false
         },
         "* teste opgave af Per||||2026-04-15T18:30:00.000Z||2026-04-15T19:00:00.000Z": {
-          "person": "BH",
-          "order": 2,
-          "priority": 1,
+          "person": null,
+          "order": 1,
+          "priority": 3,
           "done": false
         },
         "* p1 skal på tur stadig test||||2026-04-15T19:00:00.000Z||2026-04-15T19:30:00.000Z": {
-          "person": "MK",
+          "person": "BH",
           "order": 3,
-          "priority": 5,
+          "priority": 3,
           "done": false
         },
         "* teste opgave af Per||||2026-04-15T19:30:00.000Z||2026-04-15T20:00:00.000Z": {
@@ -265,27 +265,27 @@
           "done": false
         },
         "*44 teste opgave af Per||||2026-04-15T19:30:00.000Z||2026-04-15T20:00:00.000Z": {
-          "person": "MK",
-          "order": 5,
+          "person": null,
+          "order": 3,
           "priority": 3,
           "done": false
         },
         "*33 teste opgave af Per||||2026-04-15T20:00:00.000Z||2026-04-15T20:30:00.000Z": {
-          "person": "PB",
+          "person": "BH",
           "order": 5,
-          "priority": 4,
+          "priority": 3,
           "done": false
         },
         "* 22teste opgave af Per||||2026-04-15T20:30:00.000Z||2026-04-15T21:00:00.000Z": {
-          "person": "MK",
-          "order": 4,
-          "priority": 4,
+          "person": null,
+          "order": 5,
+          "priority": 3,
           "done": false
         }
       }
     },
     "personStatus": {
-      "BH": "syg"
+      "BH": ""
     }
   }
 }
