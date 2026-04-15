@@ -265,8 +265,8 @@
           "done": false
         },
         "*44 teste opgave af Per||||2026-04-15T19:30:00.000Z||2026-04-15T20:00:00.000Z": {
-          "person": "BH",
-          "order": 3,
+          "person": "MK",
+          "order": 5,
           "priority": 3,
           "done": false
         },
@@ -283,6 +283,7 @@
           "done": false
         }
       }
-    }
+    },
+    "personStatus": {}
   }
 }
