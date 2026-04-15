@@ -183,7 +183,7 @@ h1{
 
 .person-row{
   display:grid;
-  grid-template-columns:90px 1fr;
+  grid-template-columns:110px 1fr;
   gap:10px;
   align-items:start;
   background:var(--panel2);
@@ -197,6 +197,19 @@ h1{
   font-weight:900;
   letter-spacing:.08em;
   padding-top:2px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+  min-height:32px;
+}
+
+.person-row.is-sick{
+  opacity:.72;
+}
+
+.person-row.is-off{
+  opacity:.72;
 }
 
 .person-lane{
@@ -275,9 +288,28 @@ h1{
   padding:8px 2px 0;
 }
 
+.person-badge{
+  font-size:10px;
+  font-weight:900;
+  border-radius:999px;
+  padding:2px 6px;
+  letter-spacing:.04em;
+}
+
+.person-badge.sick{
+  background:#ff6666;
+  color:#fff;
+}
+
+.person-badge.off{
+  background:#949aa1;
+  color:#fff;
+}
+
 /* Små skærme */
 @media (max-width: 900px){
   .topbar{
+    position:static; /* mobil: top går med op */
     padding:10px 12px 8px;
   }
 
@@ -303,6 +335,126 @@ h1{
 
   .task-text{
     font-size:13px;
+  }
+
+  .main{
+    padding:8px 10px 12px;
+  }
+}
+
+/* iPhone / små skærme i liggende format */
+@media (max-width: 950px) and (orientation: landscape) {
+  .topbar{
+    position:static;
+    padding:6px 10px 6px;
+  }
+
+  .topline{
+    margin-bottom:6px;
+    gap:6px;
+  }
+
+  h1{
+    font-size:20px;
+    letter-spacing:.1em;
+  }
+
+  .note{
+    font-size:10px;
+  }
+
+  .people-admin{
+    gap:5px;
+    margin-bottom:6px;
+  }
+
+  .people-label,
+  .people-chip,
+  .people-admin input,
+  .people-admin button,
+  .header-actions button{
+    font-size:11px;
+  }
+
+  .people-chip{
+    padding:3px 7px;
+  }
+
+  .people-admin input{
+    min-width:70px;
+    padding:5px 7px;
+  }
+
+  .people-admin button,
+  .header-actions button{
+    padding:5px 8px;
+  }
+
+  .header-actions{
+    margin-bottom:6px;
+    gap:5px;
+  }
+
+  .queue{
+    min-height:44px;
+    gap:6px;
+  }
+
+  .queue-title{
+    font-size:12px;
+  }
+
+  .queue-sub,
+  .status{
+    font-size:10px;
+  }
+
+  .main{
+    padding:6px 8px 10px;
+  }
+
+  .rows{
+    gap:6px;
+  }
+
+  .person-row{
+    grid-template-columns:60px 1fr;
+    gap:6px;
+    padding:6px;
+    border-radius:10px;
+  }
+
+  .person-name{
+    font-size:13px;
+    letter-spacing:.04em;
+  }
+
+  .person-lane{
+    min-height:38px;
+    padding:4px;
+    gap:4px;
+    border-radius:8px;
+  }
+
+  .task{
+    min-width:110px;
+    max-width:180px;
+    padding:5px 7px;
+    border-radius:8px;
+  }
+
+  .prio{
+    font-size:9px;
+    padding:1px 5px;
+  }
+
+  .task-top{
+    margin-bottom:3px;
+  }
+
+  .task-text{
+    font-size:10px;
+    line-height:1.1;
   }
 }
 
@@ -457,6 +609,57 @@ h1{
     padding:7px 9px 10px;
   }
 }
+
+/* TV mode via ?tv=1 */
+body.tv-mode h1{
+  font-size:22px;
+}
+
+body.tv-mode .note{
+  font-size:10px;
+}
+
+body.tv-mode .people-label,
+body.tv-mode .people-chip,
+body.tv-mode .people-admin input,
+body.tv-mode .people-admin button,
+body.tv-mode .header-actions button{
+  font-size:11px;
+}
+
+body.tv-mode .topbar{
+  padding:8px 12px 7px;
+}
+
+body.tv-mode .person-row{
+  grid-template-columns:70px 1fr;
+  padding:7px;
+  gap:7px;
+}
+
+body.tv-mode .person-name{
+  font-size:14px;
+}
+
+body.tv-mode .person-lane{
+  min-height:42px;
+  padding:4px;
+  gap:5px;
+}
+
+body.tv-mode .task{
+  min-width:130px;
+  max-width:220px;
+  padding:6px 8px;
+}
+
+body.tv-mode .task-text{
+  font-size:11px;
+}
+
+body.tv-mode .queue{
+  min-height:50px;
+}
 </style>
 </head>
 <body>
@@ -464,7 +667,7 @@ h1{
   <div class="topbar">
     <div class="topline">
       <h1>ARBEJDSBOARD</h1>
-      <div class="note">Kun opgaver med <strong>*</strong> tages med. Træk dem ned på en medarbejder. Klik på en opgave for at skifte prioritet.</div>
+      <div class="note">Kun opgaver med <strong>*</strong> tages med. Træk dem ned på en medarbejder. Klik på en opgave for at skifte prioritet. Klik på medarbejdernavn for status: normal → SYG → FRI.</div>
     </div>
 
     <div class="people-admin">
@@ -503,6 +706,7 @@ const QUEUE_LIMIT = 5;
 let state = {
   cfg: null,
   people: [...DEFAULT_PEOPLE],
+  personStatus: {},
   allTasks: [],
   dayKey: "",
   saveTimer: null,
@@ -512,6 +716,10 @@ let state = {
 
 function $(sel){
   return document.querySelector(sel);
+}
+
+if (new URLSearchParams(location.search).get("tv") === "1") {
+  document.body.classList.add("tv-mode");
 }
 
 function setStatus(msg){
@@ -589,6 +797,9 @@ function parseEvent(e){
 function ensureWorkboard(){
   if (!state.cfg.workboard) state.cfg.workboard = {};
   if (!Array.isArray(state.cfg.workboard.people)) state.cfg.workboard.people = [...DEFAULT_PEOPLE];
+  if (!state.cfg.workboard.personStatus || typeof state.cfg.workboard.personStatus !== "object") {
+    state.cfg.workboard.personStatus = {};
+  }
   if (!state.cfg.workboard.days || typeof state.cfg.workboard.days !== "object") state.cfg.workboard.days = {};
   if (!state.cfg.workboard.days[state.dayKey]) state.cfg.workboard.days[state.dayKey] = {};
 }
@@ -626,6 +837,7 @@ async function persistBoard(){
   setStatus("Gemmer…");
 
   state.cfg.workboard.people = [...state.people];
+  state.cfg.workboard.personStatus = { ...state.personStatus };
 
   await saveData(state.cfg);
 
@@ -655,6 +867,7 @@ function renderPeopleChips(){
 
 function removePerson(person){
   state.people = state.people.filter(p => p !== person);
+  delete state.personStatus[person];
 
   const moved = [];
   state.allTasks.forEach(task => {
@@ -685,6 +898,7 @@ function addPerson(){
 
   state.people.push(value);
   state.people.sort();
+  state.personStatus[value] = "";
   input.value = "";
 
   render();
@@ -694,6 +908,21 @@ function addPerson(){
 function cyclePriority(taskId){
   const s = getTaskState(taskId);
   s.priority = s.priority >= 5 ? 1 : s.priority + 1;
+  render();
+  scheduleSave();
+}
+
+function cyclePersonStatus(person){
+  const current = state.personStatus[person] || "";
+
+  if (current === "") {
+    state.personStatus[person] = "syg";
+  } else if (current === "syg") {
+    state.personStatus[person] = "fri";
+  } else {
+    state.personStatus[person] = "";
+  }
+
   render();
   scheduleSave();
 }
@@ -805,9 +1034,19 @@ function renderRows(){
     const row = document.createElement("div");
     row.className = "person-row";
 
+    const pStatus = state.personStatus[person] || "";
+    if (pStatus === "syg") row.classList.add("is-sick");
+    if (pStatus === "fri") row.classList.add("is-off");
+
     const name = document.createElement("div");
     name.className = "person-name";
-    name.textContent = person;
+
+    let badge = "";
+    if (pStatus === "syg") badge = `<span class="person-badge sick">SYG</span>`;
+    if (pStatus === "fri") badge = `<span class="person-badge off">FRI</span>`;
+
+    name.innerHTML = `${escapeHtml(person)} ${badge}`;
+    name.onclick = () => cyclePersonStatus(person);
 
     const lane = document.createElement("div");
     lane.className = "person-lane";
@@ -884,6 +1123,7 @@ async function init(){
   ensureWorkboard();
 
   state.people = [...state.cfg.workboard.people];
+  state.personStatus = { ...(state.cfg.workboard.personStatus || {}) };
 
   state.allTasks.forEach((task, idx) => {
     const s = getTaskState(task.id);
