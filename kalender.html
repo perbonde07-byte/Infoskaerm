@@ -271,11 +271,10 @@ h1{
   word-break:break-word;
 }
 
-.task.p1{ background:#ff6666; }
-.task.p2{ background:#ff9e57; }
-.task.p3{ background:#7bd88f; }
-.task.p4{ background:#6dbaff; }
-.task.p5{ background:#bcc3ca; }
+/* 3 prioriter */
+.task.p1{ background:#7bd88f; } /* normal */
+.task.p2{ background:#ffd24d; } /* vigtigere */
+.task.p3{ background:#ff6666; } /* alarmerende */
 
 .task.done{
   opacity:.48;
@@ -811,7 +810,7 @@ function getTaskState(taskId){
     day[taskId] = {
       person: null,
       order: 0,
-      priority: 3,
+      priority: 1,
       done: false
     };
   }
@@ -907,7 +906,7 @@ function addPerson(){
 
 function cyclePriority(taskId){
   const s = getTaskState(taskId);
-  s.priority = s.priority >= 5 ? 1 : s.priority + 1;
+  s.priority = s.priority >= 3 ? 1 : s.priority + 1;
   render();
   scheduleSave();
 }
@@ -1092,8 +1091,6 @@ function resetBoard(){
     const s = getTaskState(task.id);
     s.person = null;
     s.order = idx;
-    s.priority = 3;
-    s.done = false;
   });
   render();
   scheduleSave();
@@ -1128,7 +1125,7 @@ async function init(){
   state.allTasks.forEach((task, idx) => {
     const s = getTaskState(task.id);
     if (!Number.isFinite(s.order)) s.order = idx;
-    if (!("priority" in s)) s.priority = 3;
+    if (!("priority" in s)) s.priority = 1;
     if (!("done" in s)) s.done = false;
     if (!("person" in s)) s.person = null;
   });
