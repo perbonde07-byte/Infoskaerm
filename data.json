@@ -209,5 +209,34 @@
       "sideText": "Forhandler netværk McConnel",
       "duration": 12
     }
-  ]
+  ],
+  "workboard": {
+    "people": [
+      "BH",
+      "LB",
+      "PB"
+    ],
+    "days": {
+      "2026-04-15": {
+        "* p5 tester kørsel og møde||||2026-04-15T18:00:00.000Z||2026-04-15T18:30:00.000Z": {
+          "person": "BH",
+          "order": 1,
+          "priority": 3,
+          "done": false
+        },
+        "* teste opgave af Per||||2026-04-15T18:30:00.000Z||2026-04-15T19:00:00.000Z": {
+          "person": "LB",
+          "order": 2,
+          "priority": 3,
+          "done": false
+        },
+        "* p1 skal på tur stadig test||||2026-04-15T19:00:00.000Z||2026-04-15T19:30:00.000Z": {
+          "person": "LB",
+          "order": 1,
+          "priority": 3,
+          "done": false
+        }
+      }
+    }
+  }
 }
