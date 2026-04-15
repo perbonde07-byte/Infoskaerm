@@ -213,7 +213,7 @@
   "workboard": {
     "people": [
       "BH",
-      "LB"
+      "PB"
     ],
     "assignments": {
       "* p5 tester kørsel og møde 2026-04-15T18:00:00.000Z": "BH",
@@ -229,7 +229,7 @@
       "2026-04-15": {
         "* p5 tester kørsel og møde||||2026-04-15T18:00:00.000Z||2026-04-15T18:30:00.000Z": {
           "person": null,
-          "order": 0,
+          "order": -1000,
           "priority": 3,
           "done": false
         },
@@ -240,8 +240,8 @@
           "done": false
         },
         "* p1 skal på tur stadig test||||2026-04-15T19:00:00.000Z||2026-04-15T19:30:00.000Z": {
-          "person": "LB",
-          "order": 1,
+          "person": "PB",
+          "order": -999,
           "priority": 3,
           "done": false
         }
