@@ -241,9 +241,9 @@
           "done": false
         },
         "* p1 skal på tur stadig test||||2026-04-15T19:00:00.000Z||2026-04-15T19:30:00.000Z": {
-          "person": "MK",
-          "order": 3,
-          "priority": 1,
+          "person": "BH",
+          "order": 9,
+          "priority": 2,
           "done": false
         },
         "* teste opgave af Per||||2026-04-15T19:30:00.000Z||2026-04-15T20:00:00.000Z": {
@@ -291,7 +291,7 @@
         "* p5 tester kørsel og møde||||2026-04-15T18:30:00.000Z||2026-04-15T19:00:00.000Z": {
           "person": "BH",
           "order": 6,
-          "priority": 1,
+          "priority": 2,
           "done": false
         }
       }
