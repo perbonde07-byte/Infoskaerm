@@ -17,271 +17,714 @@
 }
 
 *{box-sizing:border-box}
+html,body{height:100%}
+
 body{
   margin:0;
   background:var(--bg);
   color:var(--ink);
-  font-family:system-ui;
+  font:16px/1.35 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
 }
 
-/* HEADER */
+.wrapper{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
 .topbar{
   position:sticky;
   top:0;
-  background:var(--panel);
-  padding:16px;
-  z-index:10;
+  z-index:20;
+  background:linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
+  border-bottom:1px solid var(--line);
+  padding:14px 16px 12px;
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
+}
+
+.topline{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
 }
 
 h1{
   margin:0;
-  font-size:clamp(24px,3vw,40px);
+  font-size:clamp(26px,3.3vw,42px);
+  letter-spacing:.18em;
 }
 
-/* MEDARBEJDERE */
-.people{
+.note{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.people-admin{
   display:flex;
-  gap:6px;
+  align-items:center;
+  gap:8px;
   flex-wrap:wrap;
-  margin-top:10px;
+  margin-bottom:10px;
 }
 
-.people span{
+.people-label{
+  font-weight:800;
+}
+
+.people-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid var(--line);
   background:var(--panel3);
+  color:var(--ink);
+  border-radius:999px;
   padding:6px 10px;
-  border-radius:20px;
+  font-weight:700;
 }
 
-/* IKKE FORDELT */
+.people-chip button{
+  border:0;
+  background:transparent;
+  color:var(--ink);
+  cursor:pointer;
+  font-size:15px;
+  line-height:1;
+  padding:0 0 1px;
+}
+
+.people-admin input{
+  background:var(--panel2);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:9px 10px;
+  min-width:110px;
+}
+
+.people-admin button,
+.header-actions button{
+  background:var(--panel3);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:9px 12px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.header-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.status{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.queue-wrap{
+  display:none;
+}
+
+.queue-wrap.show{
+  display:block;
+}
+
+.queue-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.queue-title{
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+
+.queue-sub{
+  color:var(--muted);
+  font-size:12px;
+}
+
 .queue{
   display:flex;
   gap:10px;
   overflow:auto;
-  margin-top:12px;
+  padding-bottom:4px;
+  min-height:74px;
 }
 
-/* TASK */
+.main{
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  padding:14px 16px 18px;
+}
+
+.rows{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.person-row{
+  display:grid;
+  grid-template-columns:110px 1fr;
+  gap:12px;
+  align-items:start;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+}
+
+.person-name{
+  font-size:clamp(16px,1.8vw,26px);
+  font-weight:900;
+  letter-spacing:.08em;
+  padding-top:4px;
+}
+
+.person-lane{
+  min-height:70px;
+  border:1px dashed #2e6971;
+  border-radius:12px;
+  padding:8px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:flex-start;
+  background:rgba(255,255,255,.02);
+}
+
+.person-lane.over,
+.queue.over{
+  outline:2px solid #c5ecf3;
+  outline-offset:2px;
+}
+
 .task{
+  user-select:none;
+  -webkit-user-select:none;
   min-width:clamp(160px,18vw,320px);
   max-width:clamp(220px,30vw,420px);
-  padding:clamp(8px,1vw,14px);
   border-radius:12px;
+  border:1px solid rgba(0,0,0,.15);
+  padding:clamp(8px,1vw,14px);
+  color:#12252a;
+  font-weight:800;
   cursor:grab;
-  font-weight:700;
+  box-shadow:0 4px 10px rgba(0,0,0,.16);
+}
+
+.task:active{
+  cursor:grabbing;
+}
+
+.task-top{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  margin-bottom:6px;
+}
+
+.prio{
+  font-size:12px;
+  font-weight:900;
+  border-radius:999px;
+  padding:3px 7px;
+  background:rgba(255,255,255,.45);
 }
 
 .task-text{
   font-size:clamp(14px,1.4vw,22px);
+  line-height:1.25;
+  white-space:normal;
+  word-break:break-word;
 }
 
-.p1{background:#ff6666}
-.p2{background:#ff9e57}
-.p3{background:#7bd88f}
-.p4{background:#6dbaff}
-.p5{background:#bcc3ca}
+.task.p1{ background:#ff6666; }
+.task.p2{ background:#ff9e57; }
+.task.p3{ background:#7bd88f; }
+.task.p4{ background:#6dbaff; }
+.task.p5{ background:#bcc3ca; }
 
-/* ROWS */
-.rows{
-  padding:16px;
+.task.done{
+  opacity:.48;
+  text-decoration:line-through;
 }
 
-.row{
-  display:grid;
-  grid-template-columns:120px 1fr;
-  gap:10px;
-  margin-bottom:10px;
-  background:var(--panel2);
-  padding:10px;
-  border-radius:10px;
+.empty{
+  color:var(--muted);
+  font-size:13px;
+  padding:10px 2px 0;
 }
 
-.name{
-  font-size:clamp(16px,1.8vw,26px);
-  font-weight:900;
-}
-
-.lane{
-  min-height:60px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
+@media (max-width:900px){
+  .person-row{
+    grid-template-columns:88px 1fr;
+  }
 }
 </style>
 </head>
-
 <body>
+<div class="wrapper">
+  <div class="topbar">
+    <div class="topline">
+      <h1>ARBEJDSBOARD</h1>
+      <div class="note">Kun opgaver med <strong>*</strong> tages med. Træk dem ned på en medarbejder. Klik på en opgave for at skifte prioritet.</div>
+    </div>
 
-<div class="topbar">
-  <h1>ARBEJDSBOARD</h1>
+    <div class="people-admin">
+      <span class="people-label">Medarbejdere:</span>
+      <div id="peopleChips"></div>
+      <input id="newPerson" type="text" maxlength="6" placeholder="fx PB">
+      <button id="addPersonBtn" type="button">Tilføj</button>
+    </div>
 
-  <div class="people" id="people"></div>
+    <div class="header-actions">
+      <button id="resetBtn" type="button">Nulstil dagens fordeling</button>
+      <div id="statusText" class="status">Klar</div>
+    </div>
 
-  <div class="queue" id="queue"></div>
+    <div id="queueWrap" class="queue-wrap">
+      <div class="queue-head">
+        <div>
+          <div class="queue-title">IKKE FORDELT I DAG</div>
+          <div class="queue-sub">Viser op til 5 opgaver.</div>
+        </div>
+      </div>
+      <div id="queue" class="queue"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="rows" class="rows"></div>
+  </div>
 </div>
 
-<div class="rows" id="rows"></div>
-
 <script>
+const DEFAULT_PEOPLE = ["BH","LB","PB"];
+const SAVE_DELAY_MS = 10000;
+const QUEUE_LIMIT = 5;
 
 let state = {
-  people:["PB","LB","BH"],
-  tasks:[],
-  assignments:{},
-  priority:{}
+  cfg: null,
+  people: [...DEFAULT_PEOPLE],
+  allTasks: [],
+  dayKey: "",
+  saveTimer: null,
+  dirty: false,
+  saving: false
 };
 
-/* API */
+function $(sel){
+  return document.querySelector(sel);
+}
+
+function setStatus(msg){
+  $("#statusText").textContent = msg;
+}
+
 async function loadData(){
   const r = await fetch("/api/data");
   const j = await r.json();
   return j.content;
 }
 
-async function saveData(data){
-  await fetch("/api/data",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      action:"saveDataJson",
-      data
+async function saveData(cfg){
+  const r = await fetch("/api/data", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "saveDataJson",
+      message: "Opdater workboard",
+      data: cfg
     })
   });
-}
-
-async function loadICS(url){
-  const r = await fetch("/api/ics?url="+encodeURIComponent(url));
   const j = await r.json();
-  return j.events||[];
+  if (!j.ok) throw new Error(j.error || "Kunne ikke gemme");
+  return j;
 }
 
-/* PARSE */
-function parse(e){
-  const txt = (e.summary||"") + " " + (e.description||"");
-  if(!txt.includes("*")) return null;
+async function loadICS(url, days, max){
+  const r = await fetch(`/api/ics?url=${encodeURIComponent(url)}&days=${days}&max=${max}`);
+  const j = await r.json();
+  return j.events || [];
+}
+
+function getTodayDateKey(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function isToday(dateStr){
+  return new Date(dateStr).toISOString().slice(0,10) === getTodayDateKey();
+}
+
+function makeTaskId(e){
+  return [
+    e.summary || "",
+    e.description || "",
+    e.start || "",
+    e.end || ""
+  ].join("||");
+}
+
+function escapeHtml(s){
+  return String(s || "").replace(/[&<>"]/g, m => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;"
+  }[m]));
+}
+
+function parseEvent(e){
+  const original = `${e.summary || ""} ${e.description || ""}`.trim();
+
+  if (!original.includes("*")) return null;
+
+  const text = original.replace(/\*/g, "").replace(/\s+/g, " ").trim();
+  if (!text) return null;
 
   return {
-    id: txt + e.start,
-    text: txt.replace("*","").trim()
+    id: makeTaskId(e),
+    text,
+    start: new Date(e.start)
   };
 }
 
-/* RENDER */
-function render(){
+function ensureWorkboard(){
+  if (!state.cfg.workboard) state.cfg.workboard = {};
+  if (!Array.isArray(state.cfg.workboard.people)) state.cfg.workboard.people = [...DEFAULT_PEOPLE];
+  if (!state.cfg.workboard.days || typeof state.cfg.workboard.days !== "object") state.cfg.workboard.days = {};
+  if (!state.cfg.workboard.days[state.dayKey]) state.cfg.workboard.days[state.dayKey] = {};
+}
 
-  const queue = document.getElementById("queue");
-  const rows = document.getElementById("rows");
-  const people = document.getElementById("people");
-
-  queue.innerHTML="";
-  rows.innerHTML="";
-  people.innerHTML="";
-
-  state.people.forEach(p=>{
-    const chip=document.createElement("span");
-    chip.textContent=p;
-    people.appendChild(chip);
-  });
-
-  /* IKKE FORDELT */
-  state.tasks
-    .filter(t=>!state.assignments[t.id])
-    .slice(0,5)
-    .forEach(t=>{
-      queue.appendChild(makeTask(t));
-    });
-
-  /* PERSONER */
-  state.people.forEach(p=>{
-
-    const row=document.createElement("div");
-    row.className="row";
-
-    const name=document.createElement("div");
-    name.className="name";
-    name.textContent=p;
-
-    const lane=document.createElement("div");
-    lane.className="lane";
-
-    lane.ondragover=e=>e.preventDefault();
-    lane.ondrop=e=>{
-      const id=e.dataTransfer.getData("text");
-      state.assignments[id]=p;
-      save();
-      render();
+function getTaskState(taskId){
+  ensureWorkboard();
+  const day = state.cfg.workboard.days[state.dayKey];
+  if (!day[taskId]) {
+    day[taskId] = {
+      person: null,
+      order: 0,
+      priority: 3,
+      done: false
     };
+  }
+  return day[taskId];
+}
 
-    state.tasks
-      .filter(t=>state.assignments[t.id]===p)
-      .forEach(t=>{
-        lane.appendChild(makeTask(t));
-      });
+function scheduleSave(){
+  state.dirty = true;
+  setStatus("Ikke gemt…");
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(() => {
+    persistBoard().catch(err => {
+      console.error(err);
+      setStatus("Gem fejlede");
+    });
+  }, SAVE_DELAY_MS);
+}
 
-    row.appendChild(name);
-    row.appendChild(lane);
+async function persistBoard(){
+  if (!state.dirty || state.saving) return;
 
-    rows.appendChild(row);
+  state.saving = true;
+  setStatus("Gemmer…");
+
+  state.cfg.workboard.people = [...state.people];
+
+  await saveData(state.cfg);
+
+  state.dirty = false;
+  state.saving = false;
+  setStatus("Gemt");
+}
+
+function renderPeopleChips(){
+  const root = $("#peopleChips");
+  root.innerHTML = "";
+
+  state.people.forEach(person => {
+    const chip = document.createElement("span");
+    chip.className = "people-chip";
+    chip.innerHTML = `
+      <span>${escapeHtml(person)}</span>
+      <button type="button" data-remove="${escapeHtml(person)}" title="Fjern ${escapeHtml(person)}">×</button>
+    `;
+    root.appendChild(chip);
+  });
+
+  root.querySelectorAll("button[data-remove]").forEach(btn => {
+    btn.onclick = () => removePerson(btn.dataset.remove);
   });
 }
 
-/* TASK */
-function makeTask(t){
+function removePerson(person){
+  state.people = state.people.filter(p => p !== person);
 
-  const el=document.createElement("div");
-  el.className="task p"+(state.priority[t.id]||3);
-  el.draggable=true;
+  const moved = [];
+  state.allTasks.forEach(task => {
+    const s = getTaskState(task.id);
+    if (s.person === person) {
+      s.person = null;
+      moved.push(task.id);
+    }
+  });
 
-  el.innerHTML=`<div class="task-text">${t.text}</div>`;
+  moved.forEach((taskId, idx) => {
+    const s = getTaskState(taskId);
+    s.order = -1000 + idx;
+  });
 
-  el.onclick=()=>{
-    state.priority[t.id]=(state.priority[t.id]||3)%5+1;
-    save();
-    render();
-  };
+  render();
+  scheduleSave();
+}
 
-  el.ondragstart=e=>{
-    e.dataTransfer.setData("text",t.id);
-  };
+function addPerson(){
+  const input = $("#newPerson");
+  const value = input.value.trim().toUpperCase();
+  if (!value) return;
+  if (state.people.includes(value)) {
+    input.value = "";
+    return;
+  }
+
+  state.people.push(value);
+  state.people.sort();
+  input.value = "";
+
+  render();
+  scheduleSave();
+}
+
+function cyclePriority(taskId){
+  const s = getTaskState(taskId);
+  s.priority = s.priority >= 5 ? 1 : s.priority + 1;
+  render();
+  scheduleSave();
+}
+
+function createTaskElement(task){
+  const s = getTaskState(task.id);
+
+  const el = document.createElement("div");
+  el.className = `task p${s.priority}${s.done ? " done" : ""}`;
+  el.draggable = true;
+  el.dataset.taskId = task.id;
+
+  el.innerHTML = `
+    <div class="task-top">
+      <span class="prio">P${s.priority}</span>
+    </div>
+    <div class="task-text">${escapeHtml(task.text)}</div>
+  `;
+
+  el.addEventListener("dragstart", e => {
+    e.dataTransfer.setData("text/plain", task.id);
+  });
+
+  el.addEventListener("click", () => {
+    cyclePriority(task.id);
+  });
 
   return el;
 }
 
-/* SAVE (debounce) */
-let timer;
-function save(){
-  clearTimeout(timer);
-  timer=setTimeout(async()=>{
-    const cfg = await loadData();
-    cfg.workboard = {
-      people: state.people,
-      assignments: state.assignments,
-      priority: state.priority
-    };
-    await saveData(cfg);
-  },10000);
+function setupDropZone(zone, personOrNull){
+  zone.addEventListener("dragover", e => {
+    e.preventDefault();
+    zone.classList.add("over");
+  });
+
+  zone.addEventListener("dragleave", () => {
+    zone.classList.remove("over");
+  });
+
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("over");
+    const taskId = e.dataTransfer.getData("text/plain");
+    if (!taskId) return;
+
+    const s = getTaskState(taskId);
+    s.person = personOrNull;
+
+    if (personOrNull === null) {
+      const currentOrders = state.allTasks
+        .map(t => getTaskState(t.id).order)
+        .filter(n => Number.isFinite(n));
+      const minOrder = currentOrders.length ? Math.min(...currentOrders) : 0;
+      s.order = minOrder - 1;
+    } else {
+      const samePersonOrders = state.allTasks
+        .filter(t => getTaskState(t.id).person === personOrNull)
+        .map(t => getTaskState(t.id).order)
+        .filter(n => Number.isFinite(n));
+      const maxOrder = samePersonOrders.length ? Math.max(...samePersonOrders) : 0;
+      s.order = maxOrder + 1;
+    }
+
+    render();
+    scheduleSave();
+  });
 }
 
-/* INIT */
-(async function(){
+function getUnassignedTasks(){
+  return state.allTasks
+    .filter(task => getTaskState(task.id).person === null)
+    .sort((a,b) => {
+      const sa = getTaskState(a.id);
+      const sb = getTaskState(b.id);
 
-  const cfg = await loadData();
-  const url = cfg.calendar?.url;
+      if (sa.order !== sb.order) return sa.order - sb.order;
+      if (sa.priority !== sb.priority) return sa.priority - sb.priority;
+      return a.start - b.start;
+    });
+}
 
-  if(cfg.workboard){
-    state.people = cfg.workboard.people || state.people;
-    state.assignments = cfg.workboard.assignments || {};
-    state.priority = cfg.workboard.priority || {};
+function renderQueue(){
+  const wrap = $("#queueWrap");
+  const queue = $("#queue");
+  queue.innerHTML = "";
+
+  const unassigned = getUnassignedTasks();
+
+  if (!unassigned.length) {
+    wrap.classList.remove("show");
+    return;
   }
 
-  const events = await loadICS(url);
+  wrap.classList.add("show");
 
-  state.tasks = events.map(parse).filter(Boolean);
+  unassigned.slice(0, QUEUE_LIMIT).forEach(task => {
+    queue.appendChild(createTaskElement(task));
+  });
+
+  setupDropZone(queue, null);
+}
+
+function renderRows(){
+  const rows = $("#rows");
+  rows.innerHTML = "";
+
+  state.people.forEach(person => {
+    const row = document.createElement("div");
+    row.className = "person-row";
+
+    const name = document.createElement("div");
+    name.className = "person-name";
+    name.textContent = person;
+
+    const lane = document.createElement("div");
+    lane.className = "person-lane";
+
+    const tasks = state.allTasks
+      .filter(task => getTaskState(task.id).person === person)
+      .sort((a,b) => {
+        const sa = getTaskState(a.id);
+        const sb = getTaskState(b.id);
+
+        if (sa.order !== sb.order) return sa.order - sb.order;
+        if (sa.priority !== sb.priority) return sa.priority - sb.priority;
+        return a.start - b.start;
+      });
+
+    if (!tasks.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "Slip opgaver her";
+      lane.appendChild(empty);
+    } else {
+      tasks.forEach(task => {
+        lane.appendChild(createTaskElement(task));
+      });
+    }
+
+    setupDropZone(lane, person);
+
+    row.appendChild(name);
+    row.appendChild(lane);
+    rows.appendChild(row);
+  });
+}
+
+function render(){
+  renderPeopleChips();
+  renderQueue();
+  renderRows();
+}
+
+function resetBoard(){
+  state.allTasks.forEach((task, idx) => {
+    const s = getTaskState(task.id);
+    s.person = null;
+    s.order = idx;
+    s.priority = 3;
+    s.done = false;
+  });
+  render();
+  scheduleSave();
+}
+
+async function init(){
+  state.cfg = await loadData();
+  const url = state.cfg.calendar?.url || "";
+  const days = Number(state.cfg.calendar?.daysAhead || 1);
+  const max = Number(state.cfg.calendar?.maxEvents || 50);
+
+  state.dayKey = getTodayDateKey();
+
+  if (!url) {
+    $("#rows").innerHTML = `<div class="empty">Ingen ICS-URL fundet.</div>`;
+    return;
+  }
+
+  const events = await loadICS(url, days, max);
+
+  state.allTasks = events
+    .filter(e => isToday(e.start))
+    .map(parseEvent)
+    .filter(Boolean)
+    .sort((a,b) => a.start - b.start);
+
+  ensureWorkboard();
+
+  state.people = [...state.cfg.workboard.people];
+
+  state.allTasks.forEach((task, idx) => {
+    const s = getTaskState(task.id);
+    if (!Number.isFinite(s.order)) s.order = idx;
+    if (!("priority" in s)) s.priority = 3;
+    if (!("done" in s)) s.done = false;
+    if (!("person" in s)) s.person = null;
+  });
+
+  $("#addPersonBtn").onclick = addPerson;
+  $("#newPerson").addEventListener("keydown", e => {
+    if (e.key === "Enter") addPerson();
+  });
+  $("#resetBtn").onclick = resetBoard;
 
   render();
+  setStatus("Klar");
+}
 
-})();
-
+init().catch(err => {
+  console.error(err);
+  setStatus("Fejl ved indlæsning");
+});
 </script>
-
 </body>
 </html>
