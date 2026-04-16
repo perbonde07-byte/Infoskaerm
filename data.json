@@ -306,8 +306,8 @@
       },
       "2026-04-16": {
         "* p5 tester kørsel og møde||||2026-04-16T18:30:00.000Z||2026-04-16T19:00:00.000Z": {
-          "person": "ANDR",
-          "order": 1,
+          "person": null,
+          "order": 0,
           "priority": 1,
           "done": false
         },
@@ -318,25 +318,25 @@
           "done": false
         },
         "* 22teste opgave af Per||||2026-04-16T20:30:00.000Z||2026-04-16T21:00:00.000Z": {
-          "person": "JB",
-          "order": 5,
+          "person": null,
+          "order": 4,
           "priority": 3,
           "done": false
         },
         "* p53 tester kørsel og møde||||2026-04-16T21:00:00.000Z||2026-04-16T21:30:00.000Z": {
-          "person": "BH",
-          "order": 7,
+          "person": null,
+          "order": 5,
           "priority": 1,
           "done": false
         },
         "*33 teste opgave af Per||||2026-04-16T19:30:00.000Z||2026-04-16T20:00:00.000Z": {
-          "person": "BH",
+          "person": "HJ",
           "order": 3,
           "priority": 2,
           "done": false
         },
         "*44 teste opgave af Per||||2026-04-16T20:00:00.000Z||2026-04-16T20:30:00.000Z": {
-          "person": "HJ",
+          "person": "BH",
           "order": 4,
           "priority": 1,
           "done": false
