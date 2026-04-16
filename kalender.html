@@ -118,7 +118,8 @@ h1{
 }
 
 .people-admin button,
-.header-actions button{
+.header-actions button,
+.topline-right button{
   background:var(--panel3);
   color:var(--ink);
   border:1px solid var(--line);
@@ -144,6 +145,7 @@ h1{
 
 .queue-wrap{
   display:none;
+  margin-top:8px;
 }
 
 .queue-wrap.show{
@@ -280,10 +282,9 @@ h1{
   word-break:break-word;
 }
 
-/* 3 prioriter */
-.task.p1{ background:#7bd88f; } /* normal */
-.task.p2{ background:#ffd24d; } /* vigtigere */
-.task.p3{ background:#ff6666; } /* alarmerende */
+.task.p1{ background:#7bd88f; }
+.task.p2{ background:#ffd24d; }
+.task.p3{ background:#ff6666; }
 
 .task.done{
   opacity:.48;
@@ -314,7 +315,6 @@ h1{
   color:#fff;
 }
 
-/* NYT: sammenklappelig header */
 .header-main{
   display:block;
 }
@@ -323,15 +323,11 @@ h1{
   display:none;
 }
 
-.topline .topline-right{
+.topline-right{
   margin-left:auto;
   display:flex;
   align-items:center;
   gap:8px;
-}
-
-.topbar.collapsed .topline-right{
-  margin-left:auto;
 }
 
 .compact-status{
@@ -349,7 +345,6 @@ h1{
   white-space:nowrap;
 }
 
-/* Små skærme */
 @media (max-width: 900px){
   .topbar{
     position:static;
@@ -384,14 +379,13 @@ h1{
     padding:8px 10px 12px;
   }
 
-  .topline .topline-right{
+  .topline-right{
     width:100%;
     margin-left:0;
     justify-content:flex-start;
   }
 }
 
-/* iPhone / små skærme i liggende format */
 @media (max-width: 950px) and (orientation: landscape) {
   .topbar{
     position:static;
@@ -421,7 +415,8 @@ h1{
   .people-chip,
   .people-admin input,
   .people-admin button,
-  .header-actions button{
+  .header-actions button,
+  .topline-right button{
     font-size:11px;
   }
 
@@ -435,7 +430,8 @@ h1{
   }
 
   .people-admin button,
-  .header-actions button{
+  .header-actions button,
+  .topline-right button{
     padding:5px 8px;
   }
 
@@ -454,7 +450,8 @@ h1{
   }
 
   .queue-sub,
-  .status{
+  .status,
+  .compact-status{
     font-size:10px;
   }
 
@@ -507,7 +504,6 @@ h1{
   }
 }
 
-/* Store TV-skærme: mindre tekst og mere kompakt */
 @media (min-width: 1400px){
   body{
     font-size:13px;
@@ -529,7 +525,8 @@ h1{
   .people-chip,
   .people-admin input,
   .people-admin button,
-  .header-actions button{
+  .header-actions button,
+  .topline-right button{
     font-size:12px;
   }
 
@@ -543,7 +540,8 @@ h1{
   }
 
   .people-admin button,
-  .header-actions button{
+  .header-actions button,
+  .topline-right button{
     padding:6px 9px;
   }
 
@@ -552,7 +550,8 @@ h1{
   }
 
   .queue-sub,
-  .status{
+  .status,
+  .compact-status{
     font-size:10px;
   }
 
@@ -603,7 +602,6 @@ h1{
   }
 }
 
-/* Meget store skærme / 30"+ */
 @media (min-width: 1900px){
   h1{
     font-size:24px;
@@ -620,7 +618,8 @@ h1{
   .people-chip,
   .people-admin input,
   .people-admin button,
-  .header-actions button{
+  .header-actions button,
+  .topline-right button{
     font-size:11px;
   }
 
@@ -659,7 +658,6 @@ h1{
   }
 }
 
-/* TV mode via ?tv=1 */
 body.tv-mode h1{
   font-size:22px;
 }
@@ -672,7 +670,8 @@ body.tv-mode .people-label,
 body.tv-mode .people-chip,
 body.tv-mode .people-admin input,
 body.tv-mode .people-admin button,
-body.tv-mode .header-actions button{
+body.tv-mode .header-actions button,
+body.tv-mode .topline-right button{
   font-size:11px;
 }
 
@@ -730,23 +729,23 @@ body.tv-mode .queue{
         <span class="people-label">Medarbejdere:</span>
         <div id="peopleChips"></div>
         <input id="newPerson" type="text" maxlength="6" placeholder="fx PB">
-        <button id="addPersonBtn" type="button">Tilføj</button>
+        <button id="addPersonBtn" type="button" title="Tilføj person">+</button>
       </div>
 
       <div class="header-actions">
         <button id="resetBtn" type="button">Nulstil dagens fordeling</button>
         <div id="statusText" class="status">Klar</div>
       </div>
+    </div>
 
-      <div id="queueWrap" class="queue-wrap">
-        <div class="queue-head">
-          <div>
-            <div class="queue-title">IKKE FORDELT I DAG</div>
-            <div class="queue-sub">Viser op til 5 opgaver.</div>
-          </div>
+    <div id="queueWrap" class="queue-wrap">
+      <div class="queue-head">
+        <div>
+          <div class="queue-title">IKKE FORDELT I DAG</div>
+          <div class="queue-sub">Viser op til 5 opgaver.</div>
         </div>
-        <div id="queue" class="queue"></div>
       </div>
+      <div id="queue" class="queue"></div>
     </div>
   </div>
 
@@ -885,6 +884,7 @@ function scheduleSave(){
   state.saveTimer = setTimeout(() => {
     persistBoard().catch(err => {
       console.error(err);
+      state.saving = false;
       setStatus("Gem fejlede");
     });
   }, SAVE_DELAY_MS);
@@ -896,14 +896,15 @@ async function persistBoard(){
   state.saving = true;
   setStatus("Gemmer…");
 
-  state.cfg.workboard.people = [...state.people];
-  state.cfg.workboard.personStatus = { ...state.personStatus };
-
-  await saveData(state.cfg);
-
-  state.dirty = false;
-  state.saving = false;
-  setStatus("Gemt");
+  try {
+    state.cfg.workboard.people = [...state.people];
+    state.cfg.workboard.personStatus = { ...state.personStatus };
+    await saveData(state.cfg);
+    state.dirty = false;
+    setStatus("Gemt");
+  } finally {
+    state.saving = false;
+  }
 }
 
 function renderPeopleChips(){
