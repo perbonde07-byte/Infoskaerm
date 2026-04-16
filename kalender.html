@@ -40,6 +40,11 @@ body{
   border-bottom:1px solid var(--line);
   padding:12px 14px 10px;
   box-shadow:0 8px 20px rgba(0,0,0,.18);
+  transition:padding .18s ease;
+}
+
+.topbar.collapsed{
+  padding:8px 14px 8px;
 }
 
 .topline{
@@ -48,6 +53,10 @@ body{
   gap:10px;
   flex-wrap:wrap;
   margin-bottom:8px;
+}
+
+.topbar.collapsed .topline{
+  margin-bottom:0;
 }
 
 h1{
@@ -305,10 +314,45 @@ h1{
   color:#fff;
 }
 
+/* NYT: sammenklappelig header */
+.header-main{
+  display:block;
+}
+
+.topbar.collapsed .header-main{
+  display:none;
+}
+
+.topline .topline-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.topbar.collapsed .topline-right{
+  margin-left:auto;
+}
+
+.compact-status{
+  display:none;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:700;
+}
+
+.topbar.collapsed .compact-status{
+  display:inline-block;
+}
+
+.toggle-btn{
+  white-space:nowrap;
+}
+
 /* Små skærme */
 @media (max-width: 900px){
   .topbar{
-    position:static; /* mobil: top går med op */
+    position:static;
     padding:10px 12px 8px;
   }
 
@@ -338,6 +382,12 @@ h1{
 
   .main{
     padding:8px 10px 12px;
+  }
+
+  .topline .topline-right{
+    width:100%;
+    margin-left:0;
+    justify-content:flex-start;
   }
 }
 
@@ -663,32 +713,40 @@ body.tv-mode .queue{
 </head>
 <body>
 <div class="wrapper">
-  <div class="topbar">
+  <div id="topbar" class="topbar">
     <div class="topline">
       <h1>ARBEJDSBOARD</h1>
+
+      <div class="topline-right">
+        <div id="compactStatus" class="compact-status">Klar</div>
+        <button id="toggleHeaderBtn" class="toggle-btn" type="button">Skjul menu</button>
+      </div>
+
       <div class="note">Kun opgaver med <strong>*</strong> tages med. Træk dem ned på en medarbejder. Klik på en opgave for at skifte prioritet. Klik på medarbejdernavn for status: normal → SYG → FRI.</div>
     </div>
 
-    <div class="people-admin">
-      <span class="people-label">Medarbejdere:</span>
-      <div id="peopleChips"></div>
-      <input id="newPerson" type="text" maxlength="6" placeholder="fx PB">
-      <button id="addPersonBtn" type="button">Tilføj</button>
-    </div>
-
-    <div class="header-actions">
-      <button id="resetBtn" type="button">Nulstil dagens fordeling</button>
-      <div id="statusText" class="status">Klar</div>
-    </div>
-
-    <div id="queueWrap" class="queue-wrap">
-      <div class="queue-head">
-        <div>
-          <div class="queue-title">IKKE FORDELT I DAG</div>
-          <div class="queue-sub">Viser op til 5 opgaver.</div>
-        </div>
+    <div id="headerMain" class="header-main">
+      <div class="people-admin">
+        <span class="people-label">Medarbejdere:</span>
+        <div id="peopleChips"></div>
+        <input id="newPerson" type="text" maxlength="6" placeholder="fx PB">
+        <button id="addPersonBtn" type="button">Tilføj</button>
       </div>
-      <div id="queue" class="queue"></div>
+
+      <div class="header-actions">
+        <button id="resetBtn" type="button">Nulstil dagens fordeling</button>
+        <div id="statusText" class="status">Klar</div>
+      </div>
+
+      <div id="queueWrap" class="queue-wrap">
+        <div class="queue-head">
+          <div>
+            <div class="queue-title">IKKE FORDELT I DAG</div>
+            <div class="queue-sub">Viser op til 5 opgaver.</div>
+          </div>
+        </div>
+        <div id="queue" class="queue"></div>
+      </div>
     </div>
   </div>
 
@@ -701,6 +759,7 @@ body.tv-mode .queue{
 const DEFAULT_PEOPLE = ["BH","LB","PB"];
 const SAVE_DELAY_MS = 10000;
 const QUEUE_LIMIT = 5;
+const HEADER_COLLAPSE_KEY = "workboardHeaderCollapsed";
 
 let state = {
   cfg: null,
@@ -710,7 +769,8 @@ let state = {
   dayKey: "",
   saveTimer: null,
   dirty: false,
-  saving: false
+  saving: false,
+  headerCollapsed: false
 };
 
 function $(sel){
@@ -723,6 +783,7 @@ if (new URLSearchParams(location.search).get("tv") === "1") {
 
 function setStatus(msg){
   $("#statusText").textContent = msg;
+  $("#compactStatus").textContent = msg;
 }
 
 async function loadData(){
@@ -1096,6 +1157,30 @@ function resetBoard(){
   scheduleSave();
 }
 
+function applyHeaderState(){
+  const topbar = $("#topbar");
+  const btn = $("#toggleHeaderBtn");
+
+  if (state.headerCollapsed) {
+    topbar.classList.add("collapsed");
+    btn.textContent = "Vis menu";
+  } else {
+    topbar.classList.remove("collapsed");
+    btn.textContent = "Skjul menu";
+  }
+}
+
+function toggleHeader(){
+  state.headerCollapsed = !state.headerCollapsed;
+  localStorage.setItem(HEADER_COLLAPSE_KEY, state.headerCollapsed ? "1" : "0");
+  applyHeaderState();
+}
+
+function loadHeaderState(){
+  state.headerCollapsed = localStorage.getItem(HEADER_COLLAPSE_KEY) === "1";
+  applyHeaderState();
+}
+
 async function init(){
   state.cfg = await loadData();
   const url = state.cfg.calendar?.url || "";
@@ -1135,7 +1220,9 @@ async function init(){
     if (e.key === "Enter") addPerson();
   });
   $("#resetBtn").onclick = resetBoard;
+  $("#toggleHeaderBtn").onclick = toggleHeader;
 
+  loadHeaderState();
   render();
   setStatus("Klar");
 }
