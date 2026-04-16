@@ -313,9 +313,9 @@
           "done": false
         },
         "* p1 skal på tur stadig test||||2026-04-16T19:00:00.000Z||2026-04-16T19:30:00.000Z": {
-          "person": null,
-          "order": 0,
-          "priority": 1,
+          "person": "ANDR",
+          "order": 1,
+          "priority": 2,
           "done": false
         },
         "* 22teste opgave af Per||||2026-04-16T20:30:00.000Z||2026-04-16T21:00:00.000Z": {
