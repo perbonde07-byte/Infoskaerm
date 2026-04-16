@@ -320,7 +320,7 @@
         "* 22teste opgave af Per||||2026-04-16T20:30:00.000Z||2026-04-16T21:00:00.000Z": {
           "person": "ANDR",
           "order": 5,
-          "priority": 3,
+          "priority": 1,
           "done": false
         },
         "* p53 tester kørsel og møde||||2026-04-16T21:00:00.000Z||2026-04-16T21:30:00.000Z": {
@@ -332,7 +332,7 @@
         "*33 teste opgave af Per||||2026-04-16T19:30:00.000Z||2026-04-16T20:00:00.000Z": {
           "person": "BH",
           "order": 3,
-          "priority": 2,
+          "priority": 1,
           "done": false
         },
         "*44 teste opgave af Per||||2026-04-16T20:00:00.000Z||2026-04-16T20:30:00.000Z": {
