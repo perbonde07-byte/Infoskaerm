@@ -171,15 +171,22 @@
   },
   "slides": [
     {
+      "type": "image",
+      "title": "Uge 19 – Messeaktivitet",
+      "image": "/media/info skærm messe helsinki og sverige",
+      "sideText": "Bredsgaard og GraecusNordic tager på messe ved Helsinge på Sjælland og her efter til Sverige i uge 19",
+      "duration": 20
+    },
+    {
       "type": "text",
       "title": "TIL MONTØR",
       "content": "Gamle arbejdskort der er klar til at blive afsluttet - bedes afleveres senest d. 29/4-2026 med tekst samt reservedele. \nTjek bil - arbejdsbord - dit rum. ",
-      "duration": 12
+      "duration": 20
     },
     {
       "type": "empties",
       "title": "TØMNINGS DAGE",
-      "duration": 12
+      "duration": 19
     },
     {
       "type": "image",
@@ -193,13 +200,6 @@
       "title": "Forhandler netværk McConnel",
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
-      "duration": 12
-    },
-    {
-      "type": "image",
-      "title": "Kampagne",
-      "image": "/media/Billede mangler",
-      "sideText": "Bredsgaard og Graecusnordic tager på messe ved Helsinge / Sjælland og her efter til Sverige i uge 19",
       "duration": 12
     }
   ],
