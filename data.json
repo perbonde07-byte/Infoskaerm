@@ -201,6 +201,12 @@
       "image": "/media/Forhandlerkort.png",
       "sideText": "Forhandler netværk McConnel",
       "duration": 12
+    },
+    {
+      "type": "text",
+      "title": "Æmdringer af modtagelse af lønsedler",
+      "content": "fra dags dato modtager man sin lønsedler på mitdk",
+      "duration": 12
     }
   ],
   "workboard": {
