@@ -172,6 +172,18 @@
   "slides": [
     {
       "type": "text",
+      "title": "Morgenbrød Tirsdag ",
+      "content": "Bent havde fødselsdag i lørdags og giver derfor morgenbrød kl. 9 i kantinen på tirsdag d. 19/5. ",
+      "duration": 12
+    },
+    {
+      "type": "text",
+      "title": "SOMMERFERIE ",
+      "content": "Sommerferien 2026 er godkendt af chefen :-)",
+      "duration": 12
+    },
+    {
+      "type": "text",
       "title": "TIL MONTØR",
       "content": "Gamle arbejdskort der er klar til at blive afsluttet - bedes afleveres senest d.26/5 -2026 med tekst samt reservedele. \nTjek bil - arbejdsbord - dit rum. ",
       "duration": 20
@@ -199,12 +211,6 @@
       "type": "text",
       "title": "Ændringer af modtagelse af lønsedler",
       "content": "fra dags dato modtager man sin lønsedler på mitdk",
-      "duration": 12
-    },
-    {
-      "type": "text",
-      "title": "SOMMERFERIE ",
-      "content": "Sommerferien 2026 er godkendt af chefen :-)",
       "duration": 12
     }
   ],
