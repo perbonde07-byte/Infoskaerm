@@ -212,6 +212,12 @@
       "title": "Ændringer af modtagelse af lønsedler",
       "content": "fra dags dato modtager man sin lønsedler på mitdk",
       "duration": 12
+    },
+    {
+      "type": "text",
+      "title": "Anledning af Jørgens Fødselsdag",
+      "content": "Har han taget morgen brød med til onsdag d 27/5 kl 09.00",
+      "duration": 12
     }
   ],
   "workboard": {
