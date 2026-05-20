@@ -172,8 +172,8 @@
   "slides": [
     {
       "type": "text",
-      "title": "Morgenbrød Tirsdag ",
-      "content": "Bent havde fødselsdag i lørdags og giver derfor morgenbrød kl. 9 i kantinen på tirsdag d. 19/5. ",
+      "title": "i anledning af Jørgens fødselsdag",
+      "content": "Har han taget morgen brød med til onsdag d 27/5 kl 09.00",
       "duration": 12
     },
     {
@@ -211,12 +211,6 @@
       "type": "text",
       "title": "Ændringer af modtagelse af lønsedler",
       "content": "fra dags dato modtager man sin lønsedler på mitdk",
-      "duration": 12
-    },
-    {
-      "type": "text",
-      "title": "Anledning af Jørgens Fødselsdag",
-      "content": "Har han taget morgen brød med til onsdag d 27/5 kl 09.00",
       "duration": 12
     }
   ],
