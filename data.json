@@ -172,6 +172,12 @@
   "slides": [
     {
       "type": "text",
+      "title": "Fyraftensmøde ",
+      "content": "Behov for tilbagemelding til Christina - fyraftensmøde direkte efter arbejde enten onsdag d. 3/6 eller torsdag d. 4/6. Hvilken dag passer bedst? \n",
+      "duration": 12
+    },
+    {
+      "type": "text",
       "title": "i anledning af Jørgens fødselsdag",
       "content": "Har han taget morgen brød med til onsdag d 27/5 kl 09.00",
       "duration": 12
