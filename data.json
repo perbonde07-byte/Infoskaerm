@@ -174,12 +174,6 @@
   "slides": [
     {
       "type": "text",
-      "title": "Personale møde ",
-      "content": "Personale møde onsdag d. 17/6-2026 - starter kl. 16.15. \nEfterfølgende aftensmad og mini golf på Signesminde Kro. \nHusk afbud til Pia. ",
-      "duration": 12
-    },
-    {
-      "type": "text",
       "title": "SOMMERFERIE ",
       "content": "Sommerferien 2026 er godkendt af chefen :-)",
       "duration": 12
@@ -213,6 +207,13 @@
       "type": "text",
       "title": "Ændringer af modtagelse af lønsedler",
       "content": "fra dags dato modtager man sin lønsedler på mitdk",
+      "duration": 12
+    },
+    {
+      "type": "image",
+      "title": "Praktik i uge 27",
+      "image": "",
+      "sideText": "William kommer i praktik i uge 27 på værkstedet. William skal se om det at være landbrugs maskinmekaniker er noget for ham. Tag godt i mod ham! ",
       "duration": 12
     }
   ],
