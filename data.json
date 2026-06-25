@@ -174,15 +174,21 @@
   "slides": [
     {
       "type": "text",
-      "title": "SOMMERFERIE ",
-      "content": "Sommerferien 2026 er godkendt af chefen :-)",
+      "title": "Traktortræk d. 26/6-2026",
+      "content": "Der er traktortræk på Aalborgvej 137, Viborg fredag d. 26/6-2026. \nDet starter kl. 18. Ønsker man som medarbejder, at deltage - har jeg et armbånd til dig. - Christina ",
       "duration": 12
     },
     {
       "type": "text",
       "title": "TIL MONTØR",
-      "content": "Gamle arbejdskort der er klar til at blive afsluttet - bedes afleveres senest d.23/6 -2026 med tekst samt reservedele. \nTjek bil - arbejdsbord - dit rum. ",
+      "content": "Gamle arbejdskort der er klar til at blive afsluttet - bedes afleveres senest d.26/6 -2026 med tekst samt reservedele. \nTjek bil - arbejdsbord - dit rum. ",
       "duration": 20
+    },
+    {
+      "type": "text",
+      "title": "SOMMERFERIE ",
+      "content": "Sommerferien 2026 er godkendt af chefen :-)",
+      "duration": 12
     },
     {
       "type": "empties",
